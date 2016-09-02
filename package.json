@@ -1,0 +1,36 @@
+{
+  "name": "substance-bundler",
+  "version": "0.1.0",
+  "description": "Simplified bundling taylored to our needs.",
+  "main": "dist/bundler.js",
+  "scripts": {
+    "build": "node build",
+    "prepublish": "node build"
+  },
+  "author": "Oliver Buchtala",
+  "license": "MIT",
+  "dependencies": {
+    "fsevents": "^1.0.0",
+    "source-map-support": "^0.4.2"
+  },
+  "optionalDependencies": {
+    "fsevents": "^1.0.0"
+  },
+  "devDependencies": {
+    "browserify": "^13.1.0",
+    "chokidar": "^1.6.0",
+    "fs-extra": "^0.30.0",
+    "lodash": "^4.15.0",
+    "node-browserify": "^1.0.0",
+    "rollup": "^0.34.10",
+    "rollup-plugin-buble": "^0.13.0",
+    "rollup-plugin-commonjs": "^3.3.1",
+    "rollup-plugin-sourcemaps": "^0.3.6",
+    "uglify-js": "^2.7.3",
+    "yargs": "^4.8.1"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
+}
