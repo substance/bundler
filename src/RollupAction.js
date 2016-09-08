@@ -28,6 +28,10 @@ export default class RollupAction {
     }
 
     let plugins = []
+    if (opts.ignore && opts.ignore.length > 0) {
+      plugins.push(ignore({ ignore: opts.ignore }))
+      delete opts.ignore
+    }
     if (opts.sourceMap !== false) {
       plugins.push(sourcemaps())
     }
@@ -35,22 +39,17 @@ export default class RollupAction {
       plugins.push(buble(opts.buble))
       delete opts.buble
     }
-    if (opts.commonjs) {
-      plugins.push(commonjs(opts.commonjs))
-      delete opts.commonjs
-    }
     if (opts.nodeResolve) {
       plugins.push(nodeResolve(opts.nodeResolve))
       delete opts.nodeResolve
     }
-    if (opts.ignore && opts.ignore.length > 0) {
-      plugins.push(ignore({ ignore: opts.ignore }))
-      delete opts.ignore
+    if (opts.commonjs) {
+      plugins.push(commonjs(opts.commonjs))
+      delete opts.commonjs
     }
     opts.globals = opts.globals || []
 
     this.plugins = plugins
-
 
     let _external = opts.external
     if (_external && _external.length > 0) {
