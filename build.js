@@ -4,9 +4,21 @@ var browserify = require('browserify');
 var uglifyjs = require('uglify-js');
 var rollup = require('rollup');
 var buble = require('rollup-plugin-buble');
+var yargs = require('yargs')
 
-_vendor()
-.then(_bundle)
+var argv = yargs
+  .boolean('v').alias('v', 'vendor').default('v', false)
+  .argv;
+
+var p;
+
+if (argv.vendor) {
+  p = _vendor();
+} else {
+  p = Promise.resolve();
+}
+
+p.then(_bundle)
 .catch(function(err) {
   if (err.stack) {
     console.error(err.stack);
@@ -16,6 +28,7 @@ _vendor()
 });
 
 function _vendor() {
+  console.info('dist/vendor.js...')
   var src = "./vendor.js";
   var dest = "./dist/vendor.js";
   return new Promise(function(resolve, reject) {
@@ -44,6 +57,7 @@ function _vendor() {
 }
 
 function _bundle() {
+  console.info('dist/bundler.js...')
   var dest = 'dist/bundler.js';
   return rollup.rollup({
     entry: 'src/main.js',

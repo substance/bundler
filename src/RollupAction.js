@@ -1,80 +1,66 @@
-import { isArray, rollup, buble, commonjs, sourcemaps } from './vendor'
+import { rollup, buble, commonjs, sourcemaps } from './vendor'
 import { basename, isAbsolute, join, writeSync } from './fileUtils'
 import ignore from './rollup/rollup-plugin-ignore'
 import nodeResolve from './rollup/rollup-plugin-resolve'
 
 export default class RollupAction {
 
-  constructor(bundler, src, targets, opts) {
-    opts = Object.assign(bundler.opts['js'] || {}, opts)
+  constructor(bundler, src, opts) {
+    opts = Object.assign({}, bundler.opts['js'], opts)
 
     this.bundler = bundler
     this.src = src
-    this.targets = targets
-    if (!isArray(targets)) {
-      this.targets = [targets]
-    }
-    this.opts = opts
 
-    this.ignore = opts.ignore || []
-    this.external = []
-    if (opts.external) {
-      this.external = opts.external.map(function(ext) {
-        return new RegExp("^"+ext)
+    if (opts.targets) {
+      this.targets = opts.targets
+      delete opts.targets
+    } else {
+      this.targets = [{
+        dest: opts.dest,
+        format: opts.format,
+        moduleName: opts.moduleName,
+        sourceMapRoot: opts.sourceMapRoot
+      }]
+      delete opts.dest
+      delete opts.format
+      delete opts.moduleName
+      delete opts.sourceMapRoot
+    }
+
+    let plugins = []
+    if (opts.sourceMap !== false) {
+      plugins.push(sourcemaps())
+    }
+    if (opts.buble) {
+      plugins.push(buble(opts.buble))
+      delete opts.buble
+    }
+    if (opts.commonjs) {
+      plugins.push(commonjs(opts.commonjs))
+      delete opts.commonjs
+    }
+    if (opts.nodeResolve) {
+      plugins.push(nodeResolve(opts.nodeResolve))
+      delete opts.nodeResolve
+    }
+    if (opts.ignore && opts.ignore.length > 0) {
+      plugins.push(ignore({ ignore: opts.ignore }))
+      delete opts.ignore
+    }
+    opts.globals = opts.globals || []
+
+    this.plugins = plugins
+
+
+    let _external = opts.external
+    if (_external && _external.length > 0) {
+      _external = _external.map(function(lib) {
+        opts.globals.push(lib)
+        return new RegExp("^"+lib)
       })
-    }
-    this.commonjs = opts.commonjs || []
-
-    this.es6 = opts.es6 || { exclude: 'node_modules/**' }
-
-    this._onChange = this._onChange.bind(this)
-    this._watchedFiles = {}
-  }
-
-  run(next) {
-    const external = this.external
-    const t0 = Date.now()
-    const cache = {
-      modules: this._getCachedModules() || []
-    }
-    const src = this.src
-    const rootDir = this.bundler.rootDir
-    const targets = this.targets
-
-    if (this.es6.length > 0) {
-      bubleOpts.include = this.es6
-    }
-
-    let plugins = [
-      sourcemaps()
-    ]
-
-    if (this.ignore.length > 0) {
-      plugins.push(ignore({ ignore: this.ignore }))
-    }
-
-    plugins = plugins.concat([
-      buble(this.es6),
-      nodeResolve(),
-    ]);
-
-    let opts = {
-      entry: src,
-      plugins: plugins,
-      sourceMap: true,
-      treeshake: true,
-      cache: cache,
-      moduleName: 'app'
-    }
-    if (this.commonjs.length > 0) {
-      plugins.push(commonjs({
-        include: this.commonjs
-      }))
-    }
-    if (this.external.length > 0) {
       opts.external = function(id) {
-        for (var i = 0; i < external.length; i++) {
-          if (external[i].exec(id)) {
+        for (var i = 0; i < _external.length; i++) {
+          if (_external[i].exec(id)) {
             // console.log('### external: ', id)
             return true
           }
@@ -82,20 +68,55 @@ export default class RollupAction {
         return false
       }
     }
+
+    this.opts = opts
+
+    this._onChange = this._onChange.bind(this)
+    this._watchedFiles = {}
+
+    this.cache = null
+  }
+
+  run(next) {
+    const t0 = Date.now()
+    const cache = this.cache
+    const src = this.src
+    const rootDir = this.bundler.rootDir
+    const targets = this.targets
+    const plugins = this.plugins
+
+    let opts = Object.assign({
+      entry: src,
+      plugins: plugins,
+      sourceMap: true,
+      treeshake: true,
+      cache: cache
+    }, this.opts)
     rollup.rollup(opts)
     .then(function(bundle) {
-      this._setCachedModules(bundle.modules)
+      this.cache = bundle
       targets.forEach(function(target) {
         var absDest = isAbsolute(target.dest) ? target.dest : join(rootDir, target.dest)
-        var result = bundle.generate({
+        var _opts = Object.assign({
           format: target.format,
           sourceMap: true,
           sourceMapFile: absDest,
-          moduleName: 'app'
-        })
+        }, target)
+        var result = bundle.generate(_opts)
         // write the map file first so that a file watcher for the bundle
         // is not triggered too early
-        writeSync(absDest+'.map', result.map.toString())
+        let sourceMap = result.map.toString()
+        if (target.sourceMapRoot) {
+          let data = JSON.parse(sourceMap)
+          data.sources = data.sources.map(function(srcPath) {
+            // console.log('### source file:', srcPath)
+            // HACK: hard coded pattern for source path transformation
+            srcPath = srcPath.replace('..', target.sourceMapRoot)
+            return srcPath
+          })
+          sourceMap = JSON.stringify(data)
+        }
+        writeSync(absDest+'.map', sourceMap)
         writeSync(absDest,
           [
             result.code,
@@ -120,7 +141,9 @@ export default class RollupAction {
     bundle.modules.forEach(function(m) {
       const id = m.id
       if (!this._watchedFiles[id]) {
-        watcher.watchFile(id, this._onChange)
+        watcher.watch(id, {
+          change: this._onChange
+        })
         this._watchedFiles[id] = true
       }
     }.bind(this))
@@ -128,17 +151,5 @@ export default class RollupAction {
 
   _onChange() {
     this.bundler._schedule(this)
-  }
-
-  _getCachedModules() {
-    const cache = this.bundler.cache[this.src]
-    let cachedModules = cache ? cache.modules : []
-    return cachedModules || []
-  }
-
-  _setCachedModules(modules) {
-    let cache = this.bundler.cache[this.src]
-    if (!cache) this.bundler.cache[this.src] = cache = {}
-    cache.modules = modules
   }
 }

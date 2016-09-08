@@ -112,12 +112,16 @@ export default class Bundler extends EventEmitter {
         if (err) {
           console.error(err.toString())
           if (err.stack) console.error(err.stack)
-        } else {
-          process.nextTick(this._step.bind(this))
         }
+        process.nextTick(this._step.bind(this))
       }.bind(this))
     } else {
-      action.run()
+      try {
+        action.run()
+      } catch (err) {
+        console.error(err.toString())
+        if (err.stack) console.error(err.stack)
+      }
       process.nextTick(this._step.bind(this))
     }
   }

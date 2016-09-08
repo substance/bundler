@@ -1,11 +1,13 @@
 import FileWatcher from './FileWatcher'
+import GlobWatcher from './GlobWatcher'
+import { glob } from './fileUtils'
 
-export default class Watcher{
+export default class Watcher {
 
   constructor() {
     this.watching = false
     this.watchEntries = {}
-    this.fileWatchers = {}
+    this.watchers = {}
 
     // make sure that watchers are disposed on exit
     this.stop = this.stop.bind(this)
@@ -16,7 +18,7 @@ export default class Watcher{
   start() {
     if (this.watching) return
     var watchEntries = this.watchEntries
-    var watchers = this.fileWatchers
+    var watchers = this.watchers
     Object.keys(watchEntries).forEach(function(id) {
       var watcher = watchers[id]
       if (watcher) watcher.close()
@@ -28,7 +30,7 @@ export default class Watcher{
 
   stop() {
     var watchEntries = this.watchEntries
-    var watchers = this.fileWatchers
+    var watchers = this.watchers
     Object.keys(watchEntries).forEach(function(id) {
       var watcher = watchers[id]
       if (watcher) {
@@ -39,36 +41,38 @@ export default class Watcher{
     this.watching = false
   }
 
-  watchFile(absPath, handler) {
+  watch(patternOrPath, hooks) {
     // console.log('### watching', absPath)
-    var watchEntries = this.watchEntries
-    var watchers = this.fileWatchers
-    var watchEntry
-    if (!watchEntries[absPath]) {
+    const watchEntries = this.watchEntries
+    const watchers = this.watchers
+    let watchEntry
+    let type = glob.hasMagic(patternOrPath) ? 'glob' : 'file'
+    if (!watchEntries[patternOrPath]) {
       watchEntry = {
-        path: absPath,
-        handlers: [handler],
+        type: type,
+        path: patternOrPath,
+        handlers: [hooks]
       }
-      watchEntries[absPath] = watchEntry
+      watchEntries[patternOrPath] = watchEntry
     } else {
-      watchEntries[absPath].handlers.push(handler)
+      watchEntries[patternOrPath].handlers.push(hooks)
       return
     }
     if (this.watching) {
-      watchers[absPath] = this._createWatcher(watchEntry)
+      watchers[patternOrPath] = this._createWatcher(watchEntry)
     }
   }
 
   _createWatcher(watchEntry) {
-    const w = new FileWatcher(watchEntry.path, _onChange.bind(null, watchEntry))
+    const w = watchEntry.type === 'file' ?
+      new FileWatcher(watchEntry.path) :
+      new GlobWatcher(watchEntry.path)
     // console.log('### watching %s', watchEntry.path)
+    watchEntry.handlers.forEach(function(hooks) {
+      Object.keys(hooks).forEach(function(evt) {
+        w.on(evt, hooks[evt])
+      })
+    })
     return w
   }
-}
-
-function _onChange(entry) {
-  console.log('Changed: %s', entry.path)
-  entry.handlers.forEach(function(handler) {
-    handler(entry.path)
-  })
 }

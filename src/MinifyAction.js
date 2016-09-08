@@ -42,7 +42,9 @@ export default class MinifyAction {
       this._isWatching = true
       const absPath = isAbsolute(src) ? src : join(rootDir, src)
       // console.log('### MinifyAction starts watching', absPath)
-      watcher.watchFile(absPath, this._onChange.bind(this))
+      watcher.watch(absPath, {
+        change: this._onChange.bind(this)
+      })
     }
   }
 

@@ -1,10 +1,10 @@
 import { lstatSync, writeFileSync } from 'fs'
 import { dirname, normalize, resolve } from 'path'
-import { removeSync, walk, ensureDirSync } from './vendor'
+import { ensureDirSync, copySync } from './vendor'
 
 export { basename, dirname, join, relative, sep } from 'path'
 export { existsSync } from 'fs'
-export { removeSync, walk, ensureDirSync } from './vendor'
+export { removeSync, walk, ensureDirSync, glob } from './vendor'
 
 export function isDirectory (p) {
   return lstatSync(p).isDirectory()
