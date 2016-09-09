@@ -1,10 +1,12 @@
 import { dirname, join, existsSync } from './fileUtils'
+var fs = require('fs')
 
 export default class MakeAction {
 
-  constructor(bundler, otherModule) {
+  constructor(bundler, otherModule, tasks) {
     this.bundler = bundler
     this.module = otherModule
+    this.tasks = tasks || []
   }
 
   run(next) {
@@ -12,13 +14,16 @@ export default class MakeAction {
     const rootDir = bundler.rootDir
     const otherModule = this.module
     var makefile = join(rootDir, 'node_modules', otherModule, 'make.js')
-    if (!existsSync) {
-      console.error('Could not resolve "%s"', otherModule)
-      return
+    if (!existsSync(makefile)) {
+      console.error('Could not find "make.js" in module "%s"', otherModule)
+      return next()
     }
+    // get the real location of the module in case
+    // it is npm-linked
+    makefile = fs.realpathSync(makefile)
     const cp = require('child_process')
-    let args = ['--remote']
-    if (bundler.watch) args.push('--watch')
+    let args = this.tasks.concat(['--remote'])
+    if (bundler.opts.watch) args.push('--watch')
     const child = cp.fork(makefile, args, {
       cwd: dirname(makefile)
     })
