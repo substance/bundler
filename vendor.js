@@ -1,5 +1,7 @@
 // chokidar
 var chokidar = require('chokidar')
+// express
+var express = require('express')
 // fs-extra
 var fse = require('fs-extra')
 var glob = require('glob')
@@ -19,6 +21,7 @@ var yargs = require('yargs')
 
 module.exports = {
   chokidar: chokidar,
+  express: express,
   removeSync: fse.removeSync,
   walk: fse.walk,
   copySync: fse.copySync,

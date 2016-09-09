@@ -1,6 +1,7 @@
 import EventEmitter from 'events'
 
-import { isFunction, forEach } from './vendor'
+import { isFunction, forEach, express } from './vendor'
+import { join } from './fileUtils'
 
 import CopyAction from './CopyAction'
 import MakeAction from './MakeAction'
@@ -17,6 +18,9 @@ export default class Bundler extends EventEmitter {
     this.opts = opts || {}
     this.rootDir = process.cwd()
     this.watcher = new Watcher()
+    this.server = new express()
+    this._serverPort = 4000
+
     this.cache = {}
 
     // task registry
@@ -26,7 +30,6 @@ export default class Bundler extends EventEmitter {
     this._jobs = []
 
     // flags
-    this.watch = opts.watch
     this._started = false
     this._running = false
 
@@ -46,17 +49,13 @@ export default class Bundler extends EventEmitter {
     }.bind(this))
   }
 
-  make(other) {
-    return this._schedule(new MakeAction(this, other))
+  make(other, ...tasks) {
+    return this._schedule(new MakeAction(this, other, tasks))
   }
 
   copy(src, dest, opts) {
     return this._schedule(new CopyAction(this, src, dest, opts))
   }
-
-  // css(src, dest, opts) {
-  //   return this._schedule(new CSSAction(this, src, dest, opts))
-  // }
 
   js(src, targets, opts) {
     return this._schedule(new RollupAction(this, src, targets, opts))
@@ -79,8 +78,32 @@ export default class Bundler extends EventEmitter {
     return this._schedule(new MinifyAction(this, src))
   }
 
+  setServerPort(port) {
+    this._serverPort = port
+  }
+
+  serve(params) {
+    const server = this.server
+    const rootDir = this.rootDir
+    if (params.static) {
+      const route = params.route
+      let folder = params.folder
+      if (!route || !folder) {
+        throw new Error("Parameters 'route' and 'folder' required.")
+      }
+      folder = join(rootDir, folder)
+      // console.log('## Adding static route %s -> %s', route, folder)
+      server.use(route, express.static(folder))
+    }
+  }
+
   _startWatching() {
     this.watcher.start()
+  }
+
+  _startServing() {
+    console.info('Starting server on port %s...', this._serverPort)
+    this.server.listen(this._serverPort)
   }
 
   _schedule(action) {

@@ -7,10 +7,12 @@ import Bundler from './Bundler'
 let argv = yargs
   // use this to start watcher
   .boolean('w').alias('w', 'watch').default('w', false)
+  .boolean('s').alias('s', 'serve').default('s', false)
   .argv
 
 let opts = {
-  watch: argv.watch
+  watch: argv.watch,
+  serve: argv.serve
 }
 
 let bundler = new Bundler(opts)
@@ -33,13 +35,20 @@ function _start() {
 
 process.once('beforeExit', _start)
 bundler.once('done', function() {
-  if (bundler.watch) {
+  var watch = bundler.opts.watch;
+  var serve = bundler.opts.serve;
+  var remote = argv.remote;
+  if (serve) {
+    bundler._startServing();
+  }
+  if (watch) {
     // start watching if this has been requested (default is false)
-    if (!argv.remote) {
+    if (!remote) {
       console.info('Watching for changes... Press CTRL-C to exit.')
     }
     bundler._startWatching()
-  } else if (!argv.remote) {
+  }
+  if (!remote && !watch && !serve) {
     process.exit(0)
   }
 })
