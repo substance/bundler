@@ -1,6 +1,6 @@
 import {
   basename, copySync, removeSync, isAbsolute, isDirectory, join,
-  relative, sep, glob, dirname
+  relative, sep, glob
 } from './fileUtils'
 
 /*
@@ -116,6 +116,7 @@ export default class CopyAction {
   _onChange(src, dest) {
     const bundler = this.bundler
     const self = this
+    this.invalidate(dest)
     bundler._schedule({
       run() { copySync(src, dest) },
       toString() {
@@ -125,15 +126,7 @@ export default class CopyAction {
   }
 
   _onDelete(dest) {
-    const bundler = this.bundler
-    bundler._schedule({
-      run() {
-        removeSync(dest)
-      },
-      toString() {
-        return "Remove: " + dest
-      }
-    })
+    this.invalidate(dest)
   }
 
   _onAdd(file) {
@@ -148,6 +141,11 @@ export default class CopyAction {
       'change': this._onChange.bind(this, srcPath, destPath),
       'unlink': this._onDelete.bind(this, destPath),
     })
+  }
+
+  invalidate(dest) {
+    console.info('Removing: ', dest)
+    removeSync(dest)
   }
 
 }

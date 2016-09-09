@@ -1,7 +1,11 @@
 import { rollup, buble, commonjs, sourcemaps } from './vendor'
-import { basename, isAbsolute, join, writeSync } from './fileUtils'
+import {
+  basename, dirname, isAbsolute,
+  join, relative,
+  removeSync, writeSync
+} from './fileUtils'
 import ignore from './rollup/rollup-plugin-ignore'
-import nodeResolve from './rollup/rollup-plugin-resolve'
+import resolve from './rollup/rollup-plugin-resolve'
 
 export default class RollupAction {
 
@@ -19,29 +23,35 @@ export default class RollupAction {
         dest: opts.dest,
         format: opts.format,
         moduleName: opts.moduleName,
-        sourceMapRoot: opts.sourceMapRoot
+        sourceMapRoot: opts.sourceMapRoot,
+        sourceMapPrefix: opts.sourceMapPrefix,
       }]
       delete opts.dest
       delete opts.format
       delete opts.moduleName
       delete opts.sourceMapRoot
+      delete opts.sourceMapPrefix
     }
 
     let plugins = []
+    // ignore must be the first, so that no other
+    // plugin resolves ignored files
     if (opts.ignore && opts.ignore.length > 0) {
       plugins.push(ignore({ ignore: opts.ignore }))
       delete opts.ignore
     }
+    // we provide a custom resolver, taking care of
+    // pretty much all resolving (relative and node)
+    plugins.push(resolve())
+    // this is necesssary so that already existing sourcemaps
+    // present in imported files are picked up
     if (opts.sourceMap !== false) {
       plugins.push(sourcemaps())
     }
+    // this turns on basic es6 transpilation
     if (opts.buble) {
       plugins.push(buble(opts.buble))
       delete opts.buble
-    }
-    if (opts.nodeResolve) {
-      plugins.push(nodeResolve(opts.nodeResolve))
-      delete opts.nodeResolve
     }
     if (opts.commonjs) {
       plugins.push(commonjs(opts.commonjs))
@@ -108,10 +118,13 @@ export default class RollupAction {
         if (target.sourceMapRoot) {
           let data = JSON.parse(sourceMap)
           data.sources = data.sources.map(function(srcPath) {
+            let absSrcPath = join(dirname(absDest), srcPath)
+            let relSrcPath = relative(target.sourceMapRoot, absSrcPath)
+            relSrcPath = relSrcPath.replace(/\\/g, "/")
             // console.log('### source file:', srcPath)
             // HACK: hard coded pattern for source path transformation
-            srcPath = srcPath.replace('..', target.sourceMapRoot)
-            return srcPath
+            if (target.sourceMapPrefix) relSrcPath = target.sourceMapPrefix + '/' + relSrcPath
+            return relSrcPath
           })
           sourceMap = JSON.stringify(data)
         }
@@ -149,6 +162,17 @@ export default class RollupAction {
   }
 
   _onChange() {
+    this.invalidate()
     this.bundler._schedule(this)
+  }
+
+  invalidate() {
+    const rootDir = this.bundler.rootDir
+    const targets = this.targets
+    targets.forEach(function(target) {
+      var absDest = isAbsolute(target.dest) ? target.dest : join(rootDir, target.dest)
+      console.info('Removing: ', absDest)
+      removeSync(absDest)
+    })
   }
 }
