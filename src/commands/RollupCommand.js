@@ -78,7 +78,8 @@ export default class RollupCommand {
   }
 
   execute(bundler) {
-    const src = this.src
+    let src = this.src
+    if (!isAbsolute(src)) src = path.join(bundler.rootDir, src)
     const plugins = this.plugins
     const targets = this.targets
     const opts = this.opts
@@ -91,7 +92,7 @@ export default class RollupCommand {
 class RollupAction extends Action {
 
   constructor(bundler, src, plugins, targets, opts) {
-    super([src])
+    super()
     this.bundler = bundler
     this.src = src
     this.plugins = plugins
@@ -179,6 +180,8 @@ class RollupAction extends Action {
 
     bundle.modules.forEach(function(m) {
       const file = m.id
+      // skip fake modules which usually do not have a qualified path
+      if (!isAbsolute(file)) return
       if (!watched[file]) {
         watcher.watch(file, {
           change: _onChange,

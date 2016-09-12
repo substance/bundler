@@ -1,4 +1,5 @@
 import { glob, isString } from './vendor'
+import { isAbsolute } from './fileUtils'
 import FileWatcher from './FileWatcher'
 import GlobWatcher from './GlobWatcher'
 
@@ -49,6 +50,9 @@ export default class Watcher {
     const watchers = this.watchers
     let watchEntry
     let type = glob.hasMagic(patternOrPath) ? 'glob' : 'file'
+    if (type === 'file' && !isAbsolute(patternOrPath)) {
+      throw new Error('Only absolute file paths are allowed. Was '+patternOrPath)
+    }
     if (!watchEntries[patternOrPath]) {
       watchEntry = {
         type: type,
