@@ -29,9 +29,12 @@ export default class FileWatcher extends EventEmitter {
   }
 
   onDelete(file) {
-    this.close()
     console.info('Deleted: %s', file)
     this.emit('unlink', this._file)
+    // TODO: we need to think about a way to explicitly
+    // free watchers
+    // ATM, watchers are only freed when stopping the bundler
+    // this.close()
   }
 
   onChange(file, stats) {
