@@ -3,7 +3,6 @@ var debug = require('debug')
 var express = require('express')
 var fse = require('fs-extra')
 var glob = require('glob')
-var uglify = require('uglify-js')
 var yargs = require('yargs')
 
 //lodash
@@ -32,6 +31,5 @@ module.exports = {
   buble: buble,
   commonjs: commonjs,
   sourcemaps: sourcemaps,
-  uglify: uglify,
   yargs: yargs
 }

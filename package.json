@@ -1,11 +1,11 @@
 {
   "name": "substance-bundler",
-  "version": "0.4.0",
+  "version": "0.4.2",
   "description": "Simplified bundling taylored to our needs.",
   "main": "dist/bundler.js",
   "scripts": {
-    "build": "node build --vendor",
-    "prepublish": "node build --vendor"
+    "build": "node build -v -d",
+    "prepublish": "node build -v -d"
   },
   "author": "Oliver Buchtala",
   "license": "MIT",

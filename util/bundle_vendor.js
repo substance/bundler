@@ -10,11 +10,12 @@ module.exports = function bundle_vendor(opts) {
   var src = "./vendor.js";
   var dest = "./dist/vendor.js";
   return new Promise(function(resolve, reject) {
-    _fixUglifyjsConfig()
     browserify(src, {
       insertGlobalVars: {
         'process': undefined,
         'global': undefined,
+        '__dirname': "",
+        '__filename': "",
       },
       browserField: false,
       builtins: false,
@@ -37,12 +38,4 @@ module.exports = function bundle_vendor(opts) {
       }
     });
   });
-}
-
-
-function _fixUglifyjsConfig() {
-  var p = path.join(__dirname, '..', 'node_modules', 'uglify-js', 'package.json')
-  var config = JSON.parse(fs.readFileSync(p, 'utf8'));
-  delete config.browserify;
-  fs.writeFileSync(p, JSON.stringify(config))
 }

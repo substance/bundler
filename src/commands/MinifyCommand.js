@@ -1,8 +1,10 @@
 import * as path from 'path'
 import * as fs from 'fs'
-import { uglify } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import Action from '../Action'
+
+// uglify can not be bundled as it does dynamic file loading
+const uglify = require('uglify-js')
 
 export default class MinifyCommand {
 
