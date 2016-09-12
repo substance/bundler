@@ -11,7 +11,8 @@
   "license": "MIT",
   "dependencies": {
     "fsevents": "^1.0.0",
-    "source-map-support": "^0.4.2"
+    "source-map-support": "^0.4.2",
+    "uglify-js": "^2.7.3"
   },
   "optionalDependencies": {
     "fsevents": "^1.0.0"
