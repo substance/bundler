@@ -77,15 +77,21 @@ export default class RollupCommand {
     this.cache = null
   }
 
-  execute(bundler) {
+  get id() {
+    return ['RollupCommand', this.src, this.targets.map(function(target) {
+      return target.dest
+    })]
+  }
+
+  execute(bundler, next) {
     let src = this.src
     if (!isAbsolute(src)) src = path.join(bundler.rootDir, src)
     const plugins = this.plugins
     const targets = this.targets
     const opts = this.opts
-    bundler._registerAction(
-      new RollupAction(bundler, src, plugins, targets, opts)
-    )
+    const action = new RollupAction(bundler, src, plugins, targets, opts)
+    bundler._registerAction(action)
+    action.execute(bundler, next)
   }
 }
 
@@ -110,7 +116,7 @@ class RollupAction extends Action {
     return ['Rollup:', this.src, '->'].concat(this._getBundles().join('|')).join(' ')
   }
 
-  update(next) {
+  execute(bundler, next) {
     console.info(this.id)
     const t0 = Date.now()
     const cache = this._cache

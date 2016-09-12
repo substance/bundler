@@ -14,11 +14,17 @@ export default class MinifyCommand {
     this._isWatching = false
   }
 
-  execute(bundler) {
+  get id() {
+    return ['MinifyCommand', this.src].join(' ')
+  }
+
+  execute(bundler, next) {
     let src = this.src
     if (!isAbsolute(src)) src = path.join(bundler.rootDir, src)
     const dest = path.join(path.dirname(src), path.basename(src, '.js')+'.min.js')
-    bundler._registerAction(new MinifyAction(src, dest))
+    const action = new MinifyAction(src, dest)
+    bundler._registerAction(action)
+    action.execute(bundler, next)
   }
 }
 
@@ -38,7 +44,7 @@ class MinifyAction extends Action {
     return ['Minify:', this.src].join(' ')
   }
 
-  update(next) {
+  execute(bundler, next) {
     console.info(this.id)
     const src = this.src
     const dest = this.dest

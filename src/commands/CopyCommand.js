@@ -39,24 +39,28 @@ export default class CopyCommand {
     this.opts = opts || {}
   }
 
-  execute(bundler) {
+  get id() {
+    return ['CopyCommand', this.src, '->', this.dest].join(' ')
+  }
+
+  execute(bundler, next) {
     const rootDir = bundler.rootDir
     let dest = this.dest
     if (!isAbsolute(dest)) dest = path.join(rootDir, dest)
     if (glob.hasMagic(this.src)) {
-      this._executeWithGlob(bundler)
+      this._executeWithGlob(bundler, next)
     }
     else if (isDirectory(this.src)) {
       this.opts.root = this.src
       this.src = this.src+"/**/*"
-      this._executeWithGlob(bundler)
+      this._executeWithGlob(bundler, next)
     }
     else {
-      this._executeWithoutGlob(bundler)
+      this._executeWithoutGlob(bundler, next)
     }
   }
 
-  _executeWithoutGlob(bundler) {
+  _executeWithoutGlob(bundler, next) {
     const rootDir = bundler.rootDir
     let dest = this.dest
     let src = this.src
@@ -65,10 +69,12 @@ export default class CopyCommand {
     const lastIsSlash = (dest[dest.length-1] === path.sep)
     if (lastIsSlash || isDirectory(dest)) dest = path.join(dest, path.basename(src))
     // console.log('####', dest, isAbsolute(dest), dest[dest.length-1], path.sep, lastIsSlash, path.basename(src))
-    bundler._registerAction(new CopyAction(src, dest))
+    const action = new CopyAction(src, dest)
+    bundler._registerAction(action)
+    action.execute(bundler, next)
   }
 
-  _executeWithGlob(bundler) {
+  _executeWithGlob(bundler, next) {
     const rootDir = bundler.rootDir
     const watcher = bundler.watcher
     const pattern = this.src
@@ -92,6 +98,7 @@ export default class CopyCommand {
     watcher.watch(pattern, {
       'add': this._onAdd.bind(this, bundler)
     })
+    next()
   }
 
   /*
@@ -107,9 +114,10 @@ export default class CopyCommand {
     const globRoot = path.join(rootDir, this.opts.root) || rootDir
     let destPath = path.join(this.dest, path.relative(globRoot, file))
     if (!isAbsolute(destPath)) destPath = path.join(rootDir, destPath)
-    bundler._registerAction(new CopyAction(srcPath, destPath))
+    const action = new CopyAction(srcPath, destPath)
+    bundler._registerAction(action)
+    bundler._schedule(action)
   }
-
 }
 
 class CopyAction extends Action {
@@ -135,13 +143,13 @@ class CopyAction extends Action {
     return ['Copy:',this.src,'->',this.dest].join(' ')
   }
 
-  update() {
+  execute(bundler, next) {
     // console.info(this.id)
     copySync(this.src, this.dest)
+    next()
   }
 
   invalidate() {
     fse.removeSync(this.dest)
   }
-
 }

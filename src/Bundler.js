@@ -44,29 +44,24 @@ export default class Bundler extends EventEmitter {
     })
   }
 
-  execute(cmd) {
-    // log('Executing command', cmd)
-    cmd.execute(this)
-  }
-
   make(other, ...tasks) {
-    this.execute(new MakeCommand(other, tasks))
+    this._schedule(new MakeCommand(other, tasks))
   }
 
   copy(src, dest, opts) {
-    this.execute(new CopyCommand(src, dest, opts))
+    this._schedule(new CopyCommand(src, dest, opts))
   }
 
   js(src, targets, opts) {
-    this.execute(new RollupCommand(src, targets, opts))
+    this._schedule(new RollupCommand(src, targets, opts))
   }
 
   rm(rmPath) {
-    this.execute(new RemoveCommand(rmPath))
+    this._schedule(new RemoveCommand(rmPath))
   }
 
   minify(src) {
-    this.execute(new MinifyCommand(src))
+    this._schedule(new MinifyCommand(src))
   }
 
   task(name, deps, fn) {
@@ -107,7 +102,6 @@ export default class Bundler extends EventEmitter {
     // skip if the same action is already registered
     if (this._actions[id]) return
     this._actions[id] = action
-    this._schedule(action)
     action.inputs.forEach(function(input) {
       log('Watching ', input)
       watcher.watch(input, {
@@ -215,27 +209,17 @@ export default class Bundler extends EventEmitter {
     const action = this._scheduledActions.shift()
     const id = action.id
     delete this._scheduledActionIds[id]
-    if (action.update.length > 0) {
-      try {
-        action.update(function(err) {
-          if (err) {
-            if (err.stack) console.error(err.stack)
-            else console.error(err.toString())
-          }
-          process.nextTick(this._step.bind(this))
-        }.bind(this))
-      } catch (err) {
-        if (err.stack) console.error(err.stack)
-        else console.error(err.toString())
+    try {
+      action.execute(this, function(err) {
+        if (err) {
+          if (err.stack) console.error(err.stack)
+          else console.error(err.toString())
+        }
         process.nextTick(this._step.bind(this))
-      }
-    } else {
-      try {
-        action.update()
-      } catch (err) {
-        if (err.stack) console.error(err.stack)
-        else console.error(err.toString())
-      }
+      }.bind(this))
+    } catch (err) {
+      if (err.stack) console.error(err.stack)
+      else console.error(err.toString())
       process.nextTick(this._step.bind(this))
     }
   }

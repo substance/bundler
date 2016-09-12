@@ -9,32 +9,19 @@ export default class RemoveCommand {
     this.rmPath = rmPath
   }
 
-  execute(bundler) {
+  get id() {
+    return ['RemoveCommand:', this.rmPath].join(' ')
+  }
+
+  execute(bundler, next) {
     let rmPath = this.rmPath
     if (rmPath[0] === '.') {
       rmPath = path.join(bundler.rootDir, rmPath)
     }
-    bundler._registerAction(new RemoveAction(rmPath))
-  }
-}
-
-class RemoveAction extends Action {
-
-  constructor(rmPath) {
-    super()
-
-    this.rmPath = rmPath
-  }
-
-  get id() {
-    return ['Remove:', this.rmPath].join(' ')
-  }
-
-  update() {
-    if (fs.existsSync(this.rmPath)) {
+    if (fs.existsSync(rmPath)) {
       // console.info(this.id)
       fse.removeSync(this.rmPath)
     }
+    next()
   }
-
 }
