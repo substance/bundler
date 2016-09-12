@@ -59,8 +59,4 @@ if (argv.remote) {
   })
 }
 
-Bundler.API.forEach(function(api) {
-  global.api = bundler[api]
-})
-
 export default bundler

@@ -1,16 +1,3 @@
-/*
-  Rollup plugin that returns an empty object for ignored modules or resources.
-
-  ```
-    rollup.rollup({
-      plugins: [
-        ignore({
-          ignore: ['cheerio']
-        })
-      ]
-    })
-  ```
-*/
 export default function ignore(opts) {
   // TODO: maybe we want something more sophisticated
   // than just an exact match

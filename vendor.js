@@ -1,34 +1,32 @@
-// chokidar
 var chokidar = require('chokidar')
-// express
+var debug = require('debug')
 var express = require('express')
-// fs-extra
 var fse = require('fs-extra')
 var glob = require('glob')
-// lodash
+var uglify = require('uglify-js')
+var yargs = require('yargs')
+
+//lodash
 var forEach = require('lodash/forEach')
 var isArray = require('lodash/isArray')
+var isString = require('lodash/isString')
 var isFunction = require('lodash/isFunction')
-// rollup
+
+//rollup
 var rollup = require('rollup/dist/rollup')
 var buble = require('rollup-plugin-buble')
 var commonjs = require('rollup-plugin-commonjs')
 var sourcemaps = require('rollup-plugin-sourcemaps')
-// uglify-js
-var uglify = require('uglify-js')
-// yargs
-var yargs = require('yargs')
 
 module.exports = {
   chokidar: chokidar,
+  debug: debug,
   express: express,
-  removeSync: fse.removeSync,
-  walk: fse.walk,
-  copySync: fse.copySync,
-  ensureDirSync: fse.ensureDirSync,
+  fse: fse,
   glob: glob,
   forEach: forEach,
   isArray: isArray,
+  isString: isString,
   isFunction: isFunction,
   rollup: rollup,
   buble: buble,

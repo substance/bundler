@@ -1,6 +1,6 @@
+import { glob, isString } from './vendor'
 import FileWatcher from './FileWatcher'
 import GlobWatcher from './GlobWatcher'
-import { glob } from './fileUtils'
 
 export default class Watcher {
 
@@ -42,7 +42,9 @@ export default class Watcher {
   }
 
   watch(patternOrPath, hooks) {
-    // console.log('### watching', absPath)
+    if (!patternOrPath || !isString(patternOrPath)) {
+      throw new Error('Watcher.watch(): invalid path ' + patternOrPath)
+    }
     const watchEntries = this.watchEntries
     const watchers = this.watchers
     let watchEntry

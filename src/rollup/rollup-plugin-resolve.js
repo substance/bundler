@@ -1,6 +1,5 @@
 var Module = require('module');
 var path = require('path');
-
 var DOT = '.'.charCodeAt(0);
 
 // rather dangerous iplementation of nodejs resolve

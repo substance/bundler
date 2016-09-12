@@ -1,20 +1,15 @@
-import { rollup, buble, commonjs, sourcemaps } from './vendor'
-import {
-  basename, dirname, isAbsolute,
-  join, relative,
-  removeSync, writeSync
-} from './fileUtils'
-import ignore from './rollup/rollup-plugin-ignore'
-import resolve from './rollup/rollup-plugin-resolve'
+import * as path from 'path'
+import { rollup, buble, commonjs, sourcemaps } from '../vendor'
+import { isAbsolute, writeSync } from '../fileUtils'
+import ignore from '../rollup/rollup-plugin-ignore'
+import resolve from '../rollup/rollup-plugin-resolve'
+import Action from '../Action'
+import log from '../log'
 
-export default class RollupAction {
+export default class RollupCommand {
 
-  constructor(bundler, src, opts) {
-    opts = Object.assign({}, bundler.opts['js'], opts)
-
-    this.bundler = bundler
+  constructor(src, opts) {
     this.src = src
-
     if (opts.targets) {
       this.targets = opts.targets
       delete opts.targets
@@ -50,7 +45,8 @@ export default class RollupAction {
     }
     // this turns on basic es6 transpilation
     if (opts.buble) {
-      plugins.push(buble(opts.buble))
+      let bubleOpts = Object.assign({}, opts.buble)
+      plugins.push(buble(bubleOpts))
       delete opts.buble
     }
     if (opts.commonjs) {
@@ -77,20 +73,47 @@ export default class RollupAction {
         return false
       }
     }
-
     this.opts = opts
-
-    this._onChange = this._onChange.bind(this)
-    this._watchedFiles = {}
-
     this.cache = null
   }
 
-  run(next) {
-    const t0 = Date.now()
-    const cache = this.cache
+  execute(bundler) {
     const src = this.src
-    const rootDir = this.bundler.rootDir
+    const plugins = this.plugins
+    const targets = this.targets
+    const opts = this.opts
+    bundler._registerAction(
+      new RollupAction(bundler, src, plugins, targets, opts)
+    )
+  }
+}
+
+class RollupAction extends Action {
+
+  constructor(bundler, src, plugins, targets, opts) {
+    super([src])
+    this.bundler = bundler
+    this.src = src
+    this.plugins = plugins
+    this.targets = targets
+    this.opts = opts
+    this.rootDir = bundler.rootDir
+
+    this._cache = null
+    this._watched = {}
+
+    this.outputs = this._getOutputs()
+  }
+
+  get id() {
+    return ['Rollup:', this.src, '->'].concat(this._getBundles().join('|')).join(' ')
+  }
+
+  update(next) {
+    const t0 = Date.now()
+    const cache = this._cache
+    const src = this.src
+    const rootDir = this.rootDir
     const targets = this.targets
     const plugins = this.plugins
 
@@ -101,11 +124,15 @@ export default class RollupAction {
       treeshake: true,
       cache: cache
     }, this.opts)
+
+    log('RollupAction: starting rollup...')
     rollup.rollup(opts)
     .then(function(bundle) {
+      log('RollupAction: received bundle...')
       this.cache = bundle
+      log('RollupAction: generating targets...')
       targets.forEach(function(target) {
-        var absDest = isAbsolute(target.dest) ? target.dest : join(rootDir, target.dest)
+        var absDest = isAbsolute(target.dest) ? target.dest : path.join(rootDir, target.dest)
         var _opts = Object.assign({
           format: target.format,
           sourceMap: true,
@@ -118,8 +145,8 @@ export default class RollupAction {
         if (target.sourceMapRoot) {
           let data = JSON.parse(sourceMap)
           data.sources = data.sources.map(function(srcPath) {
-            let absSrcPath = join(dirname(absDest), srcPath)
-            let relSrcPath = relative(target.sourceMapRoot, absSrcPath)
+            let absSrcPath = path.join(path.dirname(absDest), srcPath)
+            let relSrcPath = path.relative(target.sourceMapRoot, absSrcPath)
             relSrcPath = relSrcPath.replace(/\\/g, "/")
             // console.log('### source file:', srcPath)
             // HACK: hard coded pattern for source path transformation
@@ -133,46 +160,66 @@ export default class RollupAction {
           [
             result.code,
             // HACK: buble has troubles with '//' in a string
-            "\n","/","/# sourceMappingURL=./",basename(absDest)+".map"
+            "\n","/","/# sourceMappingURL=./", path.basename(absDest)+".map"
           ].join('')
         )
       })
       console.info('.. finished in %s ms.', Date.now()-t0)
-      this._watchFiles(bundle)
+      this._updateWatchers(bundle)
       next()
     }.bind(this))
     .catch(next)
   }
 
-  toString() {
-    return ['Rollup: ', this.src, ' -> ', this.targets[0].dest].join('')
-  }
+  _updateWatchers(bundle) {
+    const bundler = this.bundler
+    const watcher = bundler.watcher
+    const watched = this._watched
+    const self = this
 
-  _watchFiles(bundle) {
-    const watcher = this.bundler.watcher
     bundle.modules.forEach(function(m) {
-      const id = m.id
-      if (!this._watchedFiles[id]) {
-        watcher.watch(id, {
-          change: this._onChange
+      const file = m.id
+      if (!watched[file]) {
+        watcher.watch(file, {
+          change: _onChange,
+          unlink: _invalidate
         })
-        this._watchedFiles[id] = true
+        watched[file] = true
       }
-    }.bind(this))
-  }
-
-  _onChange() {
-    this.invalidate()
-    this.bundler._schedule(this)
-  }
-
-  invalidate() {
-    const rootDir = this.bundler.rootDir
-    const targets = this.targets
-    targets.forEach(function(target) {
-      var absDest = isAbsolute(target.dest) ? target.dest : join(rootDir, target.dest)
-      console.info('Removing: ', absDest)
-      removeSync(absDest)
     })
+
+    function _onChange() {
+      _invalidate()
+      bundler._schedule(self)
+    }
+
+    function _invalidate() {
+      self.invalidate()
+      self.outputs.forEach(function(file) {
+        bundler._invalidate(file)
+      })
+    }
+  }
+
+  _getOutputs() {
+    return this._getBundles().concat(this._getSourceMaps())
+  }
+
+  _getBundles() {
+    const rootDir = this.rootDir
+    const targets = this.targets
+    return targets.map(function(target) {
+      return isAbsolute(target.dest) ? target.dest : path.join(rootDir, target.dest)
+    })
+  }
+
+  _getSourceMaps() {
+    const rootDir = this.rootDir
+    const targets = this.targets
+    return targets.map(function(target) {
+      if (target.sourceMap === false) return null
+      const dest = target.dest + ".map"
+      return isAbsolute(dest) ? dest : path.join(rootDir, dest)
+    }).filter(Boolean)
   }
 }
