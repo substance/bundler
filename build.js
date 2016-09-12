@@ -1,5 +1,6 @@
 /* eslint-disable semi */
 var yargs = require('yargs')
+var fs = require('fs')
 
 var bundle = require('./util/bundle')
 var bundleVendor = require('./util/bundle_vendor')
@@ -10,6 +11,10 @@ var argv = yargs
   .argv;
 
 var p;
+
+if (!fs.existsSync('./dist')) {
+  fs.mkdirSync('./dist')
+}
 
 if (argv.vendor) {
   p = bundleVendor({ debug: argv.d });
