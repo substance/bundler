@@ -39,13 +39,8 @@ export default class FileWatcher extends EventEmitter {
     // this.close()
   }
 
-  onChange(file, stats) {
-    // HACK: when we write files we receive two change events
-    // the first is actually not the real one
-    // However, this way we loose changes that empty a file
-    // Maybe we should kind of throttle the event?
-    if (stats.size === 0) return
+  onChange(file) {
     log('File changed: %s', file)
-    this.emit('change', file, stats)
+    this.emit('change', file)
   }
 }
