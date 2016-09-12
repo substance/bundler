@@ -87,7 +87,9 @@ export default class CopyCommand {
         let srcPath = path.join(rootDir, file)
         if (isDirectory(srcPath)) return
         let destPath = path.join(dest, path.relative(globRoot, file))
-        bundler._registerAction(new CopyAction(srcPath, destPath))
+        const action = new CopyAction(srcPath, destPath)
+        bundler._registerAction(action)
+        action.execute(bundler, function() {})
       })
     } else {
       console.error('No files found for pattern %s', pattern)
@@ -144,8 +146,10 @@ class CopyAction extends Action {
   }
 
   execute(bundler, next) {
-    // console.info(this.id)
-    copySync(this.src, this.dest)
+    console.info(this.id)
+    if (fs.existsSync(this.src)) {
+      copySync(this.src, this.dest)
+    }
     next()
   }
 
