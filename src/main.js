@@ -27,7 +27,7 @@ function _start() {
   } else if (bundler._tasks['default']) {
     bundler._runTask('default')
   }
-  if (bundler._jobs.length === 0) {
+  if (!bundler._hasScheduledActions()) {
     console.error('No action. ')
   }
   bundler._start()
@@ -35,11 +35,11 @@ function _start() {
 
 process.once('beforeExit', _start)
 bundler.once('done', function() {
-  var watch = bundler.opts.watch;
-  var serve = bundler.opts.serve;
-  var remote = argv.remote;
+  var watch = bundler.opts.watch
+  var serve = bundler.opts.serve
+  var remote = argv.remote
   if (serve) {
-    bundler._startServing();
+    bundler._startServing()
   }
   if (watch) {
     // start watching if this has been requested (default is false)

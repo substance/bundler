@@ -1,4 +1,5 @@
 import * as path from 'path'
+import * as fs from 'fs'
 import { fse } from '../vendor'
 import Action from '../Action'
 
@@ -30,7 +31,10 @@ class RemoveAction extends Action {
   }
 
   update() {
-    fse.removeSync(this.rmPath)
+    if (fs.existsSync(this.rmPath)) {
+      // console.info(this.id)
+      fse.removeSync(this.rmPath)
+    }
   }
 
 }

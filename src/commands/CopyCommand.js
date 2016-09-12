@@ -1,4 +1,5 @@
 import * as path from 'path'
+import * as fs from 'fs'
 import Action from '../Action'
 import { glob, fse } from '../vendor'
 import { copySync, isAbsolute, isDirectory } from '../fileUtils'
@@ -100,9 +101,12 @@ export default class CopyCommand {
   _onAdd(bundler, file) {
     if (isDirectory(file)) return
     const rootDir = bundler.rootDir
+    let srcPath = file
+    if (!isAbsolute(srcPath)) srcPath = path.join(rootDir, srcPath)
+    if (!fs.existsSync(srcPath)) return
     const globRoot = path.join(rootDir, this.opts.root) || rootDir
-    const srcPath = file
-    const destPath = path.join(this.dest, path.relative(globRoot, file))
+    let destPath = path.join(this.dest, path.relative(globRoot, file))
+    if (!isAbsolute(destPath)) destPath = path.join(rootDir, destPath)
     bundler._registerAction(new CopyAction(srcPath, destPath))
   }
 
@@ -112,6 +116,17 @@ class CopyAction extends Action {
 
   constructor(src, dest) {
     super([src], [dest])
+
+    if (!isAbsolute(src)) {
+      throw new Error('Only absolute paths are allowed. Was ' + src)
+    }
+    if (!isAbsolute(dest)) {
+      throw new Error('Only absolute paths are allowed. Was ' + dest)
+    }
+    // use real paths so that we do not register copy actions
+    // for the same file twice (~ in presence of sym links)
+    src = fs.realpathSync(src)
+
     this.src = src
     this.dest = dest
   }
@@ -121,6 +136,7 @@ class CopyAction extends Action {
   }
 
   update() {
+    // console.info(this.id)
     copySync(this.src, this.dest)
   }
 

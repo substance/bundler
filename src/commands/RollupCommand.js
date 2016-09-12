@@ -111,6 +111,7 @@ class RollupAction extends Action {
   }
 
   update(next) {
+    console.info(this.id)
     const t0 = Date.now()
     const cache = this._cache
     const src = this.src

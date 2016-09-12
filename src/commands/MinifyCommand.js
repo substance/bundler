@@ -39,6 +39,7 @@ class MinifyAction extends Action {
   }
 
   update(next) {
+    console.info(this.id)
     const src = this.src
     const dest = this.dest
     const inSourceMap = src + '.map'

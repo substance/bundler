@@ -25,14 +25,15 @@ export default class Bundler extends EventEmitter {
     // an action is registerd via a file id
     // whenever the file changes the action gets scheduled
     this._actions = {}
+    this._actionsByInput = {}
 
     // a task is just a function executing commands
     // or registering actions
     this._tasks = {}
 
     // a queue for sequencing actions
-    this._jobs = []
-    this._actionsByInput = {}
+    this._scheduledActions = []
+    this._scheduledActionIds = {}
 
     // flags
     this._started = false
@@ -96,13 +97,16 @@ export default class Bundler extends EventEmitter {
     }
   }
 
+  _hasScheduledActions() {
+    return this._schedule.length > 0
+  }
+
   _registerAction(action) {
     const watcher = this.watcher
     const id = action.id
-    if (this._actions[id]) {
-      console.error('Action %s is already registered')
-      return
-    }
+    // skip if the same action is already registered
+    if (this._actions[id]) return
+    this._actions[id] = action
     this._schedule(action)
     action.inputs.forEach(function(input) {
       log('Watching ', input)
@@ -111,24 +115,21 @@ export default class Bundler extends EventEmitter {
         unlink: this._onUnlink.bind(this)
       })
       if (!this._actionsByInput[input]) {
-        this._actionsByInput[input] = {}
+        this._actionsByInput[input] = []
       }
-      this._actionsByInput[input][id] = action
+      this._actionsByInput[input].push(action)
     }.bind(this))
   }
 
   _onChange(file) {
-    log('File changed: %s', file)
     this._invalidate(file)
-    // schedule updates
-    const actions = this._getActions(file)
+    const actions = this._actionsByInput[file] || []
     actions.forEach(function(action) {
       this._schedule(action)
     }.bind(this))
   }
 
   _onUnlink(file) {
-    log('File deleted: %s', file)
     // TODO: maybe we should unregister the action
     // when the file is deleted
     this._invalidate(file)
@@ -136,13 +137,14 @@ export default class Bundler extends EventEmitter {
 
   _invalidate(file) {
     log('Invalidating', file)
-    const actions = this._getActions(file)
+    const actions = this._getAllActions(file)
     actions.forEach(function(action) {
       action.invalidate()
     })
   }
 
-  _getActions(file) {
+  // find all actions by investigating action input-output dependencies
+  _getAllActions(file) {
     let visited = {}
     let queue = [file]
     let actions = []
@@ -171,12 +173,29 @@ export default class Bundler extends EventEmitter {
   }
 
   _schedule(action) {
-    log('Scheduling action: %s', action.id)
+    const id = action.id
+    const schedule = this._scheduledActions
+    const scheduledIds = this._scheduledActionIds
+    // action is already scheduled
+    if (scheduledIds[id]) {
+      let idx = -1
+      for (let i = 0; i < schedule.length; i++) {
+        if (schedule[i].id === id) {
+          idx = i
+          break
+        }
+      }
+      if (idx < 0) throw new Error('Internal error.')
+      schedule.splice(idx, 1)
+    }
+    log('Scheduling action: %s', id)
     if (!this._started) {
-      this._jobs.push(action)
+      schedule.push(action)
+      scheduledIds[id] = true
     } else {
       process.nextTick(function() {
-        this._jobs.push(action)
+        schedule.push(action)
+        scheduledIds[id] = true
         if (!this._running) {
           this._running = true
           this._next()
@@ -193,8 +212,9 @@ export default class Bundler extends EventEmitter {
   }
 
   _next() {
-    const action = this._jobs.shift()
-    console.info(action.descr)
+    const action = this._scheduledActions.shift()
+    const id = action.id
+    delete this._scheduledActionIds[id]
     if (action.update.length > 0) {
       try {
         action.update(function(err) {
@@ -221,7 +241,7 @@ export default class Bundler extends EventEmitter {
   }
 
   _step() {
-    if (this._jobs.length > 0) {
+    if (this._scheduledActions.length > 0) {
       this._next()
     } else {
       this._running = false

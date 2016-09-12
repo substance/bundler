@@ -38,6 +38,7 @@ class MakeAction extends Action {
   }
 
   update(next) {
+    console.info(this.id)
     const cp = require('child_process')
     const makefile = this.makefile
     let args = this.tasks.concat(['--remote'])

@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events'
 import { chokidar } from './vendor'
+import log from './log'
 
 const opts = {
   encoding: 'utf-8',
@@ -9,6 +10,7 @@ const opts = {
 export default class FileWatcher extends EventEmitter {
 
   constructor (file) {
+    super()
     this._file = file
     const watcher = chokidar.watch(file, opts)
     this._watcher = watcher
@@ -19,7 +21,7 @@ export default class FileWatcher extends EventEmitter {
       } else {
         throw err
       }
-    }.bind(this))
+    })
     watcher.on('unlink', this.onDelete.bind(this))
     watcher.on('change', this.onChange.bind(this))
   }
@@ -29,7 +31,7 @@ export default class FileWatcher extends EventEmitter {
   }
 
   onDelete(file) {
-    console.info('Deleted: %s', file)
+    log('File deleted: %s', file)
     this.emit('unlink', this._file)
     // TODO: we need to think about a way to explicitly
     // free watchers
@@ -43,7 +45,7 @@ export default class FileWatcher extends EventEmitter {
     // However, this way we loose changes that empty a file
     // Maybe we should kind of throttle the event?
     if (stats.size === 0) return
-    console.info('Changed: %s', file)
+    log('File changed: %s', file)
     this.emit('change', file, stats)
   }
 }
