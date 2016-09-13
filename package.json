@@ -1,6 +1,6 @@
 {
   "name": "substance-bundler",
-  "version": "0.4.13",
+  "version": "0.4.14",
   "description": "Simplified bundling taylored to our needs.",
   "repository": "https.//github.com/substance/bundler.git",
   "main": "dist/bundler.js",
@@ -29,7 +29,7 @@
     "rollup-plugin-buble": "^0.13.0",
     "rollup-plugin-commonjs": "^3.3.1",
     "rollup-plugin-sourcemaps": "^0.3.6",
-    "substance-bundler": "0.4.12",
+    "substance-bundler": "0.4.13",
     "uglify-js": "^2.7.3",
     "yargs": "^4.8.1"
   },
