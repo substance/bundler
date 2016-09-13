@@ -4,8 +4,8 @@
   "description": "Simplified bundling taylored to our needs.",
   "main": "dist/bundler.js",
   "scripts": {
-    "build": "node build -v -d",
-    "prepublish": "node build -v -d"
+    "build": "node make -d",
+    "prepublish": "node make -d"
   },
   "author": "Oliver Buchtala",
   "license": "MIT",
