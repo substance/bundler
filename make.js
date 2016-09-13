@@ -1,7 +1,7 @@
 // we are using an older version of bundler
 // to build the bundler
 var b = require('substance-bundler')
-var bundleVendor = require('./.make/bundleVendor')
+var bundleVendor = require('./util/bundleVendor')
 var path = require('path')
 
 var argv = b.yargs
@@ -14,10 +14,15 @@ b.task('clean', function() {
 
 b.task('vendor', function() {
   b.custom('Bundling vendor...', {
+    // these are necessary for watch and ensureDir
     src: './.make/vendor.js',
     dest: './dist/vendor.js',
     execute: function() {
       return bundleVendor({
+        // ... and these are used for doing the work
+        src: './.make/vendor.js',
+        dest: './dist/vendor.js',
+        external: ['fsevents'],
         debug: argv.debug
       })
     }
