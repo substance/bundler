@@ -4,6 +4,7 @@ import { isFunction, express } from './vendor'
 import Watcher from './Watcher'
 
 import CopyCommand from './commands/CopyCommand'
+import CustomCommand from './commands/CustomCommand'
 import MakeCommand from './commands/MakeCommand'
 import MinifyCommand from './commands/MinifyCommand'
 import RemoveCommand from './commands/RemoveCommand'
@@ -50,6 +51,10 @@ export default class Bundler extends EventEmitter {
 
   copy(src, dest, opts) {
     this._schedule(new CopyCommand(src, dest, opts))
+  }
+
+  custom(description, params) {
+    this._schedule(new CustomCommand(description, params))
   }
 
   js(src, targets, opts) {
