@@ -43,25 +43,25 @@ export default class CopyCommand {
     return ['CopyCommand', this.src, '->', this.dest].join(' ')
   }
 
-  execute(bundler, next) {
+  execute(bundler) {
     console.info('Copy:', this.src, '->', this.dest)
     const rootDir = bundler.rootDir
     let dest = this.dest
     if (!isAbsolute(dest)) dest = path.join(rootDir, dest)
     if (glob.hasMagic(this.src)) {
-      this._executeWithGlob(bundler, next)
+      return this._executeWithGlob(bundler)
     }
     else if (isDirectory(this.src)) {
       this.opts.root = this.src
       this.src = this.src+"/**/*"
-      this._executeWithGlob(bundler, next)
+      return this._executeWithGlob(bundler)
     }
     else {
-      this._executeWithoutGlob(bundler, next)
+      return this._executeWithoutGlob(bundler)
     }
   }
 
-  _executeWithoutGlob(bundler, next) {
+  _executeWithoutGlob(bundler) {
     const rootDir = bundler.rootDir
     let dest = this.dest
     let src = this.src
@@ -73,10 +73,9 @@ export default class CopyCommand {
     const action = new CopyAction(src, dest)
     bundler._registerAction(action)
     action._execute()
-    next()
   }
 
-  _executeWithGlob(bundler, next) {
+  _executeWithGlob(bundler) {
     const rootDir = bundler.rootDir
     const watcher = bundler.watcher
     const pattern = this.src
@@ -102,7 +101,6 @@ export default class CopyCommand {
     watcher.watch(pattern, {
       'add': this._onAdd.bind(this, bundler)
     })
-    next()
   }
 
   /*
@@ -147,10 +145,9 @@ class CopyAction extends Action {
     return ['Copy:',this.src,'->',this.dest].join(' ')
   }
 
-  execute(bundler, next) {
+  execute() {
     console.info(this.id)
     this._execute()
-    next()
   }
 
   invalidate() {

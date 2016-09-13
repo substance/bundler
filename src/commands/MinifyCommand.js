@@ -18,13 +18,13 @@ export default class MinifyCommand {
     return ['MinifyCommand', this.src].join(' ')
   }
 
-  execute(bundler, next) {
+  execute(bundler) {
     let src = this.src
     if (!isAbsolute(src)) src = path.join(bundler.rootDir, src)
     const dest = path.join(path.dirname(src), path.basename(src, '.js')+'.min.js')
     const action = new MinifyAction(src, dest)
     bundler._registerAction(action)
-    action.execute(bundler, next)
+    action.execute(bundler)
   }
 }
 
@@ -44,7 +44,7 @@ class MinifyAction extends Action {
     return ['Minify:', this.src].join(' ')
   }
 
-  execute(bundler, next) {
+  execute(bundler) {
     console.info(this.id)
     const src = this.src
     const dest = this.dest
@@ -64,6 +64,5 @@ class MinifyAction extends Action {
     writeSync(dest, result.code)
     writeSync(destSourceMap, result.map)
     console.info('.. finished in %s ms.', Date.now()-t0)
-    next()
   }
 }

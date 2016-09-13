@@ -208,19 +208,24 @@ export default class Bundler extends EventEmitter {
   _next() {
     const action = this._scheduledActions.shift()
     const id = action.id
+    const _step = this._step.bind(this)
     delete this._scheduledActionIds[id]
     try {
-      action.execute(this, function(err) {
-        if (err) {
-          if (err.stack) console.error(err.stack)
-          else console.error(err.toString())
-        }
-        process.nextTick(this._step.bind(this))
-      }.bind(this))
+      Promise.resolve(action.execute(this))
+      .then(_next)
+      .catch(_catch)
     } catch (err) {
+      _catch(err)
+    }
+
+    function _next() {
+      process.nextTick(_step)
+    }
+
+    function _catch(err) {
       if (err.stack) console.error(err.stack)
       else console.error(err.toString())
-      process.nextTick(this._step.bind(this))
+      _next()
     }
   }
 

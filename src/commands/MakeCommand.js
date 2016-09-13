@@ -12,30 +12,37 @@ class MakeCommand {
     return ['MakeCommand', this.module].concat(this.tasks).join(' ')
   }
 
-  execute(bundler, next) {
-    console.info(this.id)
+  execute(bundler) {
+    const tasks = this.tasks
     const module = this.module
+
+    console.info(this.id)
     let makefile = path.join(bundler.rootDir, 'node_modules', module, 'make.js')
     if (!fs.existsSync(makefile)) {
       throw new Error('Could not find "make.js" in module "%s"', module)
     }
     makefile = fs.realpathSync(makefile)
-    // get the real location of the module in case
-    // it is npm-linked
-    const cp = require('child_process')
-    let args = this.tasks.concat(['--remote'])
-    if (bundler.opts.watch) args.push('--watch')
-    const child = cp.fork(makefile, args, {
-      cwd: path.dirname(makefile)
-    })
-    child.on('message', function(msg) {
-      if (msg === 'done') {
-        next()
-      }
-    })
-    child.on('error', function(error) {
-      next(new Error(error))
-    })
+
+    return new Promise(_runMake)
+
+    function _runMake(resolve, reject) {
+      // get the real location of the module in case
+      // it is npm-linked
+      const cp = require('child_process')
+      let args = tasks.concat(['--remote'])
+      if (bundler.opts.watch) args.push('--watch')
+      const child = cp.fork(makefile, args, {
+        cwd: path.dirname(makefile)
+      })
+      child.on('message', function(msg) {
+        if (msg === 'done') {
+          resolve()
+        }
+      })
+      child.on('error', function(error) {
+        reject(new Error(error))
+      })
+    }
   }
 }
 

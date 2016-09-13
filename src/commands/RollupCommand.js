@@ -83,7 +83,7 @@ export default class RollupCommand {
     })]
   }
 
-  execute(bundler, next) {
+  execute(bundler) {
     let src = this.src
     if (!isAbsolute(src)) src = path.join(bundler.rootDir, src)
     const plugins = this.plugins
@@ -91,7 +91,7 @@ export default class RollupCommand {
     const opts = this.opts
     const action = new RollupAction(bundler, src, plugins, targets, opts)
     bundler._registerAction(action)
-    action.execute(bundler, next)
+    return action.execute(bundler)
   }
 }
 
@@ -116,7 +116,7 @@ class RollupAction extends Action {
     return ['Rollup:', this.src, '->'].concat(this._getBundles().join('|')).join(' ')
   }
 
-  execute(bundler, next) {
+  execute() {
     console.info(this.id)
     const t0 = Date.now()
     const cache = this._cache
@@ -134,8 +134,8 @@ class RollupAction extends Action {
     }, this.opts)
 
     log('RollupAction: starting rollup...')
-    rollup.rollup(opts)
-    .then(function(bundle) {
+    return rollup.rollup(opts)
+    .then((bundle) => {
       log('RollupAction: received bundle...')
       this.cache = bundle
       log('RollupAction: generating targets...')
@@ -174,9 +174,7 @@ class RollupAction extends Action {
       })
       console.info('.. finished in %s ms.', Date.now()-t0)
       this._updateWatchers(bundle)
-      next()
-    }.bind(this))
-    .catch(next)
+    })
   }
 
   _updateWatchers(bundle) {
