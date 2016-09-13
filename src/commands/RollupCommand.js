@@ -37,7 +37,9 @@ export default class RollupCommand {
     }
     // we provide a custom resolver, taking care of
     // pretty much all resolving (relative and node)
-    plugins.push(resolve())
+    let resolveOpts = opts.resolve
+    delete opts.resolve
+    plugins.push(resolve(resolveOpts))
     // this is necesssary so that already existing sourcemaps
     // present in imported files are picked up
     if (opts.sourceMap !== false) {
