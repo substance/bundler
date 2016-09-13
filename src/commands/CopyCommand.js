@@ -44,6 +44,7 @@ export default class CopyCommand {
   }
 
   execute(bundler, next) {
+    console.info('Copy:', this.src, '->', this.dest)
     const rootDir = bundler.rootDir
     let dest = this.dest
     if (!isAbsolute(dest)) dest = path.join(rootDir, dest)
@@ -71,7 +72,8 @@ export default class CopyCommand {
     // console.log('####', dest, isAbsolute(dest), dest[dest.length-1], path.sep, lastIsSlash, path.basename(src))
     const action = new CopyAction(src, dest)
     bundler._registerAction(action)
-    action.execute(bundler, next)
+    action._execute()
+    next()
   }
 
   _executeWithGlob(bundler, next) {
@@ -89,7 +91,7 @@ export default class CopyCommand {
         let destPath = path.join(dest, path.relative(globRoot, file))
         const action = new CopyAction(srcPath, destPath)
         bundler._registerAction(action)
-        action.execute(bundler, function() {})
+        action._execute()
       })
     } else {
       console.error('No files found for pattern %s', pattern)
@@ -147,13 +149,17 @@ class CopyAction extends Action {
 
   execute(bundler, next) {
     console.info(this.id)
-    if (fs.existsSync(this.src)) {
-      copySync(this.src, this.dest)
-    }
+    this._execute()
     next()
   }
 
   invalidate() {
     fse.removeSync(this.dest)
+  }
+
+  _execute() {
+    if (fs.existsSync(this.src)) {
+      copySync(this.src, this.dest)
+    }
   }
 }
