@@ -3,7 +3,7 @@ var yargs = require('yargs')
 var fs = require('fs')
 
 var bundle = require('./util/bundle')
-var bundleVendor = require('./util/bundle_vendor')
+var bundleVendor = require('./util/bundleVendor')
 
 var argv = yargs
   .boolean('v').alias('v', 'vendor').default('v', false)
