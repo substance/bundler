@@ -6,7 +6,6 @@ var uglifyjs = require('uglify-js');
 
 module.exports = function bundle_vendor(opts) {
   opts = opts || {}
-  console.info('dist/vendor.js...')
   var src = "./vendor.js";
   var dest = "./dist/vendor.js";
   return new Promise(function(resolve, reject) {
