@@ -43,4 +43,4 @@ b.task('bundler', function() {
   })
 })
 
-b.task('default', [/*'clean',*/ 'vendor', 'bundler'])
+b.task('default', ['clean', 'vendor', 'bundler'])
