@@ -1,3 +1,4 @@
+// JUST FOR LEGACY
 /* eslint-disable semi */
 var rollup = require('rollup');
 var buble = require('rollup-plugin-buble');
