@@ -1,15 +1,20 @@
 // we are using an older version of bundler
 // to build the bundler
 var b = require('substance-bundler')
-var bundleVendor = require('./util/bundleVendor')
+var bundleVendor = require('./.make/bundleVendor')
+var path = require('path')
 
 var argv = b.yargs
   .boolean('d').alias('d', 'debug').default('d', false)
   .argv
 
+b.task('clean', function() {
+  b.rm('./dist')
+})
+
 b.task('vendor', function() {
   b.custom('Bundling vendor...', {
-    src: './vendor.js',
+    src: './.make/vendor.js',
     dest: './dist/vendor.js',
     execute: function() {
       return bundleVendor({
@@ -28,7 +33,7 @@ b.task('bundler', function() {
     external: [
       'assert', 'buffer', 'child_process', 'constants', 'events',
       'fs', 'os', 'path', 'stream', 'tty', 'url', 'util',
-      require.resolve('./dist/vendor')
+      path.join(__dirname, 'dist', 'vendor.js')
     ],
     sourceMap: true,
     targets: [{
@@ -38,4 +43,4 @@ b.task('bundler', function() {
   })
 })
 
-b.task('default', ['vendor', 'bundler'])
+b.task('default', [/*'clean',*/ 'vendor', 'bundler'])
