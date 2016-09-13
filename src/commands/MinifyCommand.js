@@ -3,9 +3,6 @@ import * as fs from 'fs'
 import { isAbsolute, writeSync } from '../fileUtils'
 import Action from '../Action'
 
-// uglify can not be bundled as it does dynamic file loading
-const uglify = require('uglify-js')
-
 export default class MinifyCommand {
 
   constructor(src) {
@@ -44,8 +41,11 @@ class MinifyAction extends Action {
     return ['Minify:', this.src].join(' ')
   }
 
-  execute(bundler) {
+  execute() {
     console.info(this.id)
+    // uglify can not be bundled as it does dynamic file loading
+    // and we also don't ship it, thus it is required as late as possible
+    const uglify = require('uglify-js')
     const src = this.src
     const dest = this.dest
     const inSourceMap = src + '.map'
