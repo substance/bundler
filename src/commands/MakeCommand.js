@@ -9,7 +9,7 @@ class MakeCommand {
   }
 
   get id() {
-    return ['MakeCommand', this.module].concat(this.tasks).join(' ')
+    return ['Make', this.module].concat(this.tasks).join(' ')
   }
 
   execute(bundler) {

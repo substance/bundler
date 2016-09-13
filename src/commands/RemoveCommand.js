@@ -9,7 +9,7 @@ export default class RemoveCommand {
   }
 
   get id() {
-    return ['RemoveCommand:', this.rmPath].join(' ')
+    return ['Remove:', this.rmPath].join(' ')
   }
 
   execute(bundler) {
@@ -18,7 +18,7 @@ export default class RemoveCommand {
       rmPath = path.join(bundler.rootDir, rmPath)
     }
     if (fs.existsSync(rmPath)) {
-      // console.info(this.id)
+      console.info(this.id)
       fse.removeSync(this.rmPath)
     }
   }
