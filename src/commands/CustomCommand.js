@@ -1,6 +1,6 @@
 import * as path from 'path'
 import { isAbsolute } from '../fileUtils'
-import { isArray, isFunction } from '../vendor'
+import { isArray, isFunction, fse } from '../vendor'
 import Action from '../Action'
 import randomId from '../randomId'
 
@@ -65,6 +65,9 @@ class CustomAction extends Action {
   execute(bundler) {
     console.info(this._description)
     var t0 = Date.now()
+    this.outputs.forEach(function(f) {
+      fse.ensureDirSync(path.dirname(f))
+    })
     return Promise.resolve(this._execute(bundler))
     .then(function() {
       console.info('..finished in %s ms', Date.now()-t0)
