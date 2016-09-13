@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { rollup, buble, commonjs, sourcemaps } from '../vendor'
+import { rollup, buble, commonjs, sourcemaps, isString } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import ignore from '../rollup/rollup-plugin-ignore'
 import resolve from '../rollup/rollup-plugin-resolve'
@@ -57,22 +57,7 @@ export default class RollupCommand {
 
     this.plugins = plugins
 
-    let _external = opts.external
-    if (_external && _external.length > 0) {
-      _external = _external.map(function(lib) {
-        opts.globals.push(lib)
-        return new RegExp("^"+lib)
-      })
-      opts.external = function(id) {
-        for (var i = 0; i < _external.length; i++) {
-          if (_external[i].exec(id)) {
-            // console.log('### external: ', id)
-            return true
-          }
-        }
-        return false
-      }
-    }
+    opts.external = _compileExternals(opts.external)
     this.opts = opts
     this.cache = null
   }
@@ -94,6 +79,33 @@ export default class RollupCommand {
     return action.execute(bundler)
   }
 }
+
+function _compileExternals(externals) {
+  if (!externals || externals.length === 0) return
+  externals = externals.map(function(f) {
+    if (!isAbsolute(f)) {
+      return new RegExp("^"+f)
+    } else {
+      return f
+    }
+  })
+  return function(id) {
+    for (var i = 0; i < externals.length; i++) {
+      const e = externals[i]
+      if (isString(e)) {
+        if (id === e) {
+          // console.log('### external: ', id)
+          return true
+        }
+      } else if (e.exec(id)) {
+        // console.log('### external: ', id)
+        return true
+      }
+    }
+    return false
+  }
+}
+
 
 class RollupAction extends Action {
 
