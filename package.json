@@ -36,6 +36,6 @@
   "files": [
     "dist",
     "README.md",
-    ".make/bundleVendor.js"
+    "util/bundleVendor.js"
   ]
 }
