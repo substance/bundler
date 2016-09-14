@@ -6,6 +6,7 @@ var fs = require('fs')
 // rather dangerous iplementation of nodejs resolve
 // using node's private API
 export default function resolve(opts) {
+  opts = opts || {}
   const alias = opts.alias || {}
   const jsnext = {}
   if (opts.jsnext) {
