@@ -113,7 +113,7 @@ export default class CopyCommand {
     let srcPath = file
     if (!isAbsolute(srcPath)) srcPath = path.join(rootDir, srcPath)
     if (!fs.existsSync(srcPath)) return
-    const globRoot = path.join(rootDir, this.opts.root) || rootDir
+    const globRoot = this.opts.root ? path.join(rootDir, this.opts.root) : rootDir
     let destPath = path.join(this.dest, path.relative(globRoot, file))
     if (!isAbsolute(destPath)) destPath = path.join(rootDir, destPath)
     const action = new CopyAction(srcPath, destPath)
