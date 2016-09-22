@@ -10,6 +10,8 @@ var forEach = require('lodash/forEach')
 var isArray = require('lodash/isArray')
 var isString = require('lodash/isString')
 var isFunction = require('lodash/isFunction')
+var uniq = require('lodash/uniq')
+var without = require('lodash/without')
 
 //rollup
 var rollup = require('rollup/dist/rollup')
@@ -27,6 +29,8 @@ module.exports = {
   isArray: isArray,
   isString: isString,
   isFunction: isFunction,
+  uniq: uniq,
+  without: without,
   rollup: rollup,
   buble: buble,
   commonjs: commonjs,

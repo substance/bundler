@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import * as path from 'path'
-import { isFunction, express } from './vendor'
+import { isFunction, uniq, express } from './vendor'
 import Watcher from './Watcher'
 
 import CopyCommand from './commands/CopyCommand'
@@ -116,7 +116,7 @@ export default class Bundler extends EventEmitter {
       if (!this._actionsByInput[input]) {
         this._actionsByInput[input] = []
       }
-      this._actionsByInput[input].push(action)
+      this._actionsByInput[input] = uniq(this._actionsByInput[input].push(action))
     }.bind(this))
   }
 
