@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import { isAbsolute } from '../fileUtils'
 
 class MakeCommand {
 
@@ -13,11 +14,16 @@ class MakeCommand {
   }
 
   execute(bundler) {
+    console.info(this.id)
+
     const tasks = this.tasks
     const module = this.module
-
-    console.info(this.id)
-    let makefile = path.join(bundler.rootDir, 'node_modules', module, 'make.js')
+    let makefile
+    if (isAbsolute(module)) {
+      makefile = module
+    } else {
+      makefile = path.join(bundler.rootDir, 'node_modules', module, 'make.js')
+    }
     if (!fs.existsSync(makefile)) {
       throw new Error('Could not find "make.js" in module "%s"', module)
     }
