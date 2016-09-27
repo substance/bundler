@@ -23,7 +23,7 @@ b.task('vendor', function() {
         src: './.make/vendor.js',
         dest: './dist/vendor.js',
         external: ['fsevents'],
-        debug: argv.debug
+        debug: true //argv.debug
       })
     }
   })
