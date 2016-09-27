@@ -27,7 +27,7 @@ export default class CustomCommand {
   }
 
   execute(bundler) {
-    if (glob.hasMagic(this.src)) {
+    if (this.src && glob.hasMagic(this.src)) {
       return this._executeWithGlob(bundler)
     } else {
       return this._executeWithoutGlob(bundler)
@@ -37,8 +37,8 @@ export default class CustomCommand {
   _executeWithoutGlob(bundler) {
     let src = this.src
     let dest = this.dest
-    if (!isAbsolute(src)) src = path.join(bundler.rootDir, src)
-    if (!isAbsolute(dest)) dest = path.join(bundler.rootDir, dest)
+    if (src && !isAbsolute(src)) src = path.join(bundler.rootDir, src)
+    if (dest && !isAbsolute(dest)) dest = path.join(bundler.rootDir, dest)
     const action = new CustomAction(this._id, this.description, [src], [dest], this._execute)
     bundler._registerAction(action)
     return action.execute()
@@ -76,7 +76,7 @@ export default class CustomCommand {
 
 class CustomAction extends Action {
   constructor(id, description, inputs, outputs, _execute) {
-    super(inputs, outputs)
+    super(inputs.filter(Boolean), outputs.filter(Boolean))
     this._id = id
     this._description = description
     this._execute = _execute
