@@ -15,9 +15,10 @@ var without = require('lodash/without')
 
 //rollup
 var rollup = require('rollup/dist/rollup')
-var buble = require('rollup-plugin-buble')
 var commonjs = require('rollup-plugin-commonjs')
 var sourcemaps = require('rollup-plugin-sourcemaps')
+var buble = require('../vendor/buble.deps')
+var pluginutils = require('rollup-pluginutils/dist/pluginutils.cjs.js')
 
 module.exports = {
   chokidar: chokidar,
@@ -32,8 +33,9 @@ module.exports = {
   uniq: uniq,
   without: without,
   rollup: rollup,
-  buble: buble,
   commonjs: commonjs,
   sourcemaps: sourcemaps,
+  buble: buble,
+  pluginutils: pluginutils,
   yargs: yargs
 }

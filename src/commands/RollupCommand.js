@@ -1,8 +1,9 @@
 import * as path from 'path'
-import { rollup, buble, commonjs, sourcemaps, isString } from '../vendor'
+import { rollup, commonjs, sourcemaps, isString } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import ignore from '../rollup/rollup-plugin-ignore'
 import resolve from '../rollup/rollup-plugin-resolve'
+import buble from '../rollup/rollup-plugin-buble'
 import Action from '../Action'
 import log from '../log'
 
