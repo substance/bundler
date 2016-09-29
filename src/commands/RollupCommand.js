@@ -50,12 +50,12 @@ export default class RollupCommand {
     if (opts.buble) {
       let bubleOpts = Object.assign({}, opts.buble)
       plugins.push(buble(bubleOpts))
-      delete opts.buble
     }
+    delete opts.buble
     if (opts.commonjs) {
       plugins.push(commonjs(opts.commonjs))
-      delete opts.commonjs
     }
+    delete opts.commonjs
     opts.globals = opts.globals || []
 
     this.plugins = plugins

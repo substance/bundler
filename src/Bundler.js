@@ -184,7 +184,10 @@ export default class Bundler extends EventEmitter {
           break
         }
       }
-      if (idx < 0) throw new Error('Internal error.')
+      if (idx < 0) {
+        console.error('Internal Error: tried to reschedule an action with id "%s"',id)
+        process.exit(1)
+      }
       schedule.splice(idx, 1)
     }
     log('Scheduling action: %s', id)
@@ -253,6 +256,10 @@ export default class Bundler extends EventEmitter {
     state = state || {}
     if (state[name] === 'done') return
     const task = this._tasks[name]
+    if (!task) {
+      console.error("Unknown task: '%s'", name)
+      process.exit()
+    }
     state[name] = 'visiting'
     if (task.deps) {
       task.deps.forEach(function(dep) {
