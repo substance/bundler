@@ -61,7 +61,8 @@ export default class CustomCommand {
       // TODO: need to rework the whole dynamic registry stuff
       watcher.watch(pattern, {
         add: function(file) {
-          action.inputs = uniq(action.inputs.push(file))
+          action.inputs.push(file)
+          action.inputs = uniq(action.inputs)
           const _actionsByInput = bundler._actionsByInput
           if (!_actionsByInput[file]) _actionsByInput[file] = []
           _actionsByInput[file] = uniq(_actionsByInput[file].push(action))

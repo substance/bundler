@@ -116,7 +116,8 @@ export default class Bundler extends EventEmitter {
       if (!this._actionsByInput[input]) {
         this._actionsByInput[input] = []
       }
-      this._actionsByInput[input] = uniq(this._actionsByInput[input].push(action))
+      this._actionsByInput[input].push(action)
+      this._actionsByInput[input] = uniq(this._actionsByInput[input])
     }.bind(this))
   }
 
@@ -124,6 +125,7 @@ export default class Bundler extends EventEmitter {
     this._invalidate(file)
     const actions = this._actionsByInput[file] || []
     actions.forEach(function(action) {
+      log('Rescheduling action', action.id)
       this._schedule(action)
     }.bind(this))
   }
