@@ -56,11 +56,12 @@ export default class RollupCommand {
       plugins.push(commonjs(opts.commonjs))
     }
     delete opts.commonjs
-    opts.globals = opts.globals || []
+
+    const res = _compileExternals(opts.external)
+    opts.external = res.external
+    opts.globals = Object.assign(res.globals, opts.globals || {})
 
     this.plugins = plugins
-
-    opts.external = _compileExternals(opts.external)
     this.opts = opts
     this.cache = null
   }
@@ -85,27 +86,35 @@ export default class RollupCommand {
 
 function _compileExternals(externals) {
   if (!externals || externals.length === 0) return
+  let globals = {}
   externals = externals.map(function(f) {
+    if (!isString(f)) {
+      globals[f.path] = f.global
+      f = f.path
+    } else {
+      globals[f] = f
+    }
     if (!isAbsolute(f)) {
       return new RegExp("^"+f)
     } else {
       return f
     }
   })
-  return function(id) {
-    for (var i = 0; i < externals.length; i++) {
-      const e = externals[i]
-      if (isString(e)) {
-        if (id === e) {
-          // console.log('### external: ', id)
+  return {
+    external: function(id) {
+      for (var i = 0; i < externals.length; i++) {
+        const e = externals[i]
+        if (isString(e)) {
+          if (id === e) {
+            return true
+          }
+        } else if (e.exec(id)) {
           return true
         }
-      } else if (e.exec(id)) {
-        // console.log('### external: ', id)
-        return true
       }
-    }
-    return false
+      return false
+    },
+    globals: globals
   }
 }
 
@@ -160,6 +169,7 @@ class RollupAction extends Action {
           format: target.format,
           sourceMap: true,
           sourceMapFile: absDest,
+          globals: opts.globals
         }, target)
         var result = bundle.generate(_opts)
         // write the map file first so that a file watcher for the bundle
