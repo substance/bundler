@@ -85,7 +85,12 @@ export default class RollupCommand {
 }
 
 function _compileExternals(externals) {
-  if (!externals || externals.length === 0) return
+  if (!externals || externals.length === 0) {
+    return {
+      globals: {},
+      external: null
+    }
+  }
   let globals = {}
   externals = externals.map(function(f) {
     if (!isString(f)) {
