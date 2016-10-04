@@ -27,6 +27,7 @@ export default class Bundler extends EventEmitter {
     // whenever the file changes the action gets scheduled
     this._actions = {}
     this._actionsByInput = {}
+    this._generatedFiles = {}
 
     // a task is just a function executing commands
     // or registering actions
@@ -108,16 +109,26 @@ export default class Bundler extends EventEmitter {
     if (this._actions[id]) return
     this._actions[id] = action
     action.inputs.forEach(function(input) {
-      log('Watching ', input)
-      watcher.watch(input, {
-        change: this._onChange.bind(this),
-        unlink: this._onUnlink.bind(this)
-      })
+      // if no other action has been registered as generator
+      // then we add a file watcher
+      if (!this._generatedFiles[input]) {
+        log('Watching ', input)
+        watcher.watch(input, {
+          change: this._onChange.bind(this),
+          unlink: this._onUnlink.bind(this)
+        })
+      }
       if (!this._actionsByInput[input]) {
         this._actionsByInput[input] = []
       }
       this._actionsByInput[input].push(action)
       this._actionsByInput[input] = uniq(this._actionsByInput[input])
+    }.bind(this))
+    action.outputs.forEach(function(output) {
+      if (this._generatedFiles[output]) {
+        throw new Error('Another action generates the same file', action.descr)
+      }
+      this._generatedFiles[output] = action
     }.bind(this))
   }
 
@@ -216,6 +227,7 @@ export default class Bundler extends EventEmitter {
   }
 
   _next() {
+    const self = this
     const action = this._scheduledActions.shift()
     const id = action.id
     const _step = this._step.bind(this)
@@ -229,6 +241,13 @@ export default class Bundler extends EventEmitter {
     }
 
     function _next() {
+      const outputs = action.outputs || []
+      outputs.forEach(function(output) {
+        const nextActions = self._actionsByInput[output] || []
+        nextActions.forEach(function(action) {
+          self._schedule(action)
+        })
+      })
       process.nextTick(_step)
     }
 
