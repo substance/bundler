@@ -97,7 +97,7 @@ function _compileExternals(externals) {
       globals[f.path] = f.global
       f = f.path
     } else {
-      globals[f] = f
+      // globals[f] = f
     }
     if (!isAbsolute(f)) {
       return new RegExp("^"+f)
