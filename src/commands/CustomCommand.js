@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { isAbsolute } from '../fileUtils'
-import { isFunction, uniq, fse, glob } from '../vendor'
+import { isFunction, isArray, uniq, fse, glob } from '../vendor'
 import Action from '../Action'
 import randomId from '../randomId'
 
@@ -27,7 +27,9 @@ export default class CustomCommand {
   }
 
   execute(bundler) {
-    if (this.src && glob.hasMagic(this.src)) {
+    if (this.src && isArray(this.src)) {
+      return this._executeWithCollection(bundler)
+    } else if (this.src && glob.hasMagic(this.src)) {
       return this._executeWithGlob(bundler)
     } else {
       return this._executeWithoutGlob(bundler)
@@ -73,6 +75,47 @@ export default class CustomCommand {
       console.error('No files found for pattern %s', pattern)
     }
   }
+
+  _executeWithCollection(bundler) {
+    const rootDir = bundler.rootDir
+    const watcher = bundler.watcher
+    let dest = this.dest
+    if (!isAbsolute(dest)) dest = path.join(rootDir, dest)
+    let files = []
+    let patterns = []
+    this.src.forEach(function(fileOrPattern) {
+      if (glob.hasMagic(fileOrPattern)) {
+        patterns.push(fileOrPattern)
+        files = files.concat(glob.sync(fileOrPattern, {}))
+      } else {
+        files.push(fileOrPattern)
+      }
+    })
+    if (files.length) {
+      files = files.map(function(file) {
+        return path.join(rootDir, file)
+      })
+      const action = new CustomAction(this._id, this.description, files, [dest], this._execute)
+      bundler._registerAction(action)
+      let result = action.execute()
+      patterns.forEach(function(pattern) {
+        // TODO: need to rework the whole dynamic registry stuff
+        watcher.watch(pattern, {
+          add: function(file) {
+            action.inputs.push(file)
+            action.inputs = uniq(action.inputs)
+            const _actionsByInput = bundler._actionsByInput
+            if (!_actionsByInput[file]) _actionsByInput[file] = []
+            _actionsByInput[file] = uniq(_actionsByInput[file].push(action))
+          }
+        })
+      })
+      return result
+    } else {
+      console.error('No files found for pattern %s', pattern)
+    }
+  }
+
 }
 
 class CustomAction extends Action {
