@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events'
 import * as path from 'path'
 import { isFunction, uniq, express } from './vendor'
+import { writeSync } from './fileUtils'
 import Watcher from './Watcher'
 
 import CopyCommand from './commands/CopyCommand'
@@ -96,6 +97,10 @@ export default class Bundler extends EventEmitter {
       log('Adding static route %s -> %s', route, folder)
       server.use(route, express.static(folder))
     }
+  }
+
+  writeSync(dest, buf) {
+    writeSync(dest, buf)
   }
 
   _hasScheduledActions() {

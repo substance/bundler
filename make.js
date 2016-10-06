@@ -4,10 +4,6 @@ var b = require('substance-bundler')
 var bundleVendor = require('./util/bundleVendor')
 var path = require('path')
 
-var argv = b.yargs
-  .boolean('d').alias('d', 'debug').default('d', false)
-  .argv
-
 b.task('clean', function() {
   b.rm('./dist')
 })
