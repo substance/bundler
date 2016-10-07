@@ -8,7 +8,10 @@ let argv = yargs
   // use this to start watcher
   .boolean('w').alias('w', 'watch').default('w', false)
   .boolean('s').alias('s', 'serve').default('s', false)
+  .boolean('t').default('t', false)
   .argv
+
+const showTasks = argv.t
 
 let opts = {
   watch: argv.watch,
@@ -22,6 +25,11 @@ bundler.argv = argv
 const tasks = argv._
 
 function _start() {
+  if(showTasks) {
+    console.info('Available tasks:')
+    console.info(Object.keys(bundler._tasks).map(function(name){ return "  - "+name }).join('\n'))
+    return
+  }
   if (tasks.length > 0) {
     bundler._runTasks(tasks)
   } else if (bundler._tasks['default']) {
@@ -38,6 +46,7 @@ bundler.once('done', function() {
   var watch = bundler.opts.watch
   var serve = bundler.opts.serve
   var remote = argv.remote
+  if (showTasks) return
   if (serve) {
     bundler._startServing()
   }
