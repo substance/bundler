@@ -10,6 +10,7 @@ import MakeCommand from './commands/MakeCommand'
 import MinifyCommand from './commands/MinifyCommand'
 import RemoveCommand from './commands/RemoveCommand'
 import RollupCommand from './commands/RollupCommand'
+import PostCSSCommand from './commands/PostCSSCommand'
 import log from './log'
 
 export default class Bundler extends EventEmitter {
@@ -61,6 +62,10 @@ export default class Bundler extends EventEmitter {
 
   js(src, targets, opts) {
     this._schedule(new RollupCommand(src, targets, opts))
+  }
+
+  css(src, dest, opts) {
+    this._schedule(new PostCSSCommand(src, dest, opts))
   }
 
   rm(rmPath) {

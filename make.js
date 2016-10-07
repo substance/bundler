@@ -18,7 +18,7 @@ b.task('vendor', function() {
         // ... and these are used for doing the work
         src: './.make/vendor.js',
         dest: './dist/vendor.js',
-        external: ['fsevents'],
+        external: ['fsevents', 'pkg-resolve'],
         debug: true //argv.debug
       })
     }
