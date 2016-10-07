@@ -23,6 +23,7 @@ var pluginutils = require('rollup-pluginutils/dist/pluginutils.cjs.js')
 // postcss
 var postcss = require('postcss')
 var postcssImport = require('postcss-import')
+var postcssVariables = require('postcss-css-variables')
 
 module.exports = {
   chokidar: chokidar,
@@ -43,5 +44,6 @@ module.exports = {
   pluginutils: pluginutils,
   yargs: yargs,
   postcss: postcss,
-  postcssImport: postcssImport
+  postcssImport: postcssImport,
+  postcssVariables: postcssVariables
 }

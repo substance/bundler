@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { postcss, postcssImport } from '../vendor'
+import { postcss, postcssImport, postcssVariables } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import Action from '../Action'
 
@@ -21,11 +21,7 @@ export default class PostCSSCommand {
     let dest = this.dest
     if (!isAbsolute(src)) src = path.join(bundler.rootDir, src)
     if (!isAbsolute(dest)) dest = path.join(bundler.rootDir, dest)
-
-    let plugins = []
-    let opts = {}
-
-    const action = new PostCSSAction(bundler, src, dest, plugins, opts)
+    const action = new PostCSSAction(bundler, src, dest, this.opts)
     bundler._registerAction(action)
     return action.execute(bundler)
   }
@@ -33,12 +29,11 @@ export default class PostCSSCommand {
 
 class PostCSSAction extends Action {
 
-  constructor(bundler, src, dest, plugins, opts) {
+  constructor(bundler, src, dest, opts) {
     super()
     this.bundler = bundler
     this.src = src
     this.dest = dest
-    this.plugins = plugins || []
     this.opts = opts
     this._watched = {}
   }
@@ -57,7 +52,10 @@ class PostCSSAction extends Action {
       onImport: (files) => {
         this._onImport(files)
       }
-    })].concat(this.plugins)
+    })]
+    if (this.opts.variables) {
+      plugins.push(postcssVariables())
+    }
 
     const css = fs.readFileSync(this.src, 'utf8')
     return postcss(plugins)

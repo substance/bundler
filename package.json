@@ -27,6 +27,7 @@
     "lodash": "^4.15.0",
     "postcss": "^5.2.4",
     "postcss-import": "^8.1.2",
+    "postcss-css-variables": "^0.6.0",
     "rollup": "^0.36.0",
     "rollup-plugin-commonjs": "^3.3.1",
     "rollup-plugin-sourcemaps": "^0.3.6",
