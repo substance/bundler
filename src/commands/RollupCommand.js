@@ -11,10 +11,16 @@ export default class RollupCommand {
 
   constructor(src, opts) {
     this.src = src
+
+    // parse targets
     if (opts.targets) {
       this.targets = opts.targets
       delete opts.targets
+    } else if (opts.target) {
+      this.targets = [opts.target]
+      delete opts.target
     } else {
+      console.warn('DEPRECATED: use { target: {...} } instead.')
       this.targets = [{
         dest: opts.dest,
         format: opts.format,
