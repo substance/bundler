@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { rollup, commonjs, sourcemaps, isString } from '../vendor'
+import { rollup, commonjs, sourcemaps, isArray, isString, isPlainObject } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import ignore from '../rollup/rollup-plugin-ignore'
 import resolve from '../rollup/rollup-plugin-resolve'
@@ -35,39 +35,70 @@ export default class RollupCommand {
       delete opts.sourceMapPrefix
     }
 
-    let plugins = []
-    // ignore must be the first, so that no other
-    // plugin resolves ignored files
+    let ignoreOpts = null
     if (opts.ignore && opts.ignore.length > 0) {
-      plugins.push(ignore({ ignore: opts.ignore }))
+      ignoreOpts = { ignore: opts.ignore }
       delete opts.ignore
     }
-    // we provide a custom resolver, taking care of
-    // pretty much all resolving (relative and node)
-    let resolveOpts = opts.resolve
-    delete opts.resolve
-    plugins.push(resolve(resolveOpts))
-    // this is necesssary so that already existing sourcemaps
-    // present in imported files are picked up
-    if (opts.sourceMap !== false) {
-      plugins.push(sourcemaps())
-    }
-    // this turns on basic es6 transpilation
-    if (opts.buble) {
-      let bubleOpts = Object.assign({}, opts.buble)
-      plugins.push(buble(bubleOpts))
-    }
-    delete opts.buble
-    if (opts.commonjs) {
-      plugins.push(commonjs(opts.commonjs))
-    }
-    delete opts.commonjs
 
+    // externals: modules which are not bundled
     const res = _compileExternals(opts.external)
     opts.external = res.external
     opts.globals = Object.assign(res.globals, opts.globals || {})
 
+    // we provide a custom resolver, taking care of
+    // pretty much all resolving (relative and node)
+    let resolveOpts = opts.resolve || {}
+    delete opts.resolve
+
+    // commonjs modules
+    let cjsOpts = null
+    if (opts.commonjs) {
+      cjsOpts = { include: [] }
+      if (isArray(opts.commonjs)) {
+        resolveOpts.cjs = resolveOpts.cjs || []
+        resolveOpts.cjs = resolveOpts.cjs.concat(opts.commonjs)
+        opts.commonjs.forEach((name) => {
+          cjsOpts.include.push('**/'+name+'/**')
+        })
+      } else if (isPlainObject(opts.commonjs)) {
+        cjsOpts = opts.commonjs
+      }
+    }
+    delete opts.commonjs
+
+    let bubleOpts = null
+    if (opts.buble) {
+      bubleOpts = Object.assign({}, opts.buble)
+      delete opts.buble
+    }
+
+    // TODO: ATM we do not support custom rollup plugins
+    delete opts.plugins
+
+    // Plugins
+
+    let plugins = []
+    // ignore must be the first, so that no other
+    // plugin resolves ignored files
+    if (ignoreOpts) plugins.push(ignore(ignoreOpts))
+
+    // resolve plugin takes care of finding imports in 'node_modules'
+    if (resolveOpts) plugins.push(resolve(resolveOpts))
+
+    // this is necesssary so that already existing sourcemaps
+    // present in imported files are picked up
+    if (opts.sourceMap !== false) plugins.push(sourcemaps())
+
+    // this turns on basic es6 transpilation
+    if (bubleOpts) plugins.push(buble(bubleOpts))
+
+    // TODO: is it important to add commonjs here or could it be earlier as well?
+    // e.g. does it need to be after buble?
+    if (cjsOpts) plugins.push(commonjs(cjsOpts))
+
     this.plugins = plugins
+
     this.opts = opts
     this.cache = null
   }

@@ -10,6 +10,7 @@ var forEach = require('lodash/forEach')
 var isArray = require('lodash/isArray')
 var isString = require('lodash/isString')
 var isFunction = require('lodash/isFunction')
+var isPlainObject = require('lodash/isPlainObject')
 var uniq = require('lodash/uniq')
 var without = require('lodash/without')
 
@@ -35,6 +36,7 @@ module.exports = {
   isArray: isArray,
   isString: isString,
   isFunction: isFunction,
+  isPlainObject: isPlainObject,
   uniq: uniq,
   without: without,
   rollup: rollup,
