@@ -8,19 +8,18 @@ Typically we bundle everything into a `dist` folder and watch files during devel
 
 # Bundling a JS library
 
-Consider a library 'foo' with ES6 index file.
+Consider a library 'foo' written in ES6.
 
-## CJS / Node
+## NodeJS / CommonJS
 
-To be able to use the library from a ES5 CommonJS project, define a target
-with format `cjs`, and specify a `moduleName`.
+To be able to use the library from Node, set the target format to 'cjs'.
 
 ```
 b.js('index.es6.js', {
-  targets: [{
+  target: {
     dest: './dist/foo.cjs.js',
-    format: 'cjs', moduleName: 'foo'
-  }]
+    format: 'cjs'
+  }
 })
 ```
 
@@ -28,26 +27,41 @@ b.js('index.es6.js', {
 
 ## ES6
 
+If you have CommonJS dependencies, it makes sense to provide an ES6 bundle, so that it is easier
+to use your library without the need of extra configuration. Additionally it might bring a slight speed up.
+
+> Note: if you don't do this, others will need to configure their bundler to treat the CommonJS code on their own.
+
 ```
 b.js('index.es6.js', {
-  targets: [{
+  target: {
     dest: './dist/foo.es6.js',
     format: 'es'
-  }]
+  }
 })
 ```
+
+In `package.json` you would then set `"jsnext:main": "dist/foo.es6.js"`.
 
 ## Browser
 
 ```
 b.js('index.es6.js', {
-  targets: [{
+  target: {
     dest: './dist/foo.js',
     format: 'umd', moduleName: 'foo'
-  }]
+  }
 })
 ```
 
-# Bundling with dependencies
+## CommonJS Dependencies
 
-TODO
+```
+b.js('index.es6.js', {
+  commonjs: ['lodash'],
+  target: {
+    dest: './dist/foo.js',
+    format: 'es'
+  }
+})
+```
