@@ -65,3 +65,34 @@ b.js('index.es6.js', {
   }
 })
 ```
+
+## Ignoring Dependencies
+
+Sometimes you want to exclude dependencies from the bundle, e.g. because it is not used.
+
+```
+b.js('index.es6.js', {
+  ignore: ['cheerio'],
+  target: {
+    dest: './dist/foo.js',
+    format: 'es'
+  }
+})
+```
+
+The specified modules will be replaced with a stub, an empty object.
+
+## External Dependencies
+
+If you want to take care of a module by yourself, you can declare it as 'external'.
+These modules are supposed to be found in the global scope.
+
+```
+b.js('index.es6.js', {
+  external: ['jquery'],
+  target: {
+    dest: './dist/foo.js',
+    format: 'umd', moduleName: 'foo'
+  }
+})
+```
