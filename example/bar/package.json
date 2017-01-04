@@ -9,6 +9,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "substance-bundler": "^0.5.1"
+    "substance-bundler": "^0.6.0"
   }
 }

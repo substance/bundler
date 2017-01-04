@@ -22,14 +22,3 @@ b.js('./index.es6.js', {
     format: 'es'
   }
 })
-
-// Browser bundle
-
-b.js('./index.es6.js', {
-  commonjs: commonjs,
-  target: {
-    dest: DIST + 'foo.es6.js',
-    format: 'umd',
-    moduleName: 'foo'
-  }
-})
