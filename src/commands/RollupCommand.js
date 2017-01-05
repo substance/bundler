@@ -7,6 +7,7 @@ import { isAbsolute, writeSync } from '../fileUtils'
 import ignore from '../rollup/rollup-plugin-ignore'
 import resolve from '../rollup/rollup-plugin-resolve'
 import buble from '../rollup/rollup-plugin-buble'
+import eslintPlugin from '../rollup/rollup-plugin-eslint'
 import Action from '../Action'
 import log from '../log'
 
@@ -82,6 +83,12 @@ export default class RollupCommand {
       delete opts.json
     }
 
+    let eslint = null
+    if (opts.eslint) {
+      eslint = opts.eslint
+      delete opts.eslint
+    }
+
     // Plugins
 
     let plugins = []
@@ -104,6 +111,8 @@ export default class RollupCommand {
     if (cjsOpts) plugins.push(commonjs(cjsOpts))
 
     if (jsonOpts) plugins.push(json(jsonOpts))
+
+    if (eslint) plugins.push(eslintPlugin(eslint))
 
     // TODO: need to discuss whether and how we want to allow custom rollup plugins
     // The order of plugins is critical in certain cases, thus as we do here, appending to
