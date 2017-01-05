@@ -39,7 +39,7 @@ b.task('bundler', function() {
     sourceMap: true,
     targets: [{
       dest: './dist/bundler.js',
-      format: 'cjs', moduleName: 'bundler'
+      format: 'cjs'
     }]
   })
 })
