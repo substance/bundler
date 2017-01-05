@@ -1,10 +1,11 @@
 import * as path from 'path'
-import { rollup, commonjs, nodeResolve, json,
+import { rollup, commonjs, json,
          sourcemaps, isArray, isString, isPlainObject,
          colors
        } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import ignore from '../rollup/rollup-plugin-ignore'
+import resolve from '../rollup/rollup-plugin-resolve'
 import buble from '../rollup/rollup-plugin-buble'
 import Action from '../Action'
 import log from '../log'
@@ -89,7 +90,7 @@ export default class RollupCommand {
     if (ignoreOpts) plugins.push(ignore(ignoreOpts))
 
     // resolve plugin takes care of finding imports in 'node_modules'
-    if (resolveOpts) plugins.push(nodeResolve(resolveOpts))
+    if (resolveOpts) plugins.push(resolve(resolveOpts))
 
     // this is necesssary so that already existing sourcemaps
     // present in imported files are picked up
