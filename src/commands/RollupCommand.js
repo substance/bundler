@@ -1,8 +1,8 @@
 import * as path from 'path'
-import { rollup, commonjs, sourcemaps, isArray, isString, isPlainObject } from '../vendor'
+import { rollup, commonjs, nodeResolve, json, sourcemaps, isArray, isString, isPlainObject, colors } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import ignore from '../rollup/rollup-plugin-ignore'
-import resolve from '../rollup/rollup-plugin-resolve'
+// import resolve from '../rollup/rollup-plugin-resolve'
 import buble from '../rollup/rollup-plugin-buble'
 import Action from '../Action'
 import log from '../log'
@@ -73,6 +73,12 @@ export default class RollupCommand {
       delete opts.buble
     }
 
+    let jsonOpts = null
+    if (opts.json) {
+      jsonOpts = opts.json
+      delete opts.json
+    }
+
     // TODO: ATM we do not support custom rollup plugins
     delete opts.plugins
 
@@ -84,7 +90,7 @@ export default class RollupCommand {
     if (ignoreOpts) plugins.push(ignore(ignoreOpts))
 
     // resolve plugin takes care of finding imports in 'node_modules'
-    if (resolveOpts) plugins.push(resolve(resolveOpts))
+    if (resolveOpts) plugins.push(nodeResolve(resolveOpts))
 
     // this is necesssary so that already existing sourcemaps
     // present in imported files are picked up
@@ -96,6 +102,8 @@ export default class RollupCommand {
     // TODO: is it important to add commonjs here or could it be earlier as well?
     // e.g. does it need to be after buble?
     if (cjsOpts) plugins.push(commonjs(cjsOpts))
+
+    if (jsonOpts) plugins.push(json(jsonOpts))
 
     this.plugins = plugins
 
@@ -196,7 +204,11 @@ class RollupAction extends Action {
       plugins: plugins,
       sourceMap: true,
       treeshake: true,
-      cache: cache
+      cache: cache,
+      onwarn: (warning) => {
+        console.info(colors.yellow(warning.message))
+        console.info(colors.grey(warning.url))
+      }
     }, this.opts)
 
     log('RollupAction: starting rollup...')
@@ -239,8 +251,13 @@ class RollupAction extends Action {
           ].join('')
         )
       })
-      console.info('.. finished in %s ms.', Date.now()-t0)
+      console.info(colors.green('.. finished in %s ms.'), Date.now()-t0)
       this._updateWatchers(bundle)
+    })
+    .catch((err) => {
+      console.error(colors.red('Rollup failed with %s in %s, line %2, column %s'), err.code, err.loc.file, err.loc.line, err.loc.column)
+      console.error(colors.grey(err.frame))
+      throw err
     })
   }
 

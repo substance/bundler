@@ -17,6 +17,8 @@ var without = require('lodash/without')
 // rollup
 var rollup = require('rollup/dist/rollup')
 var commonjs = require('rollup-plugin-commonjs')
+var nodeResolve = require('rollup-plugin-node-resolve')
+var json = require('rollup-plugin-json')
 var sourcemaps = require('rollup-plugin-sourcemaps')
 var buble = require('../vendor/buble.deps')
 var pluginutils = require('rollup-pluginutils/dist/pluginutils.cjs.js')
@@ -25,6 +27,8 @@ var pluginutils = require('rollup-pluginutils/dist/pluginutils.cjs.js')
 var postcss = require('postcss')
 var postcssImport = require('postcss-import')
 var postcssVariables = require('postcss-css-variables')
+
+var colors = require('colors/safe')
 
 module.exports = {
   chokidar: chokidar,
@@ -41,11 +45,14 @@ module.exports = {
   without: without,
   rollup: rollup,
   commonjs: commonjs,
+  json: json,
+  nodeResolve: nodeResolve,
   sourcemaps: sourcemaps,
   buble: buble,
   pluginutils: pluginutils,
   yargs: yargs,
   postcss: postcss,
   postcssImport: postcssImport,
-  postcssVariables: postcssVariables
+  postcssVariables: postcssVariables,
+  colors: colors
 }

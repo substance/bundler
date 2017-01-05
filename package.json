@@ -20,6 +20,7 @@
   "devDependencies": {
     "browserify": "^13.1.0",
     "chokidar": "^1.6.0",
+    "colors": "^1.1.2",
     "debug": "^2.2.0",
     "express": "^4.14.0",
     "fs-extra": "^0.30.0",
@@ -30,6 +31,8 @@
     "postcss-import": "substance/postcss-import#no-pkg-resolve",
     "rollup": "^0.40.0",
     "rollup-plugin-commonjs": "^7.0.0",
+    "rollup-plugin-json": "^2.1.0",
+    "rollup-plugin-node-resolve": "^2.0.0",
     "rollup-plugin-sourcemaps": "^0.4.1",
     "rollup-pluginutils": "^2.0.1",
     "substance-bundler": "0.4.13",
