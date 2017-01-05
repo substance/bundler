@@ -99,6 +99,8 @@ export default class RollupCommand {
     // resolve plugin takes care of finding imports in 'node_modules'
     if (resolveOpts) plugins.push(resolve(resolveOpts))
 
+    if (eslint) plugins.push(eslintPlugin(eslint))
+
     // this is necesssary so that already existing sourcemaps
     // present in imported files are picked up
     if (opts.sourceMap !== false) plugins.push(sourcemaps())
@@ -111,8 +113,6 @@ export default class RollupCommand {
     if (cjsOpts) plugins.push(commonjs(cjsOpts))
 
     if (jsonOpts) plugins.push(json(jsonOpts))
-
-    if (eslint) plugins.push(eslintPlugin(eslint))
 
     // TODO: need to discuss whether and how we want to allow custom rollup plugins
     // The order of plugins is critical in certain cases, thus as we do here, appending to
