@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "browserify": "^13.1.0",
+    "buble": "^0.15.1",
     "chokidar": "^1.6.0",
     "colors": "^1.1.2",
     "debug": "^2.2.0",
@@ -35,7 +36,7 @@
     "rollup-plugin-node-resolve": "^2.0.0",
     "rollup-plugin-sourcemaps": "^0.4.1",
     "rollup-pluginutils": "^2.0.1",
-    "substance-bundler": "0.4.13",
+    "substance-bundler": "0.6.1",
     "uglify-js": "^2.7.3",
     "yargs": "^4.8.1"
   },
