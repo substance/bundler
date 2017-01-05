@@ -104,11 +104,6 @@ export default class RollupCommand {
 
     if (jsonOpts) plugins.push(json(jsonOpts))
 
-    if (opts.eslint) {
-      plugins.push(opts.eslint)
-      delete opts.eslint
-    }
-
     // TODO: need to discuss whether and how we want to allow custom rollup plugins
     // The order of plugins is critical in certain cases, thus as we do here, appending to
     // automatically added plugins, might lead to custom plugins not being called
