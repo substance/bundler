@@ -262,8 +262,14 @@ class RollupAction extends Action {
       this._updateWatchers(bundle)
     })
     .catch((err) => {
-      console.error(colors.red('Rollup failed with %s in %s, line %2, column %s'), err.code, err.loc.file, err.loc.line, err.loc.column)
-      console.error(colors.grey(err.frame))
+      if (err.loc) {
+        console.error(colors.red('Rollup failed with %s in %s, line %2, column %s'), err.code, err.loc.file, err.loc.line, err.loc.column)
+      } else {
+        console.error(colors.red('Rollup failed with %s'), err.code, err)
+      }
+      if (err.frame) {
+        console.error(colors.grey(err.frame))
+      }
       throw err
     })
   }
