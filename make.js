@@ -9,8 +9,8 @@ b.task('clean', function() {
 })
 
 b.task('vendor', function() {
-  b.copy('./node_modules/buble/dist/buble.deps.js', './vendor/buble.deps.js')
-  b.copy('./node_modules/buble/dist/buble.deps.js.map', './vendor/buble.deps.js.map')
+  b.copy('./node_modules/buble/dist/buble.deps.js', './tmp/buble.deps.js')
+  b.copy('./node_modules/buble/dist/buble.deps.js.map', './tmp/buble.deps.js.map')
   b.custom('Bundling vendor...', {
     // these are necessary for watch and ensureDir
     src: './.make/vendor.js',

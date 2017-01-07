@@ -22,7 +22,7 @@ var commonjs = require('rollup-plugin-commonjs')
 //var nodeResolve = require('rollup-plugin-node-resolve')
 var json = require('rollup-plugin-json')
 var sourcemaps = require('rollup-plugin-sourcemaps')
-var buble = require('../vendor/buble.deps')
+var buble = require('../tmp/buble.deps')
 var pluginutils = require('rollup-pluginutils/dist/pluginutils.cjs.js')
 
 // postcss
