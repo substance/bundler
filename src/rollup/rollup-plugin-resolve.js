@@ -46,11 +46,17 @@ export default function resolve(opts) {
           let pkg = JSON.parse(fs.readFileSync(pkgPathAbs, 'utf8'))
           let entry = pkg['jsnext:main']
           if (entry) {
-            return path.join(path.dirname(pkgPathAbs), entry)
+            let p = path.join(path.dirname(pkgPathAbs), entry)
+            // console.log('resolve: resolved via package jsnext:main', p)
+            return p
           }
         }
       }
-      return Module._findPath(importee, paths, false) || null
+      let p = Module._findPath(importee, paths, false) || null
+      if (p) {
+        // console.log('resolve: ', p)
+        return p
+      }
     }
   }
 }

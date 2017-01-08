@@ -96,3 +96,13 @@ b.js('index.es6.js', {
   }
 })
 ```
+
+## FAQ
+
+### Plugin filters do not work with `npm link`
+
+Correct. That's because `node`'s internal `resolve` implementation uses `realPath` by default. You can tell node to preserve symlinks with:
+
+```bash
+$ node --preserve-symliks make
+```
