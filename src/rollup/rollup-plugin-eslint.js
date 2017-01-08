@@ -1,6 +1,8 @@
 import * as path from 'path'
 import { pluginutils } from '../vendor'
 
+const DOT = ".".charCodeAt(0)
+
 function normalizePath(id) {
   return path.relative(process.cwd(), id).split(path.sep).join('/')
 }
@@ -21,12 +23,21 @@ export default function eslintPlugin(eslint, options = {}) {
     options.exclude || 'node_modules/**'
   )
 
+  const onlyInProject = (options.onlyInProject !== false)
+
   return {
     name: 'eslint',
 
     transform(code, id) {
       const file = normalizePath(id)
       if (cli.isPathIgnored(file) || !filter(id)) {
+        return null
+      }
+      // when using symlinks the default filter does not work as node resolves
+      // a path outside of 'node_modules'
+      // Typically, only the local source code should be checked, i.e., there should
+      // be no '../' at the beginning of the relative path
+      if (onlyInProject && file.charCodeAt(0) === DOT && file.charCodeAt(1) === DOT) {
         return null
       }
       const report = cli.executeOnText(code, file)
