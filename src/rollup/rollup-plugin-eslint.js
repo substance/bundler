@@ -1,5 +1,6 @@
 import * as path from 'path'
 import { pluginutils } from '../vendor'
+import { CLIEngine } from 'eslint'
 
 const DOT = ".".charCodeAt(0)
 
@@ -7,22 +8,13 @@ function normalizePath(id) {
   return path.relative(process.cwd(), id).split(path.sep).join('/')
 }
 
-export default function eslintPlugin(eslint, options = {}) {
-  if (!eslint) {
-    throw new Error('You must pass in a reference to an eslint module')
-  }
-  const { CLIEngine } = eslint
-  if (!CLIEngine) {
-    throw new Error('Invalid eslint module.')
-  }
+export default function eslintPlugin(options = {}) {
   const cli = new CLIEngine()
   let formatter = cli.getFormatter('stylish')
-
   const filter = pluginutils.createFilter(
     options.include,
     options.exclude || 'node_modules/**'
   )
-
   const onlyInProject = (options.onlyInProject !== false)
 
   return {

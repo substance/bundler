@@ -88,9 +88,9 @@ export default class RollupCommand {
     }
     delete opts.json
 
-    let eslint = null
+    let eslintOpts = null
     if (opts.eslint) {
-      eslint = opts.eslint
+      eslintOpts = opts.eslint
     }
     delete opts.eslint
 
@@ -104,7 +104,7 @@ export default class RollupCommand {
     // resolve plugin takes care of finding imports in 'node_modules'
     if (resolveOpts) plugins.push(resolve(resolveOpts))
 
-    if (eslint) plugins.push(eslintPlugin(eslint))
+    if (eslintOpts) plugins.push(eslintPlugin(eslintOpts))
 
     // this is necesssary so that already existing sourcemaps
     // present in imported files are picked up

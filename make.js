@@ -37,9 +37,9 @@ b.task('bundler', function() {
     external: [
       'assert', 'buffer', 'child_process', 'constants', 'events',
       'fs', 'os', 'path', 'stream', 'tty', 'url', 'util',
-      path.join(__dirname, 'dist', 'vendor.js')
+      path.join(__dirname, 'dist', 'vendor.js'),
+      'eslint'
     ],
-    sourceMap: true,
     targets: [{
       dest: './dist/bundler.js',
       format: 'cjs'
