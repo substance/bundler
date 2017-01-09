@@ -48,7 +48,12 @@ export default class RollupCommand {
     // externals: modules which are not bundled
     const res = _compileExternals(opts.external)
     opts.external = res.external
-    opts.globals = Object.assign(res.globals, opts.globals || {})
+    let globals = Object.assign(res.globals, opts.globals || {})
+    this.targets.forEach((target) => {
+      if (target.format === 'umd' || target.format === 'iife') {
+        target.globals = globals
+      }
+    })
 
     // we provide a custom resolver, taking care of
     // pretty much all resolving (relative and node)
@@ -74,20 +79,20 @@ export default class RollupCommand {
     let bubleOpts = null
     if (opts.buble) {
       bubleOpts = Object.assign({}, opts.buble)
-      delete opts.buble
     }
+    delete opts.buble
 
     let jsonOpts = null
     if (opts.json) {
       jsonOpts = opts.json
-      delete opts.json
     }
+    delete opts.json
 
     let eslint = null
     if (opts.eslint) {
       eslint = opts.eslint
-      delete opts.eslint
     }
+    delete opts.eslint
 
     // Plugins
 
@@ -119,8 +124,8 @@ export default class RollupCommand {
     // automatically added plugins, might lead to custom plugins not being called
     if (opts.plugins) {
       plugins = plugins.concat(opts.plugins)
-      delete opts.plugins
     }
+    delete opts.plugins
 
     this.plugins = plugins
 
@@ -147,26 +152,15 @@ export default class RollupCommand {
 }
 
 function _compileExternals(externals) {
-  if (!externals || externals.length === 0) {
-    return {
-      globals: {},
-      external: null
-    }
-  }
+  if (!externals) return { globals: {}, external: null }
   let globals = {}
-  externals = externals.map(function(f) {
-    if (!isString(f)) {
-      globals[f.path] = f.global
-      f = f.path
-    } else {
-      // globals[f] = f
-    }
-    if (!isAbsolute(f)) {
-      return new RegExp("^"+f)
-    } else {
-      return f
-    }
-  })
+  if (isArray(externals)) {
+    externals = externals.map(_normalizePattern)
+  } else if (isPlainObject(externals)) {
+    let obj = externals
+    externals = Object.keys(obj)
+    Object.assign(globals, obj)
+  }
   return {
     external: function(id) {
       for (var i = 0; i < externals.length; i++) {
@@ -182,6 +176,14 @@ function _compileExternals(externals) {
       return false
     },
     globals: globals
+  }
+
+  function _normalizePattern(p) {
+    if (!isAbsolute(p)) {
+      return new RegExp("^"+p)
+    } else {
+      return p
+    }
   }
 }
 
