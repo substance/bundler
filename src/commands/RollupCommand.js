@@ -8,7 +8,6 @@ import ignore from '../rollup/rollup-plugin-ignore'
 import resolve from '../rollup/rollup-plugin-resolve'
 import buble from '../rollup/rollup-plugin-buble'
 import eslintPlugin from '../rollup/rollup-plugin-eslint'
-import nodeGlobals from '../rollup/rollup-plugin-node-globals'
 import Action from '../Action'
 import log from '../log'
 
@@ -61,6 +60,11 @@ export default class RollupCommand {
     let resolveOpts = opts.resolve || {}
     delete opts.resolve
 
+    if (opts.alias) {
+      resolveOpts.alias = Object.assign({}, opts.alias, resolveOpts.alias)
+    }
+    delete opts.alias
+
     // commonjs modules
     let cjsOpts = null
     if (opts.commonjs) {
@@ -76,12 +80,6 @@ export default class RollupCommand {
       }
     }
     delete opts.commonjs
-
-    let nodeGlobalsOpts = null
-    if (opts.nodeGlobals) {
-      nodeGlobalsOpts = opts.nodeGlobals
-      delete opts.nodeGlobals
-    }
 
     let bubleOpts = null
     if (opts.buble) {
