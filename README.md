@@ -97,6 +97,50 @@ b.js('index.es6.js', {
 })
 ```
 
+## Using Browserify for Edge cases
+
+Some dependencies are difficult to bundle with `rollup`, e.g. `tape`. In these cases you can use `browserify`
+to generate a vendor bundle, and then proceed with `rollup`.
+
+For example, in `substance-test` we need to bundle `tape` with `browserify`, and then create the
+entire bundle using `rollup`
+```
+const TAPE_BROWSER = path.join(__dirname, 'tmp/tape.browser.js')
+
+// bundle tape with browserify
+b.task('tape:browser', function() {
+  b.browserify('./.make/tape.js', {
+    dest: TAPE_BROWSER,
+    // creates a module.exports wrapper (iife by default)
+    module: true
+  })
+})
+
+// bundle the suite with rollup
+// - use an alias to pick the browser bundle
+// - tell rollup-plugin-commonjs about the exports of the tape bundle
+b.task('suite', function() {
+  let namedExports = {}
+  namedExports[TAPE_BROWSER] = ['tape']
+  b.js('./src/suite.js', {
+    target: {
+      dest: './dist/testsuite.js',
+      format: 'umd', moduleName: 'testsuite'
+    },
+    resolve: {
+      alias: {
+        'tape': TAPE_BROWSER
+      }
+    },
+    commonjs: {
+      include: [TAPE_BROWSER],
+      namedExports: namedExports
+    },
+    buble: true,
+  })
+})
+```
+
 ## FAQ
 
 ### Plugin filters do not work with `npm link`
