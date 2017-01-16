@@ -3,6 +3,8 @@ var path = require('path')
 var DOT = '.'.charCodeAt(0)
 var fs = require('fs')
 
+const ZERO = "\0".charCodeAt(0)
+
 // rather dangerous iplementation of nodejs resolve
 // using node's private API
 export default function resolve(opts) {
@@ -26,8 +28,8 @@ export default function resolve(opts) {
           return null
         }
       }
-      // skip strange importees
-      if (!/^[\w]/.exec(importee)) return null
+      // skip internal imports
+      if (importee.charCodeAt(0) === ZERO) return importee
 
       // allow to define an alias path for an import
       if (alias[importee]) importee = alias[importee]

@@ -8,6 +8,7 @@ import ignore from '../rollup/rollup-plugin-ignore'
 import resolve from '../rollup/rollup-plugin-resolve'
 import buble from '../rollup/rollup-plugin-buble'
 import eslintPlugin from '../rollup/rollup-plugin-eslint'
+import nodeGlobals from '../rollup/rollup-plugin-node-globals'
 import Action from '../Action'
 import log from '../log'
 
@@ -76,6 +77,12 @@ export default class RollupCommand {
     }
     delete opts.commonjs
 
+    let nodeGlobalsOpts = null
+    if (opts.nodeGlobals) {
+      nodeGlobalsOpts = opts.nodeGlobals
+      delete opts.nodeGlobals
+    }
+
     let bubleOpts = null
     if (opts.buble) {
       bubleOpts = Object.assign({}, opts.buble)
@@ -110,12 +117,14 @@ export default class RollupCommand {
     // present in imported files are picked up
     if (opts.sourceMap !== false) plugins.push(sourcemaps())
 
-    // this turns on basic es6 transpilation
-    if (bubleOpts) plugins.push(buble(bubleOpts))
-
     // TODO: is it important to add commonjs here or could it be earlier as well?
     // e.g. does it need to be after buble?
     if (cjsOpts) plugins.push(commonjs(cjsOpts))
+
+    // if (nodeGlobalsOpts) plugins.push(nodeGlobals(nodeGlobalsOpts))
+
+    // this turns on basic es6 transpilation
+    if (bubleOpts) plugins.push(buble(bubleOpts))
 
     if (jsonOpts) plugins.push(json(jsonOpts))
 
