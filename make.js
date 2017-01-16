@@ -6,6 +6,7 @@ var path = require('path')
 
 b.task('clean', function() {
   b.rm('./dist')
+  b.rm('./tmp')
 })
 
 b.task('vendor', function() {
