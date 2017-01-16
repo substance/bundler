@@ -111,31 +111,22 @@ const TAPE_BROWSER = path.join(__dirname, 'tmp/tape.browser.js')
 b.task('tape:browser', function() {
   b.browserify('./.make/tape.js', {
     dest: TAPE_BROWSER,
-    // creates a module.exports wrapper (iife by default)
-    module: true
+    exports: ['default']
   })
 })
 
 // bundle the suite with rollup
-// - use an alias to pick the browser bundle
-// - tell rollup-plugin-commonjs about the exports of the tape bundle
+// using an alias to pick the browser bundle
 b.task('suite', function() {
-  let namedExports = {}
-  namedExports[TAPE_BROWSER] = ['tape']
   b.js('./src/suite.js', {
     target: {
       dest: './dist/testsuite.js',
       format: 'umd', moduleName: 'testsuite'
     },
-    resolve: {
-      alias: {
-        'tape': TAPE_BROWSER
-      }
-    },
-    commonjs: {
-      include: [TAPE_BROWSER],
-      namedExports: namedExports
-    },
+    alias: {
+      'tape': TAPE_BROWSER
+    }
+    commonjs: true,
     buble: true,
   })
 })
