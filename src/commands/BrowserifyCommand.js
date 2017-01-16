@@ -90,19 +90,41 @@ class BrowserifyAction extends Action {
         if(err) {
           return reject(err)
         }
-        // TODO: this only works without sourceMaps
-        if (this.options.module) {
+        // TODO: deal with sourceMaps
+        if (this.options.exports) {
+          let exports = this.options.exports
           code = String(code)
+
           let lines = code.split(/\r?\n/g)
-          let idx = lines.length-2
+          // Handling the last line which is either empty or
+          let lastLine = lines.pop()
+          if (/^\s*$/.exec(lastLine)) {
+            // nothing
+          } else if(/^\/\/#/.exec(lastLine)) {
+            // TODO: do something with the source map
+          } else {
+            lines.push(lastLine)
+          }
+          lastLine = lines.pop()
           // HACK: extracting the entry id by extracting a valid expression from the last generated line of code
           // evaluating it in a Function
-          let f = new Function('return [{ "foo": ['+lines[idx].slice(2, -2)+']')
+          // Example: },{}]},{},[1])
+          let f = new Function('return [{ "foo": [{'+lastLine.slice(0, -2)+']')
           // console.log('#### ', f.toString())
           let iifeArgs = f()
           let entry = iifeArgs[2][0]
-          lines[idx] = [lines[idx].slice(0,-1),'(',entry,')'].join('')
-          code = ['module.exports = ', lines.join('\n')].join('')
+          lines.push([lastLine.slice(0,-1),'(',entry,')'].join(''))
+          // generate es6 exports
+          code = ['let _exports = '+lines.join('\n')]
+          exports.forEach((name) => {
+            if (name === 'default') {
+              code.push('export default _exports')
+            } else {
+              code.push('let '+name+' = _exports.'+name)
+              code.push('export {'+name+'}')
+            }
+          })
+          code = code.join('\n')
         }
         let absDest = isAbsolute(this.dest) ? this.dest : path.join(this.rootDir, this.dest)
         writeSync(absDest, code)
