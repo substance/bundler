@@ -21,6 +21,9 @@ export default function resolve(opts) {
     resolveId: function(importee, importer) {
       // skip relative paths
       if (!importer || !importee/* || importee[0] === '.'*/) return null
+      // skip internal imports
+      if (importee.charCodeAt(0) === ZERO) return importee
+      // process relative imports
       if (importee.charCodeAt(0) === DOT) {
         try {
           return require.resolve(path.join(path.dirname(importer), importee))
@@ -28,10 +31,7 @@ export default function resolve(opts) {
           return null
         }
       }
-      // skip internal imports
-      if (importee.charCodeAt(0) === ZERO) return importee
-
-      // allow to define an alias path for an import
+      // replace alias
       if (alias[importee]) importee = alias[importee]
 
       // console.log('## resolving %s from %s', importee, importer)
