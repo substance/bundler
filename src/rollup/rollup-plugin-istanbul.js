@@ -25,7 +25,7 @@ export default function (options = {}) {
       opts.esModules = true;
       instrumenter = new (options.instrumenter || istanbul).Instrumenter(opts);
 
-      console.log('## Running istanbul on', id)
+      // console.log('## Running istanbul on', id)
       code = instrumenter.instrumentSync(code, id);
 
       var map = sourceMap ?
