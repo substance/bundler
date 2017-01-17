@@ -8,6 +8,7 @@ import ignore from '../rollup/rollup-plugin-ignore'
 import resolve from '../rollup/rollup-plugin-resolve'
 import buble from '../rollup/rollup-plugin-buble'
 import eslintPlugin from '../rollup/rollup-plugin-eslint'
+import istanbulPlugin from '../rollup/rollup-plugin-istanbul'
 import Action from '../Action'
 import log from '../log'
 
@@ -99,6 +100,12 @@ export default class RollupCommand {
     }
     delete opts.eslint
 
+    let istanbulOpts = null
+    if (opts.istanbul) {
+      istanbulOpts = opts.istanbul
+    }
+    delete opts.istanbul
+
     // Plugins
 
     let plugins = []
@@ -114,6 +121,9 @@ export default class RollupCommand {
     // this is necesssary so that already existing sourcemaps
     // present in imported files are picked up
     if (opts.sourceMap !== false) plugins.push(sourcemaps())
+
+    // apply instrumentation before any other transforms
+    if (istanbulOpts) plugins.push(istanbulPlugin(istanbulOpts))
 
     // TODO: is it important to add commonjs here or could it be earlier as well?
     // e.g. does it need to be after buble?
