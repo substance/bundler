@@ -139,5 +139,5 @@ b.task('suite', function() {
 Correct. That's because `node`'s internal `resolve` implementation uses `realPath` by default. You can tell node to preserve symlinks with:
 
 ```bash
-$ node --preserve-symliks make
+$ node --preserve-symlinks make
 ```
