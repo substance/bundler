@@ -1,5 +1,4 @@
-// we are using an older version of bundler
-// to build the bundler
+// NOTE: we are using an published version of substance-bundler to build the bundler
 var b = require('substance-bundler')
 var bundleVendor = require('./util/bundleVendor')
 var path = require('path')
