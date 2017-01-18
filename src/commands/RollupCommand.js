@@ -9,6 +9,7 @@ import resolve from '../rollup/rollup-plugin-resolve'
 import buble from '../rollup/rollup-plugin-buble'
 import eslintPlugin from '../rollup/rollup-plugin-eslint'
 import istanbulPlugin from '../rollup/rollup-plugin-istanbul'
+import cleanup from '../rollup/rollup-plugin-cleanup'
 import Action from '../Action'
 import log from '../log'
 
@@ -106,6 +107,12 @@ export default class RollupCommand {
     }
     delete opts.istanbul
 
+    let cleanupOpts = null
+    if (opts.cleanup) {
+      cleanupOpts = opts.cleanup
+    }
+    delete opts.cleanup
+
     // Plugins
 
     let plugins = []
@@ -143,6 +150,10 @@ export default class RollupCommand {
       plugins = plugins.concat(opts.plugins)
     }
     delete opts.plugins
+
+    if (cleanupOpts) {
+      plugins.push(cleanup(cleanupOpts))
+    }
 
     this.plugins = plugins
 

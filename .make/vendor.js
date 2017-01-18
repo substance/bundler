@@ -5,6 +5,10 @@ var fse = require('fs-extra')
 var glob = require('glob')
 var yargs = require('yargs')
 
+var acorn = require('acorn')
+var estreeWalker = require('estree-walker')
+var MagicString = require('magic-string')
+
 // lodash
 var forEach = require('lodash/forEach')
 var isArray = require('lodash/isArray')
@@ -27,6 +31,7 @@ var buble = require('../tmp/buble.deps')
 var pluginutils = require('rollup-pluginutils/dist/pluginutils.cjs.js')
 // ATTENTION rollup-plugin-node-globals also uses dynamic require statements so it can not be bundled
 //var nodeGlobals = require('rollup-plugin-node-globals/dist/rollup-plugin-node-globals.cjs.js')
+var cleanup = require('rollup-plugin-cleanup')
 
 // postcss
 var postcss = require('postcss')
@@ -41,6 +46,9 @@ module.exports = {
   express: express,
   fse: fse,
   glob: glob,
+  acorn: acorn,
+  estreeWalker: estreeWalker,
+  MagicString: MagicString,
   forEach: forEach,
   isArray: isArray,
   isString: isString,
@@ -55,6 +63,7 @@ module.exports = {
   sourcemaps: sourcemaps,
   buble: buble,
   pluginutils: pluginutils,
+  cleanup: cleanup,
   yargs: yargs,
   postcss: postcss,
   postcssImport: postcssImport,

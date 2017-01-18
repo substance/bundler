@@ -19,15 +19,18 @@
     "fsevents": "^1.0.0"
   },
   "devDependencies": {
+    "acorn": "^4.0.4",
     "browserify": "^13.1.0",
     "buble": "^0.15.2",
     "chokidar": "^1.6.0",
     "colors": "^1.1.2",
     "debug": "^2.2.0",
+    "estree-walker": "^0.3.0",
     "express": "^4.14.0",
     "fs-extra": "^0.30.0",
     "glob": "^7.0.6",
     "lodash": "^4.15.0",
+    "magic-string": "^0.19.0",
     "postcss": "^5.2.4",
     "postcss-css-variables": "^0.6.0",
     "postcss-import": "substance/postcss-import#no-pkg-resolve",
