@@ -26,26 +26,6 @@ b.task('vendor', function() {
       })
     }
   })
-  // assets for browser bundles which are loaded dynamically
-  b.copy('./node_modules/process-es6/browser.js', './dist/browser/process.js')
-  b.js('./node_modules/path-browserify/index.js', {
-    target: {
-      dest: './dist/browser/path.js',
-      format: 'es'
-    }
-  })
-  b.js('./node_modules/stream-browserify/index.js', {
-    target: {
-      dest: './dist/browser/stream.js',
-      format: 'es'
-    }
-  })
-  b.js('./node_modules/events/events.js', {
-    target: {
-      dest: './dist/browser/events.js',
-      format: 'es'
-    }
-  })
 })
 
 b.task('bundler', function() {
