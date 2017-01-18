@@ -1,6 +1,6 @@
 {
   "name": "substance-bundler",
-  "version": "0.6.10",
+  "version": "0.6.11",
   "description": "Simplified bundling taylored to our needs.",
   "repository": "https.//github.com/substance/bundler.git",
   "main": "dist/bundler.js",
