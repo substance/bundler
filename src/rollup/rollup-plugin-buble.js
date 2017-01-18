@@ -11,6 +11,7 @@ export default function buble ( options ) {
     name: 'buble',
 
     transform: function ( code, id ) {
+      if (!/\.js$/.exec(id)) return null
       if ( !filter( id ) ) return null
       return _buble.transform( code, options )
     }

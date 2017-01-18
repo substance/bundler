@@ -1,14 +1,16 @@
-// we are using an older version of bundler
-// to build the bundler
+// NOTE: we are using an published version of substance-bundler to build the bundler
 var b = require('substance-bundler')
 var bundleVendor = require('./util/bundleVendor')
 var path = require('path')
 
 b.task('clean', function() {
   b.rm('./dist')
+  b.rm('./tmp')
 })
 
 b.task('vendor', function() {
+  b.copy('./node_modules/buble/dist/buble.deps.js', './tmp/buble.deps.js')
+  b.copy('./node_modules/buble/dist/buble.deps.js.map', './tmp/buble.deps.js.map')
   b.custom('Bundling vendor...', {
     // these are necessary for watch and ensureDir
     src: './.make/vendor.js',
@@ -34,12 +36,12 @@ b.task('bundler', function() {
     external: [
       'assert', 'buffer', 'child_process', 'constants', 'events',
       'fs', 'os', 'path', 'stream', 'tty', 'url', 'util',
-      path.join(__dirname, 'dist', 'vendor.js')
+      path.join(__dirname, 'dist', 'vendor.js'),
+      'eslint'
     ],
-    sourceMap: true,
     targets: [{
       dest: './dist/bundler.js',
-      format: 'cjs', moduleName: 'bundler'
+      format: 'cjs'
     }]
   })
 })

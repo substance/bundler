@@ -3,15 +3,17 @@ var path = require('path')
 var DOT = '.'.charCodeAt(0)
 var fs = require('fs')
 
+const ZERO = "\0".charCodeAt(0)
+
 // rather dangerous iplementation of nodejs resolve
 // using node's private API
 export default function resolve(opts) {
   opts = opts || {}
   const alias = opts.alias || {}
-  const jsnext = {}
-  if (opts.jsnext) {
-    opts.jsnext.forEach(function(m) {
-      jsnext[m] = true
+  const cjs = {}
+  if (opts.cjs) {
+    opts.cjs.forEach(function(m) {
+      cjs[m] = true
     })
   }
   return {
@@ -19,37 +21,42 @@ export default function resolve(opts) {
     resolveId: function(importee, importer) {
       // skip relative paths
       if (!importer || !importee/* || importee[0] === '.'*/) return null
+      // skip internal imports
+      if (importee.charCodeAt(0) === ZERO) return importee
+      // process relative imports
       if (importee.charCodeAt(0) === DOT) {
         try {
-          var id = path.join(path.dirname(importer), importee)
-          return require.resolve(id)
+          return require.resolve(path.join(path.dirname(importer), importee))
         } catch (err) {
           return null
         }
       }
-      // skip strange importees
-      if (!/^[\w]/.exec(importee)) return null
-      if (alias[importee]) {
-        importee = alias[importee]
-      }
+      // replace alias
+      if (alias[importee]) importee = alias[importee]
+
       // console.log('## resolving %s from %s', importee, importer)
-      var dirname = path.dirname(importer)
-      var paths = Module._nodeModulePaths(dirname)
-      if (jsnext[importee]) {
-        // console.log('### looking for jsnext', importee)
+      let dirname = path.dirname(importer)
+      let paths = Module._nodeModulePaths(dirname)
+      // NOTE: jsnext:main is now the default for modules
+      // if you want to support legacy modules you need to provide an array of cjs modules
+      // via opts.cjs
+      let isModule = importee.indexOf('/') === -1
+      if (isModule && !cjs[importee]) {
         let pkgPath = importee+"/package.json"
-        var pkgPathAbs = Module._findPath(pkgPath, paths, false)
-        if(!pkgPathAbs) return
-        // console.log('### .. found package', pkgPathAbs)
-        var pkg = fs.readFileSync(pkgPathAbs, 'utf8')
-        pkg = JSON.parse(pkg)
-        var entry = pkg['jsnext:main']
-        if (!entry) return
-        // console.log('### .. jsnext:main', entry)
-        return path.join(path.dirname(pkgPathAbs), entry)
+        let pkgPathAbs = Module._findPath(pkgPath, paths, false)
+        if (pkgPathAbs) {
+          let pkg = JSON.parse(fs.readFileSync(pkgPathAbs, 'utf8'))
+          let entry = pkg['jsnext:main']
+          if (entry) {
+            let p = path.join(path.dirname(pkgPathAbs), entry)
+            // console.log('resolve: resolved via package jsnext:main', p)
+            return p
+          }
+        }
       }
-      var p = Module._findPath(importee, paths, false)
+      let p = Module._findPath(importee, paths, false) || null
       if (p) {
+        // console.log('resolve: ', p)
         return p
       }
     }

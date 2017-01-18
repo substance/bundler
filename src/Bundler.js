@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events'
 import * as path from 'path'
 import { isFunction, uniq, express } from './vendor'
-import { writeSync } from './fileUtils'
+import { writeSync as _writeSync } from './fileUtils'
 import Watcher from './Watcher'
 
 import CopyCommand from './commands/CopyCommand'
@@ -10,6 +10,7 @@ import MakeCommand from './commands/MakeCommand'
 import MinifyCommand from './commands/MinifyCommand'
 import RemoveCommand from './commands/RemoveCommand'
 import RollupCommand from './commands/RollupCommand'
+import BrowserifyCommand from './commands/BrowserifyCommand'
 import PostCSSCommand from './commands/PostCSSCommand'
 import log from './log'
 
@@ -60,8 +61,12 @@ export default class Bundler extends EventEmitter {
     this._schedule(new CustomCommand(description, params))
   }
 
-  js(src, targets, opts) {
-    this._schedule(new RollupCommand(src, targets, opts))
+  js(src, opts) {
+    this._schedule(new RollupCommand(src, opts))
+  }
+
+  browserify(src, opts) {
+    this._schedule(new BrowserifyCommand(src, opts))
   }
 
   css(src, dest, opts) {
@@ -105,7 +110,7 @@ export default class Bundler extends EventEmitter {
   }
 
   writeSync(dest, buf) {
-    writeSync(dest, buf)
+    _writeSync(dest, buf)
   }
 
   _hasScheduledActions() {

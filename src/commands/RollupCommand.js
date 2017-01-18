@@ -1,9 +1,15 @@
 import * as path from 'path'
-import { rollup, commonjs, sourcemaps, isString } from '../vendor'
+import { rollup, commonjs, json,
+         sourcemaps, isArray, isString, isPlainObject,
+         colors
+       } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import ignore from '../rollup/rollup-plugin-ignore'
 import resolve from '../rollup/rollup-plugin-resolve'
 import buble from '../rollup/rollup-plugin-buble'
+import eslintPlugin from '../rollup/rollup-plugin-eslint'
+import istanbulPlugin from '../rollup/rollup-plugin-istanbul'
+import cleanup from '../rollup/rollup-plugin-cleanup'
 import Action from '../Action'
 import log from '../log'
 
@@ -11,10 +17,16 @@ export default class RollupCommand {
 
   constructor(src, opts) {
     this.src = src
+
+    // parse targets
     if (opts.targets) {
       this.targets = opts.targets
       delete opts.targets
+    } else if (opts.target) {
+      this.targets = [opts.target]
+      delete opts.target
     } else {
+      console.warn('DEPRECATED: use { target: {...} } instead.')
       this.targets = [{
         dest: opts.dest,
         format: opts.format,
@@ -29,39 +41,122 @@ export default class RollupCommand {
       delete opts.sourceMapPrefix
     }
 
-    let plugins = []
-    // ignore must be the first, so that no other
-    // plugin resolves ignored files
+    let ignoreOpts = null
     if (opts.ignore && opts.ignore.length > 0) {
-      plugins.push(ignore({ ignore: opts.ignore }))
+      ignoreOpts = { ignore: opts.ignore }
       delete opts.ignore
     }
+
+    // externals: modules which are not bundled
+    const res = _compileExternals(opts.external)
+    opts.external = res.external
+    let globals = Object.assign(res.globals, opts.globals || {})
+    this.targets.forEach((target) => {
+      if (target.format === 'umd' || target.format === 'iife') {
+        target.globals = globals
+      }
+    })
+
     // we provide a custom resolver, taking care of
     // pretty much all resolving (relative and node)
-    let resolveOpts = opts.resolve
+    let resolveOpts = opts.resolve || {}
     delete opts.resolve
-    plugins.push(resolve(resolveOpts))
-    // this is necesssary so that already existing sourcemaps
-    // present in imported files are picked up
-    if (opts.sourceMap !== false) {
-      plugins.push(sourcemaps())
+
+    if (opts.alias) {
+      resolveOpts.alias = Object.assign({}, opts.alias, resolveOpts.alias)
     }
-    // this turns on basic es6 transpilation
-    if (opts.buble) {
-      let bubleOpts = Object.assign({}, opts.buble)
-      plugins.push(buble(bubleOpts))
-    }
-    delete opts.buble
+    delete opts.alias
+
+    // commonjs modules
+    let cjsOpts = null
     if (opts.commonjs) {
-      plugins.push(commonjs(opts.commonjs))
+      cjsOpts = { include: [] }
+      if (isArray(opts.commonjs)) {
+        resolveOpts.cjs = resolveOpts.cjs || []
+        resolveOpts.cjs = resolveOpts.cjs.concat(opts.commonjs)
+        opts.commonjs.forEach((name) => {
+          cjsOpts.include.push('**/'+name+'/**')
+        })
+      } else if (isPlainObject(opts.commonjs)) {
+        cjsOpts = opts.commonjs
+      }
     }
     delete opts.commonjs
 
-    const res = _compileExternals(opts.external)
-    opts.external = res.external
-    opts.globals = Object.assign(res.globals, opts.globals || {})
+    let bubleOpts = null
+    if (opts.buble) {
+      bubleOpts = Object.assign({}, opts.buble)
+    }
+    delete opts.buble
+
+    let jsonOpts = null
+    if (opts.json) {
+      jsonOpts = opts.json
+    }
+    delete opts.json
+
+    let eslintOpts = null
+    if (opts.eslint) {
+      eslintOpts = opts.eslint
+    }
+    delete opts.eslint
+
+    let istanbulOpts = null
+    if (opts.istanbul) {
+      istanbulOpts = opts.istanbul
+    }
+    delete opts.istanbul
+
+    let cleanupOpts = null
+    if (opts.cleanup) {
+      cleanupOpts = opts.cleanup
+    }
+    delete opts.cleanup
+
+    // Plugins
+
+    let plugins = []
+    // ignore must be the first, so that no other
+    // plugin resolves ignored files
+    if (ignoreOpts) plugins.push(ignore(ignoreOpts))
+
+    // resolve plugin takes care of finding imports in 'node_modules'
+    if (resolveOpts) plugins.push(resolve(resolveOpts))
+
+    if (eslintOpts) plugins.push(eslintPlugin(eslintOpts))
+
+    // this is necesssary so that already existing sourcemaps
+    // present in imported files are picked up
+    if (opts.sourceMap !== false) plugins.push(sourcemaps())
+
+    // apply instrumentation before any other transforms
+    if (istanbulOpts) plugins.push(istanbulPlugin(istanbulOpts))
+
+    // TODO: is it important to add commonjs here or could it be earlier as well?
+    // e.g. does it need to be after buble?
+    if (cjsOpts) plugins.push(commonjs(cjsOpts))
+
+    // if (nodeGlobalsOpts) plugins.push(nodeGlobals(nodeGlobalsOpts))
+
+    // this turns on basic es6 transpilation
+    if (bubleOpts) plugins.push(buble(bubleOpts))
+
+    if (jsonOpts) plugins.push(json(jsonOpts))
+
+    // TODO: need to discuss whether and how we want to allow custom rollup plugins
+    // The order of plugins is critical in certain cases, thus as we do here, appending to
+    // automatically added plugins, might lead to custom plugins not being called
+    if (opts.plugins) {
+      plugins = plugins.concat(opts.plugins)
+    }
+    delete opts.plugins
+
+    if (cleanupOpts) {
+      plugins.push(cleanup(cleanupOpts))
+    }
 
     this.plugins = plugins
+
     this.opts = opts
     this.cache = null
   }
@@ -85,26 +180,15 @@ export default class RollupCommand {
 }
 
 function _compileExternals(externals) {
-  if (!externals || externals.length === 0) {
-    return {
-      globals: {},
-      external: null
-    }
-  }
+  if (!externals) return { globals: {}, external: null }
   let globals = {}
-  externals = externals.map(function(f) {
-    if (!isString(f)) {
-      globals[f.path] = f.global
-      f = f.path
-    } else {
-      // globals[f] = f
-    }
-    if (!isAbsolute(f)) {
-      return new RegExp("^"+f)
-    } else {
-      return f
-    }
-  })
+  if (isArray(externals)) {
+    externals = externals.map(_normalizePattern)
+  } else if (isPlainObject(externals)) {
+    let obj = externals
+    externals = Object.keys(obj)
+    Object.assign(globals, obj)
+  }
   return {
     external: function(id) {
       for (var i = 0; i < externals.length; i++) {
@@ -120,6 +204,14 @@ function _compileExternals(externals) {
       return false
     },
     globals: globals
+  }
+
+  function _normalizePattern(p) {
+    if (!isAbsolute(p)) {
+      return new RegExp("^"+p)
+    } else {
+      return p
+    }
   }
 }
 
@@ -159,7 +251,11 @@ class RollupAction extends Action {
       plugins: plugins,
       sourceMap: true,
       treeshake: true,
-      cache: cache
+      cache: cache,
+      onwarn: (warning) => {
+        console.info(colors.yellow(warning.message))
+        console.info(colors.grey(warning.url))
+      }
     }, this.opts)
 
     log('RollupAction: starting rollup...')
@@ -202,8 +298,19 @@ class RollupAction extends Action {
           ].join('')
         )
       })
-      console.info('.. finished in %s ms.', Date.now()-t0)
+      console.info(colors.green('.. finished in %s ms.'), Date.now()-t0)
       this._updateWatchers(bundle)
+    })
+    .catch((err) => {
+      if (err.loc) {
+        console.error(colors.red('Rollup failed with %s in %s, line %2, column %s'), err.code, err.loc.file, err.loc.line, err.loc.column)
+      } else {
+        console.error(colors.red('Rollup failed with %s'), err.code, err)
+      }
+      if (err.frame) {
+        console.error(colors.grey(err.frame))
+      }
+      throw err
     })
   }
 
