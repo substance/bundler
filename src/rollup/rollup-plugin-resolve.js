@@ -3,6 +3,8 @@ const Module = require('module')
 const path = require('path')
 const fs = require('fs')
 
+const EMPTY_ID = "\0resolve:empty.js"
+const EMPTY_CODE = "export default {}"
 const DOT = '.'.charCodeAt(0)
 
 // rather dangerous iplementation of nodejs resolve
@@ -10,6 +12,7 @@ const DOT = '.'.charCodeAt(0)
 export default function resolve(opts) {
   opts = opts || {}
   const alias = opts.alias || {}
+  const ignore = opts.ignore || []
   const cjs = {}
   if (opts.cjs) {
     opts.cjs.forEach(function(m) {
@@ -19,11 +22,20 @@ export default function resolve(opts) {
   return {
     name: "resolve",
     resolveId: function(importee, importer) {
-      // console.log('## resolve(%s, %s)', importee, importer)
-      if (/\0/.test(importee)) return null // ignore IDs with null character, these belong to other plugins
+      // 'claim' loading
+      // TODO: really?
+      if (importee === EMPTY_ID) return EMPTY_ID
+      // ignore IDs with null character, these belong to other plugins
+      if (/\0/.test(importee)) return null
       // disregard entry module
       if (!importer) return null
-      if (!isAbsolute(importer)) return null
+      // this is fishy
+      if (!isAbsolute(importer)) {
+        // TODO: why is that so?
+        // happens for instance with commonjs proxies
+        // console.warn('FIXME: resolve-plugin.resolveId(%s, %s)', importee, importer)
+        return null
+      }
       // process relative imports
       if (importee.charCodeAt(0) === DOT) {
         try {
@@ -33,11 +45,13 @@ export default function resolve(opts) {
           return null
         }
       }
-      // replace alias
-      // TODO: shouldn't this be another plugin?
+      if (ignore.indexOf(importee) > -1) {
+        // console.log('## ignoring module %s', importee)
+        return EMPTY_ID
+      }
       if (alias[importee]) {
         // console.log('.... using alias: %s -> %s', importee, alias[importee])
-        return alias[importee]
+        importee = alias[importee]
       }
       // console.log('## resolving %s from %s', importee, importer)
       let dirname = path.dirname(importer)
@@ -63,6 +77,11 @@ export default function resolve(opts) {
       if (p) {
         // console.log('.... resolved', p)
         return p
+      }
+    },
+    load: function(id) {
+      if (id === EMPTY_ID) {
+        return EMPTY_CODE
       }
     }
   }
