@@ -5,8 +5,9 @@
   "repository": "https.//github.com/substance/bundler.git",
   "main": "dist/bundler.js",
   "scripts": {
-    "build": "node make -d",
-    "prepublish": "node make -d"
+    "build": "node make",
+    "prepublish": "node make",
+    "start": "node make -w"
   },
   "author": "Oliver Buchtala",
   "license": "MIT",
