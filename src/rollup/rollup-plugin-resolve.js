@@ -36,6 +36,10 @@ export default function resolve(opts) {
         // console.warn('FIXME: resolve-plugin.resolveId(%s, %s)', importee, importer)
         return null
       }
+      if (ignore.indexOf(importee) > -1) {
+        // console.log('## ignoring %s', importee)
+        return EMPTY_ID
+      }
       // process relative imports
       if (importee.charCodeAt(0) === DOT) {
         try {
@@ -44,10 +48,6 @@ export default function resolve(opts) {
         } catch (err) {
           return null
         }
-      }
-      if (ignore.indexOf(importee) > -1) {
-        // console.log('## ignoring module %s', importee)
-        return EMPTY_ID
       }
       if (alias[importee]) {
         // console.log('.... using alias: %s -> %s', importee, alias[importee])
