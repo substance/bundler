@@ -45,7 +45,7 @@ class MinifyAction extends Action {
     console.info(this.id)
     // uglify can not be bundled as it does dynamic file loading
     // and we also don't ship it, thus it is required as late as possible
-    const uglify = require('uglify-js')
+    const uglify = require('uglify-js-harmony')
     const src = this.src
     const dest = this.dest
     const inSourceMap = src + '.map'
