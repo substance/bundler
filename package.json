@@ -42,7 +42,6 @@
     "rollup-plugin-sourcemaps": "^0.4.1",
     "rollup-pluginutils": "^2.0.1",
     "substance-bundler": "0.6.2",
-    "uglify-js": "^2.7.3",
     "yargs": "^4.8.1"
   },
   "files": [
