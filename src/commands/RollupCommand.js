@@ -4,7 +4,6 @@ import { rollup, commonjs, json,
          colors
        } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
-import ignore from '../rollup/rollup-plugin-ignore'
 import resolve from '../rollup/rollup-plugin-resolve'
 import buble from '../rollup/rollup-plugin-buble'
 import eslintPlugin from '../rollup/rollup-plugin-eslint'
@@ -41,12 +40,6 @@ export default class RollupCommand {
       delete opts.sourceMapPrefix
     }
 
-    let ignoreOpts = null
-    if (opts.ignore && opts.ignore.length > 0) {
-      ignoreOpts = { ignore: opts.ignore }
-      delete opts.ignore
-    }
-
     // externals: modules which are not bundled
     const res = _compileExternals(opts.external)
     opts.external = res.external
@@ -65,6 +58,10 @@ export default class RollupCommand {
     if (opts.alias) {
       resolveOpts.alias = Object.assign({}, opts.alias, resolveOpts.alias)
     }
+    if (opts.ignore && opts.ignore.length > 0) {
+      resolveOpts.ignore = opts.ignore
+    }
+    delete opts.ignore
     delete opts.alias
 
     // commonjs modules
@@ -116,11 +113,9 @@ export default class RollupCommand {
     // Plugins
 
     let plugins = []
-    // ignore must be the first, so that no other
-    // plugin resolves ignored files
-    if (ignoreOpts) plugins.push(ignore(ignoreOpts))
-
     // resolve plugin takes care of finding imports in 'node_modules'
+    // NOTE: better this be the first and does everything related to resolving
+    // i.e., aliases, ignores etc.
     if (resolveOpts) plugins.push(resolve(resolveOpts))
 
     if (eslintOpts) plugins.push(eslintPlugin(eslintOpts))
@@ -298,7 +293,7 @@ class RollupAction extends Action {
           ].join('')
         )
       })
-      console.info(colors.green('.. finished in %s ms.'), Date.now()-t0)
+      console.info(colors.green('..finished in %s ms.'), Date.now()-t0)
       this._updateWatchers(bundle)
     })
     .catch((err) => {

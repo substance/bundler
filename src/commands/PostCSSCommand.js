@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { postcss, postcssImport, postcssVariables } from '../vendor'
+import { postcss, postcssImport, postcssVariables, colors } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import Action from '../Action'
 
@@ -67,7 +67,7 @@ class PostCSSAction extends Action {
     .then(function (result) {
       writeSync(dest+'.map', JSON.stringify(result.map))
       writeSync(dest, result.css)
-      console.info('.. finished in %s ms.', Date.now()-t0)
+      console.info(colors.green('..finished in %s ms.'), Date.now()-t0)
     })
   }
 

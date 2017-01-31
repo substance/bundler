@@ -1,12 +1,13 @@
 {
   "name": "substance-bundler",
-  "version": "0.6.11",
+  "version": "0.7.2",
   "description": "Simplified bundling taylored to our needs.",
   "repository": "https.//github.com/substance/bundler.git",
   "main": "dist/bundler.js",
   "scripts": {
-    "build": "node make -d",
-    "prepublish": "node make -d"
+    "build": "node make",
+    "prepublish": "node make",
+    "start": "node make -w"
   },
   "author": "Oliver Buchtala",
   "license": "MIT",
@@ -42,7 +43,6 @@
     "rollup-plugin-sourcemaps": "^0.4.1",
     "rollup-pluginutils": "^2.0.1",
     "substance-bundler": "0.6.2",
-    "uglify-js": "^2.7.3",
     "yargs": "^4.8.1"
   },
   "files": [
