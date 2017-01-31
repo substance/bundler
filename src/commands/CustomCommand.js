@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { isAbsolute } from '../fileUtils'
-import { isFunction, isArray, uniq, fse, glob } from '../vendor'
+import { isFunction, isArray, uniq, fse, glob, colors } from '../vendor'
 import Action from '../Action'
 import randomId from '../randomId'
 
@@ -112,7 +112,7 @@ export default class CustomCommand {
       })
       return result
     } else {
-      console.error('No files found for pattern %s', pattern)
+      console.error('No files found for pattern %s', patterns)
     }
   }
 
@@ -145,7 +145,7 @@ class CustomAction extends Action {
     })
     return Promise.resolve(this._execute(inputs))
     .then(function() {
-      console.info('..finished in %s ms', Date.now()-t0)
+      console.info(colors.green('..finished in %s ms.'), Date.now()-t0)
     })
   }
 }

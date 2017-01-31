@@ -293,7 +293,7 @@ class RollupAction extends Action {
           ].join('')
         )
       })
-      console.info(colors.green('.. finished in %s ms.'), Date.now()-t0)
+      console.info(colors.green('..finished in %s ms.'), Date.now()-t0)
       this._updateWatchers(bundle)
     })
     .catch((err) => {

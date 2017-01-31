@@ -1,6 +1,7 @@
 import * as path from 'path'
 import * as fs from 'fs'
 import { isAbsolute, writeSync } from '../fileUtils'
+import { colors } from '../vendor'
 import Action from '../Action'
 
 export default class MinifyCommand {
@@ -63,6 +64,6 @@ class MinifyAction extends Action {
     const result = uglify.minify(code, opts)
     writeSync(dest, result.code)
     writeSync(destSourceMap, result.map)
-    console.info('.. finished in %s ms.', Date.now()-t0)
+    console.info(colors.green('..finished in %s ms.'), Date.now()-t0)
   }
 }
