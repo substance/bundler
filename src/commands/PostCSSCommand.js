@@ -48,11 +48,12 @@ class PostCSSAction extends Action {
     const src = this.src
     const dest = this.dest
     // const opts = this.opts
-    const plugins = [postcssImport({
+    const plugins = this.opts.plugins || []
+    plugins.unshift(postcssImport({
       onImport: (files) => {
         this._onImport(files)
       }
-    })]
+    }))
     if (this.opts.variables) {
       plugins.push(postcssVariables())
     }
