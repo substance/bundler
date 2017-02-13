@@ -3,6 +3,7 @@ var debug = require('debug')
 var express = require('express')
 var fse = require('fs-extra')
 var glob = require('glob')
+var minimatch = require('minimatch')
 var yargs = require('yargs')
 
 var acorn = require('acorn')
@@ -45,6 +46,7 @@ module.exports = {
   express: express,
   fse: fse,
   glob: glob,
+  minimatch: minimatch,
   acorn: acorn,
   estreeWalker: estreeWalker,
   MagicString: MagicString,

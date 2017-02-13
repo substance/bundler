@@ -1,4 +1,5 @@
 import { isAbsolute } from '../fileUtils'
+import { minimatch } from '../vendor'
 const Module = require('module')
 const path = require('path')
 const fs = require('fs')
@@ -12,7 +13,18 @@ const DOT = '.'.charCodeAt(0)
 export default function resolve(opts) {
   opts = opts || {}
   const alias = opts.alias || {}
-  const ignore = opts.ignore || []
+  const ignore = (opts.ignore || []).map((pattern) => {
+    // is glob pattern?
+    if (pattern.indexOf('*') > -1) {
+      return (f) => {
+        let result = minimatch(f, pattern) || minimatch(path.basename(f), pattern)
+        // console.log('#### %s?', pattern, f, result)
+        return result
+      }
+    } else {
+      return f => f === pattern
+    }
+  })
   const cjs = {}
   if (opts.cjs) {
     opts.cjs.forEach(function(m) {
@@ -36,10 +48,18 @@ export default function resolve(opts) {
         // console.warn('FIXME: resolve-plugin.resolveId(%s, %s)', importee, importer)
         return null
       }
-      if (ignore.indexOf(importee) > -1) {
-        // console.log('## ignoring %s', importee)
-        return EMPTY_ID
+
+      if (ignore.length > 0) {
+        for (let i = 0; i < ignore.length; i++) {
+          if (ignore[i](importee)) {
+            return EMPTY_ID
+          }
+        }
       }
+      // if (ignore.indexOf(importee) > -1) {
+      //   // console.log('## ignoring %s', importee)
+      //   return EMPTY_ID
+      // }
       // process relative imports
       if (importee.charCodeAt(0) === DOT) {
         try {
