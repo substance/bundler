@@ -64,7 +64,8 @@ export default function resolve(opts) {
       if (importee.charCodeAt(0) === DOT) {
         try {
           // console.log('.... resolving relatively: %s from %s', importee, importer)
-          return require.resolve(path.join(path.dirname(importer), importee))
+          let p = require.resolve(path.join(path.dirname(importer), importee))
+          return _withExtension(p)
         } catch (err) {
           return null
         }
@@ -89,14 +90,14 @@ export default function resolve(opts) {
           if (entry) {
             let p = path.join(path.dirname(pkgPathAbs), entry)
             // console.log('.... resolved via package jsnext:main', p)
-            return p
+            return _withExtension(p)
           }
         }
       }
       let p = Module._findPath(importee, paths, false) || null
       if (p) {
         // console.log('.... resolved', p)
-        return p
+        return _withExtension(p)
       }
     },
     load: function(id) {
@@ -105,4 +106,12 @@ export default function resolve(opts) {
       }
     }
   }
+}
+
+function _withExtension(p) {
+  if (p) {
+    let ext = path.extname(p)
+    if (!ext) p = p + '.js'
+  }
+  return p
 }
