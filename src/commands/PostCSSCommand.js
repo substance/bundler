@@ -76,14 +76,17 @@ class PostCSSAction extends Action {
       }
       plugins.push(postcssReporter())
     }
-
-    const css = fs.readFileSync(this.src, 'utf8')
-    return postcss(plugins)
-    .process(css, {
+    const postcssOpts = {
       from: src,
       to: dest,
       map: { inline: false }
-    })
+    }
+    if (this.opts.parser) {
+      postcssOpts.parser = this.opts.parser
+    }
+    const css = fs.readFileSync(this.src, 'utf8')
+    return postcss(plugins)
+    .process(css, postcssOpts)
     .then(function (result) {
       writeSync(dest+'.map', JSON.stringify(result.map))
       writeSync(dest, result.css)
