@@ -77,8 +77,8 @@ export default class Bundler extends EventEmitter {
     this._schedule(new RemoveCommand(rmPath))
   }
 
-  minify(src) {
-    this._schedule(new MinifyCommand(src))
+  minify(src, opts) {
+    this._schedule(new MinifyCommand(src, opts))
   }
 
   task(name, deps, fn) {
