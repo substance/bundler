@@ -1,6 +1,9 @@
 import { EventEmitter } from 'events'
 import * as path from 'path'
-import { isFunction, uniq, express } from './vendor'
+import {
+  isFunction, uniq, express,
+  colors
+ } from './vendor'
 import { writeSync as _writeSync } from './fileUtils'
 import Watcher from './Watcher'
 
@@ -43,6 +46,7 @@ export default class Bundler extends EventEmitter {
     // flags
     this._started = false
     this._running = false
+    this._firstRun = true
 
     process.on('SIGINT', function() {
       process.exit(0)
@@ -267,9 +271,19 @@ export default class Bundler extends EventEmitter {
     }
 
     function _catch(err) {
-      if (err.stack) console.error(err.stack)
-      else console.error(err.toString())
-      _next()
+      if (err.stack) {
+        console.error(colors.red('\nError during execution of Command '), colors.white(action.name))
+        console.error(colors.red(err.toString()))
+        console.error('Stacktrace:')
+        console.error(err.stack)
+      } else {
+        console.error(err.toString())
+      }
+      if (self._firstRun) {
+        process.exit(1)
+      } else {
+        _next()
+      }
     }
   }
 
@@ -278,6 +292,7 @@ export default class Bundler extends EventEmitter {
       this._next()
     } else {
       this._running = false
+      this._firstRun = false
       this.emit('done')
     }
   }

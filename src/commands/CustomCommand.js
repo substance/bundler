@@ -26,6 +26,11 @@ export default class CustomCommand {
     return this.description
   }
 
+  get name() {
+    return 'custom'
+  }
+
+
   execute(bundler) {
     if (this.src && isArray(this.src)) {
       return this._executeWithCollection(bundler)

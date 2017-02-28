@@ -17,6 +17,10 @@ export default class MinifyCommand {
     return ['MinifyCommand', this.src].join(' ')
   }
 
+  get name() {
+    return 'minify'
+  }
+
   execute(bundler) {
     let src = this.src
     if (!isAbsolute(src)) src = path.join(bundler.rootDir, src)

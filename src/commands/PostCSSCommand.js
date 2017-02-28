@@ -20,6 +20,10 @@ export default class PostCSSCommand {
     return ['PostCSSCommand', this.src, this.dest]
   }
 
+  get name() {
+    return 'css'
+  }
+
   execute(bundler) {
     let src = this.src
     let dest = this.dest

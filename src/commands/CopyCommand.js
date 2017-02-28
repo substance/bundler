@@ -43,6 +43,10 @@ export default class CopyCommand {
     return ['CopyCommand', this.src, '->', this.dest].join(' ')
   }
 
+  get name() {
+    return 'copy'
+  }
+
   execute(bundler) {
     console.info('Copy:', this.src, '->', this.dest)
     const rootDir = bundler.rootDir

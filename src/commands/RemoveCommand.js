@@ -12,6 +12,11 @@ export default class RemoveCommand {
     return ['Remove:', this.rmPath].join(' ')
   }
 
+  get name() {
+    return 'rm'
+  }
+
+
   execute(bundler) {
     let rmPath = this.rmPath
     if (rmPath[0] === '.') {

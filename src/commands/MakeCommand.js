@@ -13,6 +13,10 @@ class MakeCommand {
     return ['Make', this.module].concat(this.tasks).join(' ')
   }
 
+  get name() {
+    return 'make'
+  }
+
   execute(bundler) {
     console.info(this.id)
 

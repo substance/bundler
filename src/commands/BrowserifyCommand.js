@@ -38,6 +38,10 @@ export default class BrowserifyCommand {
     return ['BrowserifyCommand', this.src, this.dest ].join('')
   }
 
+  get name() {
+    return 'browserify'
+  }
+
   execute(bundler) {
     let src = this.src
     if (!isAbsolute(src)) src = path.join(bundler.rootDir, src)
