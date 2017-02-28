@@ -37,6 +37,7 @@ var pluginutils = require('rollup-pluginutils/dist/pluginutils.cjs.js')
 var postcss = require('postcss')
 var postcssImport = require('postcss-import')
 var postcssVariables = require('postcss-css-variables')
+var postcssReporter = require('postcss-reporter')
 
 var colors = require('colors/safe')
 
@@ -68,5 +69,6 @@ module.exports = {
   postcss: postcss,
   postcssImport: postcssImport,
   postcssVariables: postcssVariables,
+  postcssReporter: postcssReporter,
   colors: colors
 }

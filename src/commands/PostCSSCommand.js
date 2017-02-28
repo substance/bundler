@@ -1,6 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { postcss, postcssImport, postcssVariables, colors } from '../vendor'
+import {
+    postcss, postcssImport,
+    postcssVariables, postcssReporter,
+    colors
+  } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import Action from '../Action'
 
@@ -48,14 +52,25 @@ class PostCSSAction extends Action {
     const src = this.src
     const dest = this.dest
     // const opts = this.opts
-    const plugins = this.opts.plugins || []
-    plugins.unshift(postcssImport({
-      onImport: (files) => {
-        this._onImport(files)
+    const plugins = this.opts.plugins.slice() || []
+    // allow to deactivate the use of predefined plugins
+    // so that can use other import plugins such
+    // as postcss-sassy-import, for instance
+    if (this.opts.builtins !== false) {
+      if (this.opts.import !== false) {
+        // make sure that postcss-import is the first one
+        plugins.unshift(postcssImport({
+          onImport: (files) => {
+            this._onImport(files)
+          }
+        }))
       }
-    }))
-    if (this.opts.variables) {
-      plugins.push(postcssVariables())
+      if (this.opts.variables) {
+        plugins.push(postcssVariables({
+          throwError: true
+        }))
+      }
+      plugins.push(postcssReporter())
     }
 
     const css = fs.readFileSync(this.src, 'utf8')
