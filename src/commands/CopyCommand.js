@@ -59,7 +59,6 @@ export default class CopyCommand {
         let idx = this.src.indexOf('*')
         let pre = this.src.slice(0, idx)
         this.opts.root = path.dirname(pre)
-        console.log('Using implicit root', this.opts.root)
       }
       return this._executeWithGlob(bundler)
     }
