@@ -56,7 +56,7 @@ class PostCSSAction extends Action {
     const src = this.src
     const dest = this.dest
     // const opts = this.opts
-    const plugins = this.opts.plugins.slice() || []
+    const plugins = this.opts.plugins ? this.opts.plugins.slice() : []
     // allow to deactivate the use of predefined plugins
     // so that can use other import plugins such
     // as postcss-sassy-import, for instance
