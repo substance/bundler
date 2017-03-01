@@ -25,7 +25,6 @@ export default class RollupCommand {
       this.targets = [opts.target]
       delete opts.target
     } else {
-      console.warn('DEPRECATED: use { target: {...} } instead.')
       this.targets = [{
         dest: opts.dest,
         format: opts.format,
