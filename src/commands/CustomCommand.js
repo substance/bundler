@@ -48,7 +48,7 @@ export default class CustomCommand {
     if (dest && !isAbsolute(dest)) dest = path.join(bundler.rootDir, dest)
     const action = new CustomAction(this._id, this.description, [src], [dest], this._execute)
     bundler._registerAction(action)
-    return action.execute()
+    return action.execute(bundler)
   }
 
   _executeWithGlob(bundler) {
@@ -64,7 +64,7 @@ export default class CustomCommand {
       })
       const action = new CustomAction(this._id, this.description, files, [dest], this._execute)
       bundler._registerAction(action)
-      let result = action.execute()
+      let result = action.execute(bundler)
       // TODO: need to rework the whole dynamic registry stuff
       watcher.watch(pattern, {
         add: function(file) {
@@ -102,7 +102,7 @@ export default class CustomCommand {
       })
       const action = new CustomAction(this._id, this.description, files, [dest], this._execute)
       bundler._registerAction(action)
-      let result = action.execute()
+      let result = action.execute(bundler)
       patterns.forEach(function(pattern) {
         // TODO: need to rework the whole dynamic registry stuff
         watcher.watch(pattern, {
@@ -124,6 +124,7 @@ export default class CustomCommand {
 }
 
 class CustomAction extends Action {
+
   constructor(id, description, inputs, outputs, _execute) {
     super(inputs.filter(Boolean), outputs.filter(Boolean))
     this._id = id
