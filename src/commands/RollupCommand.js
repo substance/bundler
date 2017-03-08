@@ -235,8 +235,8 @@ class RollupAction extends Action {
     return ['Rollup:', this.src, '->'].concat(this._getBundles().join('|')).join(' ')
   }
 
-  execute() {
-    console.info(this.id)
+  execute(bundler) {
+    bundler._info(this.id)
     const t0 = Date.now()
     const cache = this._cache
     const src = this.src
@@ -251,8 +251,8 @@ class RollupAction extends Action {
       treeshake: true,
       cache: cache,
       onwarn: (warning) => {
-        console.info(colors.yellow(warning.message))
-        console.info(colors.grey(warning.url))
+        bundler._info(colors.yellow(warning.message))
+        bundler._info(colors.grey(warning.url))
       }
     }, this.opts)
 
@@ -296,7 +296,7 @@ class RollupAction extends Action {
           ].join('')
         )
       })
-      console.info(colors.green('..finished in %s ms.'), Date.now()-t0)
+      bundler._info(colors.green('..finished in %s ms.'), Date.now()-t0)
       this._updateWatchers(bundle)
     })
     .catch((err) => {

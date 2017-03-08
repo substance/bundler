@@ -55,39 +55,39 @@ export default class Bundler extends EventEmitter {
   }
 
   make(other, ...tasks) {
-    this._schedule(new MakeCommand(other, tasks))
+    return this._scheduleCommand(new MakeCommand(other, tasks))
   }
 
   copy(src, dest, opts) {
-    this._schedule(new CopyCommand(src, dest, opts))
+    return this._scheduleCommand(new CopyCommand(src, dest, opts))
   }
 
   custom(description, params) {
-    this._schedule(new CustomCommand(description, params))
+    return this._scheduleCommand(new CustomCommand(description, params))
   }
 
   exec(cmd, options) {
-    this._schedule(new ExecCommand(cmd, options))
+    return this._scheduleCommand(new ExecCommand(cmd, options))
   }
 
   js(src, opts) {
-    this._schedule(new RollupCommand(src, opts))
+    return this._scheduleCommand(new RollupCommand(src, opts))
   }
 
   browserify(src, opts) {
-    this._schedule(new BrowserifyCommand(src, opts))
+    return this._scheduleCommand(new BrowserifyCommand(src, opts))
   }
 
   css(src, dest, opts) {
-    this._schedule(new PostCSSCommand(src, dest, opts))
+    return this._scheduleCommand(new PostCSSCommand(src, dest, opts))
   }
 
   rm(rmPath) {
-    this._schedule(new RemoveCommand(rmPath))
+    return this._scheduleCommand(new RemoveCommand(rmPath))
   }
 
   minify(src, opts) {
-    this._schedule(new MinifyCommand(src, opts))
+    return this._scheduleCommand(new MinifyCommand(src, opts))
   }
 
   task(name, deps, fn) {
@@ -122,8 +122,19 @@ export default class Bundler extends EventEmitter {
     _writeSync(dest, buf)
   }
 
+  _scheduleCommand(cmd) {
+    const entry = this._schedule(cmd)
+    return entry.promise
+  }
+
+  _info(...args) {
+    if (!this.silent) {
+      console.info.apply(console, args)
+    }
+  }
+
   _hasScheduledActions() {
-    return this._schedule.length > 0
+    return this._scheduledActions.length > 0
   }
 
   _registerAction(action) {
@@ -204,7 +215,7 @@ export default class Bundler extends EventEmitter {
   }
 
   _startServing() {
-    console.info('Starting server on port %s...', this._serverPort)
+    this._info('Starting server on port %s...', this._serverPort)
     this.server.listen(this._serverPort)
   }
 
@@ -216,7 +227,7 @@ export default class Bundler extends EventEmitter {
     if (scheduledIds[id]) {
       let idx = -1
       for (let i = 0; i < schedule.length; i++) {
-        if (schedule[i].id === id) {
+        if (schedule[i].action.id === id) {
           idx = i
           break
         }
@@ -227,13 +238,21 @@ export default class Bundler extends EventEmitter {
       }
       schedule.splice(idx, 1)
     }
+
     log('Scheduling action: %s', id)
+    const entry = { action }
+    // return a promise so that you
+    // can do things such as b.js().then(...)
+    entry.promise = new Promise((resolve, reject) => {
+      entry.resolve = resolve
+      entry.reject = reject
+    })
     if (!this._started) {
-      schedule.push(action)
+      schedule.push(entry)
       scheduledIds[id] = true
     } else {
       process.nextTick(function() {
-        schedule.push(action)
+        schedule.push(entry)
         scheduledIds[id] = true
         if (!this._running) {
           this._running = true
@@ -241,7 +260,7 @@ export default class Bundler extends EventEmitter {
         }
       }.bind(this))
     }
-    return action
+    return entry
   }
 
   _start() {
@@ -252,7 +271,8 @@ export default class Bundler extends EventEmitter {
 
   _next() {
     const self = this
-    const action = this._scheduledActions.shift()
+    const entry = this._scheduledActions.shift()
+    const action = entry.action
     const id = action.id
     const _step = this._step.bind(this)
     delete this._scheduledActionIds[id]
@@ -272,6 +292,7 @@ export default class Bundler extends EventEmitter {
           self._schedule(action)
         })
       })
+      entry.resolve()
       process.nextTick(_step)
     }
 
@@ -287,6 +308,7 @@ export default class Bundler extends EventEmitter {
       if (self._firstRun) {
         process.exit(1)
       } else {
+        entry.reject(err)
         _next()
       }
     }

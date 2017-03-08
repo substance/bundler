@@ -50,8 +50,8 @@ class MinifyAction extends Action {
     return ['Minify:', this.src].join(' ')
   }
 
-  execute() {
-    console.info(this.id)
+  execute(bundler) {
+    bundler._info(this.id)
     // uglify can not be bundled as it does dynamic file loading
     // and we also don't ship it, thus it is required as late as possible
     const uglify = require('uglify-js-harmony')
@@ -76,6 +76,6 @@ class MinifyAction extends Action {
     if (this.debug) {
       writeSync(destSourceMap, result.map)
     }
-    console.info(colors.green('..finished in %s ms.'), Date.now()-t0)
+    bundler._info(colors.green('..finished in %s ms.'), Date.now()-t0)
   }
 }

@@ -50,8 +50,8 @@ class PostCSSAction extends Action {
     return ['PostCSS:', this.src, '->', this.dest].join('')
   }
 
-  execute() {
-    console.info(this.id)
+  execute(bundler) {
+    bundler._info(this.id)
     const t0 = Date.now()
     const src = this.src
     const dest = this.dest
@@ -90,7 +90,7 @@ class PostCSSAction extends Action {
     .then(function (result) {
       writeSync(dest+'.map', JSON.stringify(result.map))
       writeSync(dest, result.css)
-      console.info(colors.green('..finished in %s ms.'), Date.now()-t0)
+      bundler._info(colors.green('..finished in %s ms.'), Date.now()-t0)
     })
   }
 

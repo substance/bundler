@@ -37,7 +37,7 @@ class ExecAction extends Action {
     return ['Exec: ', this.cmd].join('')
   }
 
-  execute() {
+  execute(bundler) {
     const exec = require('child_process').exec
     const cmd = this.cmd
     const options = this.options
@@ -45,7 +45,7 @@ class ExecAction extends Action {
       throw new Error('Directory does not exist! ' + options.cwd)
     }
     return new Promise((resolve, reject) => {
-      console.info(this.descr)
+      bundler._info(this.descr)
       exec(cmd, options, (err) => {
         if (err) {
           reject(new Error(err))

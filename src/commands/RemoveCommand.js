@@ -23,7 +23,7 @@ export default class RemoveCommand {
       rmPath = path.join(bundler.rootDir, rmPath)
     }
     if (fs.existsSync(rmPath)) {
-      console.info(this.id)
+      bundler._info(this.id)
       fse.removeSync(this.rmPath)
     }
   }

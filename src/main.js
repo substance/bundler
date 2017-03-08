@@ -21,28 +21,33 @@ let opts = {
 let bundler = new Bundler(opts)
 bundler.yargs = yargs
 bundler.argv = argv
+bundler.autorun = true
 
 const tasks = argv._
 
 function _start() {
-  if(showTasks) {
-    console.info('Available tasks:')
-    console.info(Object.keys(bundler._tasks).map(function(name){ return "  - "+name }).join('\n'))
-    return
-  }
-  if (tasks.length > 0) {
-    bundler._runTasks(tasks)
-  } else if (bundler._tasks['default']) {
-    bundler._runTask('default')
-  }
-  if (!bundler._hasScheduledActions()) {
-    console.error('No action. ')
+  if (bundler.autorun) {
+    if(showTasks) {
+      console.info('Available tasks:')
+      console.info(Object.keys(bundler._tasks).map(function(name){ return "  - "+name }).join('\n'))
+      return
+    }
+    if (tasks.length > 0) {
+      bundler._runTasks(tasks)
+    } else if (bundler._tasks['default']) {
+      bundler._runTask('default')
+    }
+    if (!bundler._hasScheduledActions()) {
+      console.error('No action. ')
+    }
   }
   bundler._start()
 }
 
 process.once('beforeExit', _start)
 bundler.once('done', function() {
+  if (!bundler.autorun) return
+
   var watch = bundler.opts.watch
   var serve = bundler.opts.serve
   var remote = argv.remote

@@ -139,8 +139,8 @@ class CustomAction extends Action {
     return this._description
   }
 
-  execute() {
-    console.info(this._description)
+  execute(bundler) {
+    bundler._info(this._description)
     var t0 = Date.now()
     this.outputs.forEach(function(f) {
       fse.ensureDirSync(path.dirname(f))
@@ -150,7 +150,7 @@ class CustomAction extends Action {
     })
     return Promise.resolve(this._execute(inputs))
     .then(function() {
-      console.info(colors.green('..finished in %s ms.'), Date.now()-t0)
+      bundler._info(colors.green('..finished in %s ms.'), Date.now()-t0)
     })
   }
 }

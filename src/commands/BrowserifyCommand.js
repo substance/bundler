@@ -67,8 +67,8 @@ class BrowserifyAction extends Action {
     return ['Browserify:', this.src, '->', this.dest].join(' ')
   }
 
-  execute() {
-    console.info(this.id)
+  execute(bundler) {
+    bundler._info(this.id)
     const options = this.options
     var t0 = Date.now()
     return new Promise((resolve, reject) => {
@@ -132,7 +132,7 @@ class BrowserifyAction extends Action {
         }
         let absDest = isAbsolute(this.dest) ? this.dest : path.join(this.rootDir, this.dest)
         writeSync(absDest, code)
-        console.info(colors.green('..finished in %s ms'), Date.now()-t0)
+        bundler._info(colors.green('..finished in %s ms'), Date.now()-t0)
         resolve()
       })
     })

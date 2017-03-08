@@ -18,7 +18,7 @@ class MakeCommand {
   }
 
   execute(bundler) {
-    console.info(this.id)
+    bundler._info(this.id)
 
     const tasks = this.tasks
     const module = this.module

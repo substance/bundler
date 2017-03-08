@@ -48,7 +48,7 @@ export default class CopyCommand {
   }
 
   execute(bundler) {
-    console.info('Copy:', this.src, '->', this.dest)
+    bundler._info('Copy:', this.src, '->', this.dest)
     const rootDir = bundler.rootDir
     let dest = this.dest
     if (!isAbsolute(dest)) dest = path.join(rootDir, dest)
@@ -156,8 +156,8 @@ class CopyAction extends Action {
     return ['Copy:',this.src,'->',this.dest].join(' ')
   }
 
-  execute() {
-    console.info(this.id)
+  execute(bundler) {
+    bundler._info(this.id)
     this._execute()
   }
 
