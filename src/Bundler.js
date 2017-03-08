@@ -9,6 +9,7 @@ import Watcher from './Watcher'
 
 import CopyCommand from './commands/CopyCommand'
 import CustomCommand from './commands/CustomCommand'
+import ExecCommand from './commands/ExecCommand'
 import MakeCommand from './commands/MakeCommand'
 import MinifyCommand from './commands/MinifyCommand'
 import RemoveCommand from './commands/RemoveCommand'
@@ -63,6 +64,10 @@ export default class Bundler extends EventEmitter {
 
   custom(description, params) {
     this._schedule(new CustomCommand(description, params))
+  }
+
+  exec(cmd, options) {
+    this._schedule(new ExecCommand(cmd, options))
   }
 
   js(src, opts) {
