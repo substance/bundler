@@ -205,11 +205,13 @@ function _compileExternals(externals) {
   }
 
   function _normalizePattern(p) {
-    if (!isAbsolute(p)) {
-      return new RegExp("^"+p)
-    } else {
-      return p
-    }
+    // this is causing troubles
+    // if (!isAbsolute(p)) {
+    //   return new RegExp("^"+p)
+    // } else {
+    //   return p
+    // }
+    return p
   }
 }
 

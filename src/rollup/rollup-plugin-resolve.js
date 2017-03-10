@@ -34,12 +34,12 @@ export default function resolve(opts) {
   return {
     name: "resolve",
     resolveId: function(importee, importer) {
-      // 'claim' loading
+      // console.log('### resolve', importee, importer)
       // TODO: really?
       if (importee === EMPTY_ID) return EMPTY_ID
       // ignore IDs with null character, these belong to other plugins
       if (/\0/.test(importee)) return null
-      // disregard entry module
+      // skip entry module
       if (!importer) return null
       // this is fishy
       if (!isAbsolute(importer)) {
