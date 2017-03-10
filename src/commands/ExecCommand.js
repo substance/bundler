@@ -19,7 +19,7 @@ export default class ExecCommand {
   execute(bundler) {
     const action = new ExecAction(this)
     bundler._registerAction(action)
-    return action.execute()
+    return action.execute(bundler)
   }
 }
 
