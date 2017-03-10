@@ -1,7 +1,7 @@
 // enabling source maps so that errors in bundler can be traced
 require('source-map-support').install()
 
-import { yargs } from './vendor'
+import { yargs, colors } from './vendor'
 import Bundler from './Bundler'
 
 let argv = yargs
@@ -28,8 +28,17 @@ const tasks = argv._
 function _start() {
   if (bundler.autorun) {
     if(showTasks) {
+      const tasks = bundler._tasks
       console.info('Available tasks:')
-      console.info(Object.keys(bundler._tasks).map(function(name){ return "  - "+name }).join('\n'))
+      console.info(Object.keys(tasks).map((name) => {
+        const task = tasks[name]
+        const frags = ["  - ", colors.green(name)]
+        if (task.description) {
+          frags.push(colors.white(": "))
+          frags.push(task.description)
+        }
+        return frags.join('')
+      }).join('\n'))
       return
     }
     if (tasks.length > 0) {

@@ -6,7 +6,7 @@ import {
  } from './vendor'
 import { writeSync as _writeSync } from './fileUtils'
 import Watcher from './Watcher'
-
+import Task from './Task'
 import CopyCommand from './commands/CopyCommand'
 import CustomCommand from './commands/CustomCommand'
 import ExecCommand from './commands/ExecCommand'
@@ -96,7 +96,9 @@ export default class Bundler extends EventEmitter {
       fn = deps
       deps = []
     }
-    this._tasks[name] = { fn: fn, deps: deps }
+    const task = new Task(name, fn, deps)
+    this._tasks[name] = task
+    return task
   }
 
   setServerPort(port) {
