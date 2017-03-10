@@ -11,7 +11,7 @@ module.exports = function(b, options = {}) {
       return new Promise(function(resolve) {
         let fails = 0
         const server = new karma.Server({
-          configFile: __dirname + '/karma.conf.js',
+          configFile: configFile,
           browsers,
           singleRun,
           failOnEmptyTestSuite
