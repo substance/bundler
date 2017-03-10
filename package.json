@@ -47,8 +47,8 @@
     "yargs": "^4.8.1"
   },
   "files": [
-    "dist",
     "README.md",
-    "util/bundleVendor.js"
+    "dist",
+    "extensions"
   ]
 }
