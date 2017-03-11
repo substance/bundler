@@ -26,7 +26,7 @@ class MakeCommand {
     if (isAbsolute(module)) {
       makefile = module
     } else {
-      makefile = path.join(bundler.rootDir, 'node_modules', module, 'make.js')
+      makefile = require.resolve(module+'/make.js')
     }
     if (!fs.existsSync(makefile)) {
       throw new Error('Could not find "make.js" in module "%s"', module)
