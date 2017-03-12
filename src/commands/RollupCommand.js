@@ -1,6 +1,6 @@
 import * as path from 'path'
 import {
-  rollup, commonjs, json,
+  glob, rollup, commonjs, json,
   sourcemaps, isArray, isPlainObject,
   colors
 } from '../vendor'
@@ -10,14 +10,32 @@ import buble from '../rollup/rollup-plugin-buble'
 import eslintPlugin from '../rollup/rollup-plugin-eslint'
 import istanbulPlugin from '../rollup/rollup-plugin-istanbul'
 import cleanup from '../rollup/rollup-plugin-cleanup'
+import rollupGlob from '../rollup/rollup-glob'
 import Action from '../Action'
 import log from '../log'
+
+const ZERO = "\0".charCodeAt(0)
 
 export default class RollupCommand {
 
   constructor(src, opts) {
+    if (!src) throw new Error("'src' is mandatory.")
+    // rollup does not have a good behavior with src being a glob pattern.
+    // for that purpose we detect if src contains glob pattern
+    // and then use a generated index file as entry
+    let srcPattern = null
+    if(glob.hasMagic(src)) {
+      srcPattern = src
+      src = rollupGlob.ENTRY
+    }
     this.src = src
 
+    // in rollup external and globals are often
+    // redundant, thus we added an option to specify
+    // externals as object, like you would define globals
+    // This of course only makes sense for single-target builds
+    // In multi-target builds you should define globals
+    // in the target specification.
     let globals = Object.assign({}, opts.globals)
     if (opts.external && isPlainObject(opts.external)) {
       Object.assign(globals, opts.external)
@@ -111,6 +129,10 @@ export default class RollupCommand {
     // Plugins
 
     let plugins = []
+
+    // if the src contains a glob pattern we use rollupGlob to generate the entry
+    if (srcPattern) plugins.push(rollupGlob({pattern:srcPattern}))
+
     // resolve plugin takes care of finding imports in 'node_modules'
     // NOTE: better this be the first and does everything related to resolving
     // i.e., aliases, ignores etc.
@@ -166,7 +188,9 @@ export default class RollupCommand {
 
   execute(bundler) {
     let src = this.src
-    if (!isAbsolute(src)) src = path.join(bundler.rootDir, src)
+    // turn src into an absolute path, but only
+    // if it does not start with "\0" as it used by rollup-glob.ENTRY
+    if (src.charCodeAt(0)!==ZERO && !isAbsolute(src)) src = path.join(bundler.rootDir, src)
     const plugins = this.plugins
     const targets = this.targets
     const opts = this.opts
