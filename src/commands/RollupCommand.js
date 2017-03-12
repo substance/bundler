@@ -1,8 +1,9 @@
 import * as path from 'path'
-import { rollup, commonjs, json,
-         sourcemaps, isArray, isString, isPlainObject,
-         colors
-       } from '../vendor'
+import {
+  rollup, commonjs, json,
+  sourcemaps, isArray, isPlainObject,
+  colors
+} from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import resolve from '../rollup/rollup-plugin-resolve'
 import buble from '../rollup/rollup-plugin-buble'
@@ -17,6 +18,12 @@ export default class RollupCommand {
   constructor(src, opts) {
     this.src = src
 
+    let globals = Object.assign({}, opts.globals)
+    if (opts.external && isPlainObject(opts.external)) {
+      Object.assign(globals, opts.external)
+      opts.external = Object.keys(opts.external)
+    }
+
     // parse targets
     if (opts.targets) {
       this.targets = opts.targets
@@ -28,26 +35,18 @@ export default class RollupCommand {
       this.targets = [{
         dest: opts.dest,
         format: opts.format,
+        globals: globals,
         moduleName: opts.moduleName,
         sourceMapRoot: opts.sourceMapRoot,
         sourceMapPrefix: opts.sourceMapPrefix,
       }]
       delete opts.dest
       delete opts.format
+      delete opts.globals
       delete opts.moduleName
       delete opts.sourceMapRoot
       delete opts.sourceMapPrefix
     }
-
-    // externals: modules which are not bundled
-    const res = _compileExternals(opts.external)
-    opts.external = res.external
-    let globals = Object.assign(res.globals, opts.globals || {})
-    this.targets.forEach((target) => {
-      if (target.format === 'umd' || target.format === 'iife') {
-        target.globals = globals
-      }
-    })
 
     // we provide a custom resolver, taking care of
     // pretty much all resolving (relative and node)
@@ -176,45 +175,6 @@ export default class RollupCommand {
     return action.execute(bundler)
   }
 }
-
-function _compileExternals(externals) {
-  if (!externals) return { globals: {}, external: null }
-  let globals = {}
-  if (isArray(externals)) {
-    externals = externals.map(_normalizePattern)
-  } else if (isPlainObject(externals)) {
-    let obj = externals
-    externals = Object.keys(obj)
-    Object.assign(globals, obj)
-  }
-  return {
-    external: function(id) {
-      for (var i = 0; i < externals.length; i++) {
-        const e = externals[i]
-        if (isString(e)) {
-          if (id === e) {
-            return true
-          }
-        } else if (e.exec(id)) {
-          return true
-        }
-      }
-      return false
-    },
-    globals: globals
-  }
-
-  function _normalizePattern(p) {
-    // this is causing troubles
-    // if (!isAbsolute(p)) {
-    //   return new RegExp("^"+p)
-    // } else {
-    //   return p
-    // }
-    return p
-  }
-}
-
 
 class RollupAction extends Action {
 
