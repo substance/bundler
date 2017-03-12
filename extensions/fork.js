@@ -1,12 +1,21 @@
 module.exports = function(b, cmd, ...args) {
   b.custom(`Fork: ${cmd}`, {
     execute() {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         const cp = require('child_process')
         const child = cp.fork(cmd, args)
-        child.on('close', (code, signal) => {
-          console.info('..finished', code, signal)
-          resolve()
+        child.on('message', function(msg) {
+          if (msg === 'done') { resolve() }
+        })
+        child.on('error', function(error) {
+          reject(new Error(error))
+        })
+        child.on('close', function(exitCode) {
+          if (exitCode !== 0) {
+            process.exit(exitCode)
+          } else {
+            resolve()
+          }
         })
       })
     }
