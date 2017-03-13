@@ -1,4 +1,4 @@
-import { glob } from '../vendor'
+import { glob, isArray } from '../vendor'
 
 const ENTRY = '\0rollup-glob:ENTRY'
 
@@ -12,7 +12,15 @@ export default function rollupGlob(options = {}) {
     },
     load (id) {
       if (id === ENTRY) {
-        let index = glob.sync(pattern).map((f) => {
+        let files = []
+        if (isArray(pattern)) {
+          pattern.forEach((p) => {
+            files = files.concat(glob.sync(p))
+          })
+        } else {
+          files = glob.sync(pattern)
+        }
+        let index = files.map((f) => {
           return `import './${f}'`
         }).join('\n')
         return index

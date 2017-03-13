@@ -24,7 +24,7 @@ export default class RollupCommand {
     // for that purpose we detect if src contains glob pattern
     // and then use a generated index file as entry
     let srcPattern = null
-    if(glob.hasMagic(src)) {
+    if(isArray(src) || glob.hasMagic(src)) {
       srcPattern = src
       src = rollupGlob.ENTRY
     }
