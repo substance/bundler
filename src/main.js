@@ -4,30 +4,47 @@ require('source-map-support').install()
 import { yargs, colors } from './vendor'
 import Bundler from './Bundler'
 
-let argv = yargs
+const argv = yargs
   // use this to start watcher
+  .boolean('h').alias('h', 'help').default('h', false)
   .boolean('w').alias('w', 'watch').default('w', false)
   .boolean('s').alias('s', 'serve').default('s', false)
   .boolean('t').default('t', false)
   .argv
 
+const showHelp = argv.h
 const showTasks = argv.t
 
-let opts = {
+const bundler = new Bundler({
   watch: argv.watch,
   serve: argv.serve
-}
-
-let bundler = new Bundler(opts)
+})
 bundler.yargs = yargs
 bundler.argv = argv
 bundler.autorun = true
-
 const tasks = argv._
 
+bundler.usage = `
+  node make --help
+    shows this help
+
+  node make -t
+    shows a summary of all available tasks
+
+  node make [-w] [-s] ...<task>
+    runs one or multiple tasks and all their dependencies
+
+  Options:
+    -w:     watch for file changes
+    -s:     start http server
+`
 function _start() {
   if (bundler.autorun) {
-    if(showTasks) {
+    if(showHelp) {
+      console.info('Usage:')
+      console.info(bundler.usage)
+      return
+    } else if(showTasks) {
       const tasks = bundler._tasks
       console.info('Available tasks:')
       console.info(Object.keys(tasks).map((name) => {
@@ -55,12 +72,10 @@ function _start() {
 
 process.once('beforeExit', _start)
 bundler.once('done', function() {
-  if (!bundler.autorun) return
-
-  var watch = bundler.opts.watch
-  var serve = bundler.opts.serve
-  var remote = argv.remote
-  if (showTasks) return
+  if (showHelp || showTasks || !bundler.autorun) return
+  const watch = bundler.opts.watch
+  const serve = bundler.opts.serve
+  const remote = argv.remote
   if (serve) {
     bundler._startServing()
   }
