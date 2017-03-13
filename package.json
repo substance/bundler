@@ -5,8 +5,9 @@
   "repository": "https.//github.com/substance/bundler.git",
   "main": "dist/bundler.js",
   "scripts": {
-    "build": "node make",
     "prepublish": "node make",
+    "lint": "eslint -c .eslintrc.js src extensions util",
+    "build": "node make",
     "start": "node make -w"
   },
   "author": "Oliver Buchtala",
