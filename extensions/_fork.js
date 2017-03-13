@@ -1,4 +1,4 @@
-module.exports = function (cmd, ...args) {
+module.exports = function (cmd, args) {
   return new Promise((resolve, reject) => {
     const cp = require('child_process')
     const child = cp.fork(cmd, args)
