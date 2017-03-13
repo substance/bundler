@@ -1,9 +1,12 @@
-var fork = require('./_fork')
+var _fork = require('./_fork')
 
 module.exports = function(b, cmd, ...args) {
+  if (args.length === 1) {
+    args = args[0].split(/\s+/)
+  }
   b.custom(`Fork: ${cmd} ${args}`, {
     execute() {
-      return fork(cmd, args)
+      return _fork(cmd, args)
     }
   })
 }

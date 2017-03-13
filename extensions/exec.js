@@ -7,6 +7,9 @@ module.exports = function(b, cmd, ...args) {
   if (isPlainObject(args[0])) {
     options = args.shift()
   }
+  if (args.length === 1) {
+    args = args[0].split(/\s+/)
+  }
   b.custom(`Exec: ${cmd} ${args}`, {
     execute() {
       return _exec(cmd, options, args)
