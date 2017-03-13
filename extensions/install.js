@@ -1,12 +1,8 @@
+var isInstalled = require('../util/isInstalled')
 var _exec = require('./_exec')
-var Module = require('module')
 
 module.exports = function(b, moduleName, version) {
-  // install only if not yet installed
-  // TODO: we should compare the version if given
-  let lookupPaths = Module._nodeModulePaths(b.rootDir)
-  let modulePath = Module._findPath(moduleName, lookupPaths, false)
-  if (!modulePath) {
+  if (!isInstalled(moduleName, { rootDir: b.rootDir })) {
     const args = ['install']
     let moduleStr = moduleName
     if (version) {
