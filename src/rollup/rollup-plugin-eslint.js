@@ -1,6 +1,5 @@
 import * as path from 'path'
 import { pluginutils } from '../vendor'
-import { CLIEngine } from 'eslint'
 
 const DOT = ".".charCodeAt(0)
 
@@ -9,6 +8,7 @@ function normalizePath(id) {
 }
 
 export default function eslintPlugin(options = {}) {
+  const { CLIEngine } = require('eslint')
   const cli = new CLIEngine()
   let formatter = cli.getFormatter('stylish')
   const filter = pluginutils.createFilter(
