@@ -42,6 +42,16 @@ export default class RollupCommand {
       opts.external = Object.keys(opts.external)
     }
 
+    // NOTE: we must remove all externals which are ignored
+    // as we want to give 'ignore' a higher precedence
+    // rollup will not ask our resolver if it finds a matching
+    // external
+    if (opts.ignore && opts.ignore.length > 0) {
+      opts.external = opts.external.filter((ext) => {
+        return opts.ignore.indexOf(ext)<0
+      })
+    }
+
     // parse targets
     if (opts.targets) {
       this.targets = opts.targets
