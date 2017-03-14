@@ -11,7 +11,7 @@ module.exports = function(b, moduleName, version) {
     args.push(moduleStr)
     b.custom(`npm install: ${moduleStr}`, {
       execute() {
-        return _exec('npm', null, args)
+        return _exec('npm', args)
       }
     })
   } else {

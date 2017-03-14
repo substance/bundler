@@ -1,5 +1,4 @@
-module.exports = function (cmd, options, args) {
-  options = options || {}
+module.exports = function (cmd, args, options = {}) {
   // console.log('### _exec', cmd, options, args)
   const verbose = Boolean(options.verbose)
   const silent = Boolean(options.silent)
