@@ -4,7 +4,7 @@ import {
   isFunction, uniq, express,
   colors
  } from './vendor'
-import { writeSync as _writeSync } from './fileUtils'
+import { writeSync as _writeSync, isDirectory as _isDirectory } from './fileUtils'
 import Watcher from './Watcher'
 import Task from './Task'
 import CopyCommand from './commands/CopyCommand'
@@ -122,6 +122,10 @@ export default class Bundler extends EventEmitter {
 
   writeSync(dest, buf) {
     _writeSync(dest, buf)
+  }
+
+  isDirectory(p) {
+    return _isDirectory(p)
   }
 
   _scheduleCommand(cmd) {
