@@ -303,13 +303,15 @@ export default class Bundler extends EventEmitter {
     }
 
     function _catch(err) {
-      if (err.stack) {
-        console.error(colors.red('\nError during execution of Command '), colors.white(action.name))
-        console.error(colors.red(err.toString()))
-        console.error('Stacktrace:')
-        console.error(err.stack)
-      } else {
-        console.error(err.toString())
+      if (err) {
+        if (err.stack) {
+          console.error(colors.red('\nError during execution of Command '), colors.white(action.name))
+          console.error(colors.red(err.toString()))
+          console.error('Stacktrace:')
+          console.error(err.stack)
+        } else {
+          console.error(err.toString())
+        }
       }
       if (self._firstRun) {
         process.exit(1)
