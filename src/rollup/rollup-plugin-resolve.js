@@ -35,20 +35,19 @@ export default function resolve(opts) {
     name: "resolve",
     resolveId: function(importee, importer) {
       // console.log('### resolve', importee, importer)
-      // TODO: really?
       if (importee === EMPTY_ID) return EMPTY_ID
       // ignore IDs with null character, these belong to other plugins
       if (/\0/.test(importee)) return null
       // skip entry module
       if (!importer) return null
-      // this is fishy
+
       if (!isAbsolute(importer)) {
         // TODO: why is that so?
         // happens for instance with commonjs proxies
         // console.warn('FIXME: resolve-plugin.resolveId(%s, %s)', importee, importer)
         return null
       }
-
+      // stub out ignored modules
       if (ignore.length > 0) {
         for (let i = 0; i < ignore.length; i++) {
           if (ignore[i](importee)) {
@@ -56,10 +55,6 @@ export default function resolve(opts) {
           }
         }
       }
-      // if (ignore.indexOf(importee) > -1) {
-      //   // console.log('## ignoring %s', importee)
-      //   return EMPTY_ID
-      // }
       // process relative imports
       if (importee.charCodeAt(0) === DOT) {
         try {
