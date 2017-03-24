@@ -91,9 +91,9 @@ export default class RollupCommand {
       if (opts.ignore && opts.ignore.length > 0) {
         resolveOpts.ignore = opts.ignore
       }
-      delete opts.ignore
-      delete opts.alias
     }
+    delete opts.ignore
+    delete opts.alias
     delete opts.resolve
 
     // commonjs modules
