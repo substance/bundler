@@ -166,9 +166,12 @@ export default class Bundler extends EventEmitter {
       this._actionsByInput[input] = uniq(this._actionsByInput[input])
     }.bind(this))
     action.outputs.forEach(function(output) {
-      if (this._generatedFiles[output]) {
-        throw new Error('Another action generates the same file', action.descr)
-      }
+      // Deactivated the following exception
+      // as it does not seem to be a problem to have multipl
+      // actions generating the same file
+      // if (this._generatedFiles[output]) {
+      //   throw new Error('Another action generates the same file', action.descr)
+      // }
       this._generatedFiles[output] = action
     }.bind(this))
   }
