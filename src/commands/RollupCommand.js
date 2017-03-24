@@ -225,6 +225,7 @@ class RollupAction extends Action {
     this.plugins = plugins
     this.targets = targets
     this.opts = opts
+    this.sourceMap = (opts.sourceMap !== false)
     this.rootDir = bundler.rootDir
 
     this._cache = null
@@ -249,7 +250,6 @@ class RollupAction extends Action {
     let opts = Object.assign({
       entry: src,
       plugins: plugins,
-      sourceMap: true,
       treeshake: true,
       cache: cache,
       onwarn: (warning) => {
@@ -264,18 +264,20 @@ class RollupAction extends Action {
       log('RollupAction: received bundle...')
       this.cache = bundle
       log('RollupAction: generating targets...')
-      targets.forEach(function(target) {
+      targets.forEach((target) => {
         var absDest = isAbsolute(target.dest) ? target.dest : path.join(rootDir, target.dest)
         var _opts = Object.assign({
           format: target.format,
-          sourceMap: true,
-          sourceMapFile: absDest,
           globals: opts.globals
         }, target)
+        if (this.sourceMap) {
+          _opts.sourceMap = true
+          _opts.sourceMapFile = absDest
+        }
         var result = bundle.generate(_opts)
         // write the map file first so that a file watcher for the bundle
         // is not triggered too early
-        if (_opts.sourceMap) {
+        if (this.sourceMap) {
           let sourceMap = result.map.toString()
           if (target.sourceMapRoot) {
             let data = JSON.parse(sourceMap)
@@ -291,14 +293,16 @@ class RollupAction extends Action {
             sourceMap = JSON.stringify(data)
           }
           writeSync(absDest+'.map', sourceMap)
+          writeSync(absDest,
+            [
+              result.code,
+              // HACK: buble has troubles with '//' in a string
+              "\n","/","/# sourceMappingURL=./", path.basename(absDest)+".map"
+            ].join('')
+          )
+        } else {
+          writeSync(absDest, result.code)
         }
-        writeSync(absDest,
-          [
-            result.code,
-            // HACK: buble has troubles with '//' in a string
-            "\n","/","/# sourceMappingURL=./", path.basename(absDest)+".map"
-          ].join('')
-        )
       })
       bundler._info(colors.green('..finished in %s ms.'), Date.now()-t0)
       this._updateWatchers(bundle)
