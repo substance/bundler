@@ -46,7 +46,7 @@ export default class RollupCommand {
     // as we want to give 'ignore' a higher precedence
     // rollup will not ask our resolver if it finds a matching
     // external
-    if (opts.ignore && opts.ignore.length > 0) {
+    if (opts.ignore && opts.ignore.length > 0 && opts.external) {
       opts.external = opts.external.filter((ext) => {
         return opts.ignore.indexOf(ext)<0
       })
