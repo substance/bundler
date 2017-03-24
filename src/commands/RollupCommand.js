@@ -84,7 +84,9 @@ export default class RollupCommand {
     let resolveOpts
     if (opts.resolve !== false) {
       resolveOpts = opts.resolve || {}
-
+      if (opts.external) {
+        resolveOpts.external = opts.external
+      }
       if (opts.alias) {
         resolveOpts.alias = Object.assign({}, opts.alias, resolveOpts.alias)
       }

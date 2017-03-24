@@ -25,6 +25,7 @@ export default function resolve(opts) {
       return f => f === pattern
     }
   })
+  const external = (opts.external||[]).reduce((m,e)=>{m[e]=true;return m}, {})
   const cjs = {}
   if (opts.cjs) {
     opts.cjs.forEach(function(m) {
@@ -45,6 +46,9 @@ export default function resolve(opts) {
         // TODO: why is that so?
         // happens for instance with commonjs proxies
         // console.warn('FIXME: resolve-plugin.resolveId(%s, %s)', importee, importer)
+        return null
+      }
+      if (external[importee]) {
         return null
       }
       // stub out ignored modules
