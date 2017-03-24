@@ -30,6 +30,8 @@ export default class RollupCommand {
     }
     this.src = src
 
+    const sourceMap = (opts.sourceMap !== false)
+
     // in rollup external and globals are often
     // redundant, thus we added an option to specify
     // externals as object, like you would define globals
@@ -65,6 +67,7 @@ export default class RollupCommand {
         format: opts.format,
         globals: globals,
         moduleName: opts.moduleName,
+        sourceMap: sourceMap,
         sourceMapRoot: opts.sourceMapRoot,
         sourceMapPrefix: opts.sourceMapPrefix,
       }]
@@ -155,7 +158,7 @@ export default class RollupCommand {
 
     // this is necesssary so that already existing sourcemaps
     // present in imported files are picked up
-    if (opts.sourceMap !== false) plugins.push(sourcemaps())
+    if (sourceMap) plugins.push(sourcemaps())
 
     // apply instrumentation before any other transforms
     if (istanbulOpts) plugins.push(istanbulPlugin(istanbulOpts))
@@ -272,21 +275,23 @@ class RollupAction extends Action {
         var result = bundle.generate(_opts)
         // write the map file first so that a file watcher for the bundle
         // is not triggered too early
-        let sourceMap = result.map.toString()
-        if (target.sourceMapRoot) {
-          let data = JSON.parse(sourceMap)
-          data.sources = data.sources.map(function(srcPath) {
-            let absSrcPath = path.join(path.dirname(absDest), srcPath)
-            let relSrcPath = path.relative(target.sourceMapRoot, absSrcPath)
-            relSrcPath = relSrcPath.replace(/\\/g, "/")
-            // console.log('### source file:', srcPath)
-            // HACK: hard coded pattern for source path transformation
-            if (target.sourceMapPrefix) relSrcPath = target.sourceMapPrefix + '/' + relSrcPath
-            return relSrcPath
-          })
-          sourceMap = JSON.stringify(data)
+        if (_opts.sourceMap) {
+          let sourceMap = result.map.toString()
+          if (target.sourceMapRoot) {
+            let data = JSON.parse(sourceMap)
+            data.sources = data.sources.map(function(srcPath) {
+              let absSrcPath = path.join(path.dirname(absDest), srcPath)
+              let relSrcPath = path.relative(target.sourceMapRoot, absSrcPath)
+              relSrcPath = relSrcPath.replace(/\\/g, "/")
+              // console.log('### source file:', srcPath)
+              // HACK: hard coded pattern for source path transformation
+              if (target.sourceMapPrefix) relSrcPath = target.sourceMapPrefix + '/' + relSrcPath
+              return relSrcPath
+            })
+            sourceMap = JSON.stringify(data)
+          }
+          writeSync(absDest+'.map', sourceMap)
         }
-        writeSync(absDest+'.map', sourceMap)
         writeSync(absDest,
           [
             result.code,
