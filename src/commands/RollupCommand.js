@@ -78,17 +78,20 @@ export default class RollupCommand {
 
     // we provide a custom resolver, taking care of
     // pretty much all resolving (relative and node)
-    let resolveOpts = opts.resolve || {}
-    delete opts.resolve
+    let resolveOpts
+    if (opts.resolve !== false) {
+      resolveOpts = opts.resolve || {}
 
-    if (opts.alias) {
-      resolveOpts.alias = Object.assign({}, opts.alias, resolveOpts.alias)
+      if (opts.alias) {
+        resolveOpts.alias = Object.assign({}, opts.alias, resolveOpts.alias)
+      }
+      if (opts.ignore && opts.ignore.length > 0) {
+        resolveOpts.ignore = opts.ignore
+      }
+      delete opts.ignore
+      delete opts.alias
     }
-    if (opts.ignore && opts.ignore.length > 0) {
-      resolveOpts.ignore = opts.ignore
-    }
-    delete opts.ignore
-    delete opts.alias
+    delete opts.resolve
 
     // commonjs modules
     let cjsOpts = null
