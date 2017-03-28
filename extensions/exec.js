@@ -7,10 +7,16 @@ module.exports = function(b, cmd, ...args) {
   if (isPlainObject(args[args.length-1])) {
     options = args.pop()
   }
-  if (args.length === 1) {
-    args = args[0].split(/\s+/)
+  if (args.length === 0) {
+    const frags = cmd.split(/\s+/)
+    cmd = frags[0]
+    args = frags.slice(1)
   }
-  b.custom(`Exec: ${cmd} ${args}`, {
+  let msg = `Exec: ${cmd} ${args}`
+  if (options && options.cwd) {
+    msg += ` in ${options.cwd}`
+  }
+  b.custom(msg, {
     execute() {
       return _exec(cmd, args, options)
     }
