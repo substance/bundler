@@ -20,7 +20,7 @@ var uniq = require('lodash/uniq')
 var without = require('lodash/without')
 
 // rollup
-var rollup = require('rollup/dist/rollup')
+var rollup = require('./rollup/dist/rollup')
 var inject = require('rollup-plugin-inject')
 var commonjs = require('rollup-plugin-commonjs')
 // ATTENTION: rollup-plugin-node-resolve can not be bundler due to dynamic require statement

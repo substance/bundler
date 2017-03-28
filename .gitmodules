@@ -1,0 +1,4 @@
+[submodule "vendor/rollup"]
+	path = vendor/rollup
+	url = https://github.com/substance/rollup.git
+	branch = substance
