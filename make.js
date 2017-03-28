@@ -1,6 +1,7 @@
 // NOTE: we are using an published version of substance-bundler to build the bundler
 var b = require('substance-bundler')
 var bundleVendor = require('./util/bundleVendor')
+var exec = require('./extensions/exec')
 var path = require('path')
 
 b.task('clean', function() {
@@ -11,23 +12,30 @@ b.task('clean', function() {
 b.task('vendor', function() {
   b.copy('./node_modules/buble/dist/buble.deps.js', './tmp/buble.deps.js')
   b.copy('./node_modules/buble/dist/buble.deps.js.map', './tmp/buble.deps.js.map')
+  exec(b, 'npm install --ignore-scripts', {
+    cwd: path.join(__dirname, 'vendor/rollup/'),
+    verbose: true
+  })
+  exec(b, './node_modules/.bin/rollup -c rollup.config.js', {
+    cwd: path.join(__dirname, 'vendor/rollup'),
+    verbose: true
+  })
   b.custom('Bundling vendor...', {
-    // these are necessary for watch and ensureDir
-    src: './.make/vendor.js',
-    dest: './dist/vendor.js',
+    src: './vendor/_vendor.js',
+    dest: './vendor/vendor.js',
     execute: function() {
       return bundleVendor({
-        // ... and these are used for doing the work
-        src: './.make/vendor.js',
-        dest: './dist/vendor.js',
+        src: './vendor/_vendor.js',
+        dest: './vendor/vendor.js',
         external: ['fsevents', 'pkg-resolve', 'sugarss'],
-        debug: true //argv.debug
+        debug: true
       })
     }
   })
 })
 
 b.task('bundler', function() {
+  b.copy('vendor/vendor.js', 'dist/vendor.js')
   b.js('src/main.js', {
     // need buble if we want to minify later
     buble: { include: [ 'src/**' ] },
@@ -46,4 +54,4 @@ b.task('bundler', function() {
   })
 })
 
-b.task('default', ['clean', 'vendor', 'bundler'])
+b.task('default', ['clean', 'bundler'])
