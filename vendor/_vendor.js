@@ -23,8 +23,7 @@ var without = require('lodash/without')
 var rollup = require('./rollup/dist/rollup')
 var inject = require('rollup-plugin-inject')
 var commonjs = require('rollup-plugin-commonjs')
-// ATTENTION: rollup-plugin-node-resolve can not be bundler due to dynamic require statement
-// We use a patched version instead
+// ATTENTION: rollup-plugin-node-resolve can not be bundled due to dynamic require statement
 //var nodeResolve = require('rollup-plugin-node-resolve')
 var json = require('rollup-plugin-json')
 var sourcemaps = require('rollup-plugin-sourcemaps')

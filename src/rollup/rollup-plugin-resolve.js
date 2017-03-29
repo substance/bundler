@@ -1,5 +1,6 @@
 import { isAbsolute } from '../fileUtils'
 import { minimatch } from '../vendor'
+
 const Module = require('module')
 const path = require('path')
 const fs = require('fs')
@@ -35,7 +36,10 @@ export default function resolve(opts) {
   return {
     name: "resolve",
     resolveId: function(importee, importer) {
-      // console.log('### resolve', importee, importer)
+      const DEBUG = false
+      // const DEBUG = importee.indexOf('domutils') >= 0
+
+      if (DEBUG) console.info('### resolve', importee, importer)
       if (importee === EMPTY_ID) return EMPTY_ID
       // ignore IDs with null character, these belong to other plugins
       if (/\0/.test(importee)) return null
@@ -62,20 +66,38 @@ export default function resolve(opts) {
       // process relative imports
       if (importee.charCodeAt(0) === DOT) {
         try {
-          // console.log('.... resolving relatively: %s from %s', importee, importer)
-          let p = require.resolve(path.join(path.dirname(importer), importee))
-          return _withExtension(p)
+          if (DEBUG) console.info('.... resolving relatively: %s from %s', importee, importer)
+          let _importee = _withExtension(importee)
+          let p = require.resolve(path.join(path.dirname(importer), _importee))
+          if (p) {
+            if (DEBUG) console.info('.... resolved', p)
+            return _withExtension(p)
+          }
+          p = require.resolve(path.join(path.dirname(importer), importee))
+          if (p) {
+            if (DEBUG) console.info('.... resolved', p)
+            return _withExtension(p)
+          }
         } catch (err) {
           return null
         }
       }
       if (alias[importee]) {
-        // console.log('.... using alias: %s -> %s', importee, alias[importee])
+        if (DEBUG) console.info('.... using alias: %s -> %s', importee, alias[importee])
         importee = alias[importee]
       }
-      // console.log('## resolving %s from %s', importee, importer)
+
+      if (DEBUG) console.info('## resolving %s from %s', importee, importer)
       let dirname = path.dirname(importer)
       let paths = Module._nodeModulePaths(dirname)
+      // try to find it first before doing something special
+      if (DEBUG) console.info('## TRYING to _findPath', importee)
+      let p = Module._findPath(importee, paths, false) || null
+      if (p) {
+        if (DEBUG) console.info('.... resolved', p)
+        return _withExtension(p)
+      }
+      // then try to look for a node_module
       // NOTE: jsnext:main is now the default for modules
       // if you want to support legacy modules you need to provide an array of cjs modules
       // via opts.cjs
@@ -88,15 +110,10 @@ export default function resolve(opts) {
           let entry = pkg['jsnext:main']
           if (entry) {
             let p = path.join(path.dirname(pkgPathAbs), entry)
-            // console.log('.... resolved via package jsnext:main', p)
+            if (DEBUG) console.info('.... resolved via package jsnext:main', p)
             return _withExtension(p)
           }
         }
-      }
-      let p = Module._findPath(importee, paths, false) || null
-      if (p) {
-        // console.log('.... resolved', p)
-        return _withExtension(p)
       }
     },
     load: function(id) {
