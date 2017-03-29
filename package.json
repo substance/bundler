@@ -7,7 +7,7 @@
   "scripts": {
     "prepublish": "node make clean vendor bundler",
     "lint": "eslint -c .eslintrc.js src extensions util",
-    "build": "node make",
+    "build": "node make clean vendor bundler",
     "start": "node make -w"
   },
   "author": "Oliver Buchtala",
