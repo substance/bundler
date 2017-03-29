@@ -97826,7 +97826,7 @@ module.exports = {
 (function (Buffer){
 /*
 	Rollup.js v0.41.6
-	Tue Mar 28 2017 11:38:11 GMT+0200 (CEST) - commit fbf1288f78326d19a89b6bf64ed38ec60fdb4781
+	Wed Mar 29 2017 03:08:26 GMT+0200 (CEST) - commit fbf1288f78326d19a89b6bf64ed38ec60fdb4781
 
 
 	https://github.com/rollup/rollup
@@ -107654,9 +107654,8 @@ Bundle$$1.prototype.sort = function sort () {
 			var loop = function (  ) {
 				var b = ordered[i];
 
-				console.log('## stronglyDependsOn?', a.id, b.id, stronglyDependsOn[ a.id ][ b.id ] );
 				// TODO reinstate this! it no longer works
-				if ( stronglyDependsOn[ a.id ][ b.id ] ) {
+					if ( stronglyDependsOn[ a.id ][ b.id ] ) {
 					// somewhere, there is a module that imports b before a. Because
 					// b imports a, a is placed before b. We need to find the module
 					// in question, so we can provide a useful error message
@@ -107678,7 +107677,7 @@ Bundle$$1.prototype.sort = function sort () {
 					findParent( this$1.entryModule );
 
 						this$1.onwarn(
-							("Module " + (a.id) + " may be unable to evaluate without " + (b.id) + ", but is included first due to a cyclical dependency. Consider swapping the import statements in " + parent + " to ensure correct ordering")
+						("Module " + (a.id) + " may be unable to evaluate without " + (b.id) + ", but is included first due to a cyclical dependency. Consider swapping the import statements in " + parent + " to ensure correct ordering")
 					);
 				}
 			};
