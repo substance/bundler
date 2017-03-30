@@ -1,5 +1,5 @@
 /* eslint-disable semi */
-import { pluginutils } from '../vendor'
+import { pluginutils, Instrumenter } from '../vendor'
 
 const { createFilter } = pluginutils
 
@@ -8,7 +8,7 @@ export default function (options = {}) {
 
   return {
     transform (code, id) {
-      const istanbul = require('istanbul');
+      // const istanbul = require('istanbul');
       if (!filter(id)) return;
 
       var instrumenter;
@@ -23,7 +23,7 @@ export default function (options = {}) {
       }
 
       opts.esModules = true;
-      instrumenter = new (options.instrumenter || istanbul).Instrumenter(opts);
+      instrumenter = new Instrumenter(opts);
 
       // console.log('## Running istanbul on', id)
       code = instrumenter.instrumentSync(code, id);

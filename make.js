@@ -10,10 +10,12 @@ b.task('clean', function() {
 })
 
 b.task('vendor', function() {
-  b.copy('./node_modules/buble/dist/buble.deps.js', './tmp/buble.deps.js')
-  b.copy('./node_modules/buble/dist/buble.deps.js.map', './tmp/buble.deps.js.map')
   exec(b, 'npm install --ignore-scripts', {
     cwd: path.join(__dirname, 'vendor/rollup/'),
+    verbose: true
+  })
+  exec(b, 'npm install --ignore-scripts', {
+    cwd: path.join(__dirname, 'vendor/istanbul/'),
     verbose: true
   })
   exec(b, './node_modules/.bin/rollup -c rollup.config.js', {
