@@ -40,6 +40,9 @@ class SimpleVFS {
     }
     return CONTENT[path]
   }
+  existsSync(path) {
+    return CONTENT.hasOwnProperty(path)
+  }
 }
 `
   if (!format) throw new Error("'format' is mandatory")
