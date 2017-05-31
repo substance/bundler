@@ -21,11 +21,9 @@ var without = require('lodash/without')
 
 // rollup
 var rollup = require('./rollup/dist/rollup')
-var inject = require('rollup-plugin-inject')
 var commonjs = require('rollup-plugin-commonjs')
 // ATTENTION: rollup-plugin-node-resolve can not be bundled due to dynamic require statement
 //var nodeResolve = require('rollup-plugin-node-resolve')
-var json = require('rollup-plugin-json')
 var sourcemaps = require('rollup-plugin-sourcemaps')
 var buble = require('buble/dist/buble.deps')
 var pluginutils = require('rollup-pluginutils/dist/pluginutils.cjs.js')
@@ -60,9 +58,7 @@ module.exports = {
   uniq: uniq,
   without: without,
   rollup: rollup,
-  inject: inject,
   commonjs: commonjs,
-  json: json,
   sourcemaps: sourcemaps,
   buble: buble,
   pluginutils: pluginutils,
