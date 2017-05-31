@@ -92,11 +92,6 @@ export default function resolve(opts) {
       let paths = Module._nodeModulePaths(dirname)
       // try to find it first before doing something special
       if (DEBUG) console.info('## TRYING to _findPath', importee)
-      let p = Module._findPath(importee, paths, false) || null
-      if (p) {
-        if (DEBUG) console.info('.... resolved', p)
-        return _withExtension(p)
-      }
       // then try to look for a node_module
       // NOTE: jsnext:main is now the default for modules
       // if you want to support legacy modules you need to provide an array of cjs modules
@@ -114,6 +109,11 @@ export default function resolve(opts) {
             return _withExtension(p)
           }
         }
+      }
+      let p = Module._findPath(importee, paths, false) || null
+      if (p) {
+        if (DEBUG) console.info('.... resolved', p)
+        return _withExtension(p)
       }
     },
     load: function(id) {
