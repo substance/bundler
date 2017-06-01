@@ -1,6 +1,6 @@
 import * as path from 'path'
 import {
-  glob, rollup, commonjs, json,
+  glob, rollup, commonjs,
   sourcemaps, isArray, isPlainObject,
   colors
 } from '../vendor'
@@ -11,6 +11,7 @@ import eslintPlugin from '../rollup/rollup-plugin-eslint'
 import istanbulPlugin from '../rollup/rollup-plugin-istanbul'
 import cleanup from '../rollup/rollup-plugin-cleanup'
 import rollupGlob from '../rollup/rollup-glob'
+import jsonPlugin from '../rollup/rollup-plugin-json'
 import Action from '../Action'
 import log from '../log'
 
@@ -174,7 +175,7 @@ export default class RollupCommand {
     // this turns on basic es6 transpilation
     if (bubleOpts) plugins.push(buble(bubleOpts))
 
-    if (jsonOpts) plugins.push(json(jsonOpts))
+    if (jsonOpts) plugins.push(jsonPlugin(jsonOpts))
 
     // TODO: need to discuss whether and how we want to allow custom rollup plugins
     // The order of plugins is critical in certain cases, thus as we do here, appending to
