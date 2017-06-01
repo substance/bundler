@@ -65,22 +65,33 @@ export default function resolve(opts) {
       }
       // process relative imports
       if (importee.charCodeAt(0) === DOT) {
+        if (DEBUG) console.info('.... resolving relatively: %s from %s', importee, importer)
+        // first try with extension added
+        let _importee = path.join(path.dirname(importer), _withExtension(importee))
+        if (DEBUG) console.info('...... trying: %s', _importee)
         try {
-          if (DEBUG) console.info('.... resolving relatively: %s from %s', importee, importer)
-          let _importee = _withExtension(importee)
-          let p = require.resolve(path.join(path.dirname(importer), _importee))
-          if (p) {
-            if (DEBUG) console.info('.... resolved', p)
-            return _withExtension(p)
-          }
-          p = require.resolve(path.join(path.dirname(importer), importee))
-          if (p) {
-            if (DEBUG) console.info('.... resolved', p)
-            return _withExtension(p)
-          }
-        } catch (err) {
-          return null
-        }
+          let p = require.resolve(_importee)
+          if (DEBUG) console.info('.... resolved', p)
+          return _withExtension(p)
+        } catch (err) { /* nothing */ }
+        // then try as it is written originally
+        _importee = path.join(path.dirname(importer), importee)
+        if (DEBUG) console.info('...... trying: %s', _importee)
+        try {
+          let p = require.resolve(_importee)
+          if (DEBUG) console.info('.... resolved', p)
+          return _withExtension(p)
+        } catch (err) { /* nothing */ }
+        // finally try index.js
+        _importee = path.join(path.dirname(importer), importee, 'index.js')
+        if (DEBUG) console.info('...... trying: %s', _importee)
+        try {
+          let p = require.resolve(_importee)
+          if (DEBUG) console.info('.... resolved', p)
+          return _withExtension(p)
+        } catch (err) { /* nothing */ }
+        // if non of the above works, return null which means a failed lookup
+        return null
       }
       if (alias[importee]) {
         if (DEBUG) console.info('.... using alias: %s -> %s', importee, alias[importee])
