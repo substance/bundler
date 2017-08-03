@@ -85,7 +85,7 @@ export default class CustomCommand {
     const rootDir = bundler.rootDir
     const watcher = bundler.watcher
     let dest = this.dest
-    if (!isAbsolute(dest)) dest = path.join(rootDir, dest)
+    if (dest && !isAbsolute(dest)) dest = path.join(rootDir, dest)
     let files = []
     let patterns = []
     this.src.forEach(function(fileOrPattern) {
