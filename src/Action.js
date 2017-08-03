@@ -9,10 +9,8 @@ export default class Action {
   }
 
   invalidate() {
-    this.outputs.forEach(function(file) {
-      log('Invalidating %s', file)
-      fse.removeSync(file)
-    })
+    // nothing by default
+    // Note: some actions use Action.removeOutputs()
   }
 
   update(next) {} // eslint-disable-line no-unused-vars
@@ -24,4 +22,11 @@ export default class Action {
   get descr() {
     return this.id
   }
+}
+
+Action.removeOutputs = function(action) {
+  action.outputs.forEach(function(file) {
+    log('Invalidating %s', file)
+    fse.removeSync(file)
+  })
 }

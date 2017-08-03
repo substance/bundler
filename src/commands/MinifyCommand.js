@@ -78,4 +78,9 @@ class MinifyAction extends Action {
     }
     bundler._info(colors.green('..finished in %s ms.'), Date.now()-t0)
   }
+
+  invalidate() {
+    Action.removeOutputs(this)
+  }
+
 }

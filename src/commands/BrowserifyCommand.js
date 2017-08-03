@@ -137,4 +137,9 @@ class BrowserifyAction extends Action {
       })
     })
   }
+
+  invalidate() {
+    Action.removeOutputs(this)
+  }
+
 }

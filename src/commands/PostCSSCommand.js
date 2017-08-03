@@ -94,6 +94,10 @@ class PostCSSAction extends Action {
     })
   }
 
+  invalidate() {
+    Action.removeOutputs(this)
+  }
+
   _onImport(files) {
     const bundler = this.bundler
     const watcher = bundler.watcher

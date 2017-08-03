@@ -323,6 +323,10 @@ class RollupAction extends Action {
     })
   }
 
+  invalidate() {
+    Action.removeOutputs(this)
+  }
+
   _updateWatchers(bundle) {
     const bundler = this.bundler
     const watcher = bundler.watcher
