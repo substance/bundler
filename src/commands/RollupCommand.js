@@ -2,7 +2,7 @@ import * as path from 'path'
 import {
   glob, rollup, commonjs,
   sourcemaps, isArray, isPlainObject,
-  colors
+  colors, forEach
 } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import resolve from '../rollup/rollup-plugin-resolve'
@@ -63,21 +63,22 @@ export default class RollupCommand {
       this.targets = [opts.target]
       delete opts.target
     } else {
-      this.targets = [{
-        dest: opts.dest,
-        format: opts.format,
-        globals: globals,
-        moduleName: opts.moduleName,
-        sourceMap: sourceMap,
-        sourceMapRoot: opts.sourceMapRoot,
-        sourceMapPrefix: opts.sourceMapPrefix,
-      }]
-      delete opts.dest
-      delete opts.format
-      delete opts.globals
-      delete opts.moduleName
-      delete opts.sourceMapRoot
-      delete opts.sourceMapPrefix
+      // all these are actually target specific options
+      // but allowed on top-level for convenience
+      // however, here we normalize, wrapping this into
+      // 'targets'
+      const TARGET_OPTS = [
+        'dest', 'format', 'globals', 'moduleName', 'paths',
+        'sourceMap', 'sourceMapRoot', 'sourceMapPrefix'
+      ]
+      let target = {}
+      TARGET_OPTS.forEach((name) => {
+        if (opts.hasOwnProperty(name)) {
+          target[name] = opts[name]
+          delete opts[name]
+        }
+      })
+      this.targets = [target]
     }
 
     // we provide a custom resolver, taking care of
@@ -246,12 +247,11 @@ class RollupAction extends Action {
     const t0 = Date.now()
     const cache = this._cache
     const src = this.src
-    const rootDir = this.rootDir
     const targets = this.targets
     const plugins = this.plugins
 
     let opts = Object.assign({
-      entry: src,
+      input: src,
       plugins: plugins,
       treeshake: true,
       cache: cache,
@@ -267,48 +267,12 @@ class RollupAction extends Action {
       log('RollupAction: received bundle...')
       this.cache = bundle
       log('RollupAction: generating targets...')
-      targets.forEach((target) => {
-        var absDest = isAbsolute(target.dest) ? target.dest : path.join(rootDir, target.dest)
-        var _opts = Object.assign({
-          format: target.format,
-          globals: opts.globals
-        }, target)
-        if (this.sourceMap) {
-          _opts.sourceMap = true
-          _opts.sourceMapFile = absDest
-        }
-        var result = bundle.generate(_opts)
-        // write the map file first so that a file watcher for the bundle
-        // is not triggered too early
-        if (this.sourceMap) {
-          let sourceMap = result.map.toString()
-          if (target.sourceMapRoot) {
-            let data = JSON.parse(sourceMap)
-            data.sources = data.sources.map(function(srcPath) {
-              let absSrcPath = path.join(path.dirname(absDest), srcPath)
-              let relSrcPath = path.relative(target.sourceMapRoot, absSrcPath)
-              relSrcPath = relSrcPath.replace(/\\/g, "/")
-              // console.log('### source file:', srcPath)
-              // HACK: hard coded pattern for source path transformation
-              if (target.sourceMapPrefix) relSrcPath = target.sourceMapPrefix + '/' + relSrcPath
-              return relSrcPath
-            })
-            sourceMap = JSON.stringify(data)
-          }
-          writeSync(absDest+'.map', sourceMap)
-          writeSync(absDest,
-            [
-              result.code,
-              // HACK: buble has troubles with '//' in a string
-              "\n","/","/# sourceMappingURL=./", path.basename(absDest)+".map"
-            ].join('')
-          )
-        } else {
-          writeSync(absDest, result.code)
-        }
+      return Promise.all(targets.map((target) => {
+        return this._generate(bundle, target)
+      })).then(() => {
+        bundler._info(colors.green('..finished in %s ms.'), Date.now()-t0)
+        this._updateWatchers(bundle)
       })
-      bundler._info(colors.green('..finished in %s ms.'), Date.now()-t0)
-      this._updateWatchers(bundle)
     })
     .catch((err) => {
       if (err.loc) {
@@ -325,6 +289,67 @@ class RollupAction extends Action {
 
   invalidate() {
     Action.removeOutputs(this)
+  }
+
+  _generate(bundle, target) {
+    const rootDir = this.rootDir
+    const absDest = isAbsolute(target.dest) ? target.dest : path.join(rootDir, target.dest)
+    let opts = Object.assign({}, target)
+    // HACK: do globals really need to go here?
+    // maybe we should copy them previously
+    if (this.opts.globals) {
+      opts.globals = this.opts.globals
+    }
+    if (this.sourceMap) {
+      opts.sourceMap = true
+      opts.sourceMapFile = absDest
+    }
+    // NOTE: with the latest rollup version,
+    // some options have been renamed
+    // const RENAMED
+    const RENAMED = {
+      'dest': 'file',
+      'moduleName': 'name',
+      'sourceMap': 'sourcemap',
+      'sourceMapFile': 'sourcemapFile',
+    }
+    forEach(RENAMED, (newName, oldName) => {
+      if (opts.hasOwnProperty(oldName)) {
+        opts[newName] = opts[oldName]
+        delete opts[oldName]
+      }
+    })
+    return bundle.generate(opts)
+    .then((result) => {
+      // write the map file first so that a file watcher for the bundle
+      // is not triggered too early
+      if (this.sourceMap) {
+        let sourceMap = result.map.toString()
+        if (target.sourceMapRoot) {
+          let data = JSON.parse(sourceMap)
+          data.sources = data.sources.map(function(srcPath) {
+            let absSrcPath = path.join(path.dirname(absDest), srcPath)
+            let relSrcPath = path.relative(target.sourceMapRoot, absSrcPath)
+            relSrcPath = relSrcPath.replace(/\\/g, "/")
+            // console.log('### source file:', srcPath)
+            // HACK: hard coded pattern for source path transformation
+            if (target.sourceMapPrefix) relSrcPath = target.sourceMapPrefix + '/' + relSrcPath
+            return relSrcPath
+          })
+          sourceMap = JSON.stringify(data)
+        }
+        writeSync(absDest+'.map', sourceMap)
+        writeSync(absDest,
+          [
+            result.code,
+            // HACK: buble has troubles with '//' in a string
+            "\n","/","/# sourceMappingURL=./", path.basename(absDest)+".map"
+          ].join('')
+        )
+      } else {
+        writeSync(absDest, result.code)
+      }
+    })
   }
 
   _updateWatchers(bundle) {

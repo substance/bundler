@@ -10,18 +10,13 @@ b.task('clean', function() {
 })
 
 b.task('vendor', function() {
-  exec(b, 'npm install --ignore-scripts', {
-    cwd: path.join(__dirname, 'vendor/rollup/'),
-    verbose: true
-  })
-  exec(b, 'npm install --ignore-scripts', {
-    cwd: path.join(__dirname, 'vendor/istanbul/'),
-    verbose: true
-  })
-  exec(b, './node_modules/.bin/rollup -c rollup.config.js', {
-    cwd: path.join(__dirname, 'vendor/rollup'),
-    verbose: true
-  })
+  let cmd = 'npm'
+  let opts = {
+    cwd: path.join(__dirname, 'vendor', 'istanbul'),
+    verbose: true,
+    shell: true
+  }
+  exec(b, cmd, 'install', '--ignore-scripts', opts)
   b.custom('Bundling vendor...', {
     src: './vendor/_vendor.js',
     dest: './vendor/vendor.js',
