@@ -1,7 +1,3 @@
-[submodule "vendor/rollup"]
-	path = vendor/rollup
-	url = https://github.com/substance/rollup.git
-	branch = substance
 [submodule "vendor/istanbul"]
 	path = vendor/istanbul
 	url = https://github.com/kpdecker/istanbul.git
