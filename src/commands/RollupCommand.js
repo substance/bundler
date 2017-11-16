@@ -68,7 +68,7 @@ export default class RollupCommand {
       // however, here we normalize, wrapping this into
       // 'targets'
       const TARGET_OPTS = [
-        'dest', 'format', 'globals', 'moduleName', 'paths',
+        'dest', 'format', 'moduleName', 'paths',
         'sourceMap', 'sourceMapRoot', 'sourceMapPrefix'
       ]
       let target = {}
@@ -78,6 +78,8 @@ export default class RollupCommand {
           delete opts[name]
         }
       })
+      // HACK: special treatment for globals
+      target.globals = globals
       this.targets = [target]
     }
 
