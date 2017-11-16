@@ -12,7 +12,7 @@ module.exports = function(b, cmd, ...args) {
     cmd = frags[0]
     args = frags.slice(1)
   }
-  let msg = `Exec: ${cmd} ${args}`
+  let msg = `Exec: ${cmd} ${args.join(' ')}`
   if (options && options.cwd) {
     msg += ` in ${options.cwd}`
   }
