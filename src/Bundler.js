@@ -350,7 +350,7 @@ export default class Bundler extends EventEmitter {
       process.exit()
     }
     state[name] = 'visiting'
-    if (task.deps) {
+    if (task.deps && !this.opts.nodeps) {
       task.deps.forEach(function(dep) {
         if (state[dep] === 'visiting') {
           throw new Error('Cyclic dependency detected in task ' + dep)
@@ -364,5 +364,4 @@ export default class Bundler extends EventEmitter {
     if (task.fn) task.fn()
     state[name] = 'done'
   }
-
 }

@@ -10,6 +10,7 @@ const argv = yargs
   .boolean('w').alias('w', 'watch').default('w', false)
   .boolean('s').alias('s', 'serve').default('s', false)
   .boolean('t').default('t', false)
+  .boolean('n').alias('n', 'nodeps').default('n', false)
   .argv
 
 const showHelp = argv.h
@@ -17,7 +18,8 @@ const showTasks = argv.t
 
 const bundler = new Bundler({
   watch: argv.watch,
-  serve: argv.serve
+  serve: argv.serve,
+  nodeps: argv.nodeps
 })
 bundler.yargs = yargs
 bundler.argv = argv
