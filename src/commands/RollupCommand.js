@@ -16,10 +16,11 @@ import Action from '../Action'
 import log from '../log'
 
 const ZERO = "\0".charCodeAt(0)
+const DOT = ".".charCodeAt(0)
 
 export default class RollupCommand {
 
-  constructor(src, opts) {
+  constructor(src, opts, bundler) {
     if (!src) throw new Error("'src' is mandatory.")
     // rollup does not have a good behavior with src being a glob pattern.
     // for that purpose we detect if src contains glob pattern
@@ -92,7 +93,22 @@ export default class RollupCommand {
         resolveOpts.external = opts.external
       }
       if (opts.alias) {
-        resolveOpts.alias = Object.assign({}, opts.alias, resolveOpts.alias)
+        // compile aliases:
+        // keys can be provided as absolute path (/...), module based (no slash), or relative path
+        // the resolver only supports absolute paths and module based ids
+        // For the values, only absolute paths are supported
+        let _aliases = Object.assign({}, opts.alias, resolveOpts.alias)
+        let aliases = {}
+        forEach(_aliases, (val, key) => {
+          if (key.charCodeAt(0) === DOT) {
+            key = path.join(bundler.rootDir, key)
+          }
+          if (!isAbsolute(val)) {
+            val = path.join(bundler.rootDir, val)
+          }
+          aliases[key] = val
+        })
+        resolveOpts.alias = aliases
       }
       if (opts.ignore && opts.ignore.length > 0) {
         resolveOpts.ignore = opts.ignore

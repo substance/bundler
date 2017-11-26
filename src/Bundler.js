@@ -71,7 +71,7 @@ export default class Bundler extends EventEmitter {
   }
 
   js(src, opts) {
-    return this._scheduleCommand(new RollupCommand(src, opts))
+    return this._scheduleCommand(new RollupCommand(src, opts, this))
   }
 
   browserify(src, opts) {
