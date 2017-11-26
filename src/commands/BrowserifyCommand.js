@@ -31,6 +31,14 @@ export default class BrowserifyCommand {
       bOpts.fullPaths = false
     }
 
+    // for convenience as this is often necessary for web-bundles
+    if (opts.moduleName) {
+      bOpts.standalone = opts.moduleName
+    }
+    if (opts.hasOwnProperty('sourceMaps')) {
+      bOpts.debug = opts.sourceMaps
+    }
+
     this.options = options
   }
 
