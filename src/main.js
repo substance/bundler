@@ -89,7 +89,10 @@ bundler.once('done', function() {
     bundler._startWatching()
   }
   if (!remote && !watch && !serve) {
-    process.exit(0)
+    // TODO: why do exit here?
+    // If some child process is still running, it is maybe
+    // better to wait?
+    // process.exit(0)
   }
 })
 
