@@ -62,6 +62,10 @@ export default class Bundler extends EventEmitter {
     return this._scheduleCommand(new CopyCommand(src, dest, opts))
   }
 
+  cp(...args) {
+    return this.copy(...args)
+  }
+
   custom(description, params) {
     return this._scheduleCommand(new CustomCommand(description, params))
   }
