@@ -4,7 +4,14 @@ import log from './log'
 
 const opts = {
   encoding: 'utf-8',
-  persistent: true
+  persistent: true,
+  // TODO: do we really want this
+  // Under windows I found especially Sublime
+  // causing a lot of double events
+  awaitWriteFinish: {
+    stabilityThreshold: 100,
+    pollInterval: 50
+  }
 }
 
 export default class FileWatcher extends EventEmitter {
