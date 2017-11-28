@@ -121,6 +121,11 @@ export default class Bundler extends EventEmitter {
   }
 
   writeSync(dest, buf) {
+    console.warn('DEPRECATED: use b.writeFileSync()')
+    this.writeFileSync(dest, buf)
+  }
+
+  writeFileSync(dest, buf) {
     _writeSync(dest, buf)
   }
 
