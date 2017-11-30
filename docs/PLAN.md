@@ -38,6 +38,11 @@ b.custom(title, {
 
 # Log
 
+## Implement [Better API for Custom Tasks](#better-custom-api)
+
+Need this to be able to generate diagrams for planning
+in the different projects.
+
 ## Start Making Plans
 
 Started this document to record ideas.
