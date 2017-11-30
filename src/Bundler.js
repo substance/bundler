@@ -3,13 +3,14 @@ import * as path from 'path'
 import {
   isFunction, uniq, express,
   colors
- } from './vendor'
+} from './vendor'
 import { writeSync as _writeSync, isDirectory as _isDirectory } from './fileUtils'
 import Watcher from './Watcher'
 import Task from './Task'
 import CopyCommand from './commands/CopyCommand'
 import CustomCommand from './commands/CustomCommand'
 import ExecCommand from './commands/ExecCommand'
+import ForEachCommand from './commands/ForEachCommand'
 import MakeCommand from './commands/MakeCommand'
 import MinifyCommand from './commands/MinifyCommand'
 import RemoveCommand from './commands/RemoveCommand'
@@ -72,6 +73,10 @@ export default class Bundler extends EventEmitter {
 
   exec(cmd, options) {
     return this._scheduleCommand(new ExecCommand(cmd, options))
+  }
+
+  forEach(description, pattern, handler) {
+    return this._scheduleCommand(new ForEachCommand(description, pattern, handler))
   }
 
   js(src, opts) {
@@ -153,36 +158,38 @@ export default class Bundler extends EventEmitter {
   }
 
   _registerAction(action) {
-    const watcher = this.watcher
     const id = action.id
     // skip if the same action is already registered
     if (this._actions[id]) return
     this._actions[id] = action
-    action.inputs.forEach(function(input) {
-      // if no other action has been registered as generator
-      // then we add a file watcher
-      if (!this._generatedFiles[input]) {
-        log('Watching ', input)
-        watcher.watch(input, {
-          change: this._onChange.bind(this),
-          unlink: this._onUnlink.bind(this)
-        })
-      }
-      if (!this._actionsByInput[input]) {
-        this._actionsByInput[input] = []
-      }
-      this._actionsByInput[input].push(action)
-      this._actionsByInput[input] = uniq(this._actionsByInput[input])
-    }.bind(this))
-    action.outputs.forEach(function(output) {
-      // Deactivated the following exception
-      // as it does not seem to be a problem to have multipl
-      // actions generating the same file
-      // if (this._generatedFiles[output]) {
-      //   throw new Error('Another action generates the same file', action.descr)
-      // }
-      this._generatedFiles[output] = action
-    }.bind(this))
+    action.inputs.forEach((input) => {
+      this._registerActionInput(action, input)
+    })
+    action.outputs.forEach((output) => {
+      this._registerActionOutput(action, output)
+    })
+  }
+
+  _registerActionInput(action, input) {
+    const watcher = this.watcher
+    // if no other action has been registered as generator
+    // then we add a file watcher
+    if (!this._generatedFiles[input]) {
+      log('Watching ', input)
+      watcher.watch(input, {
+        change: this._onChange.bind(this),
+        unlink: this._onUnlink.bind(this)
+      })
+    }
+    if (!this._actionsByInput[input]) {
+      this._actionsByInput[input] = []
+    }
+    this._actionsByInput[input].push(action)
+    this._actionsByInput[input] = uniq(this._actionsByInput[input])
+  }
+
+  _registerActionOutput(action, output) {
+    this._generatedFiles[output] = true
   }
 
   _onChange(file) {
@@ -296,8 +303,8 @@ export default class Bundler extends EventEmitter {
     delete this._scheduledActionIds[id]
     try {
       Promise.resolve(action.execute(this))
-      .then(_next)
-      .catch(_catch)
+        .then(_next)
+        .catch(_catch)
     } catch (err) {
       _catch(err)
     }
