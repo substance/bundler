@@ -72,7 +72,7 @@ export default class CustomCommand {
           action.inputs = uniq(action.inputs)
           const _actionsByInput = bundler._actionsByInput
           if (!_actionsByInput[file]) _actionsByInput[file] = []
-          _actionsByInput[file] = uniq(_actionsByInput[file].push(action))
+          _actionsByInput[file] = uniq(_actionsByInput[file].concat(action))
         }
       })
       return result
@@ -111,7 +111,7 @@ export default class CustomCommand {
             action.inputs = uniq(action.inputs)
             const _actionsByInput = bundler._actionsByInput
             if (!_actionsByInput[file]) _actionsByInput[file] = []
-            _actionsByInput[file] = uniq(_actionsByInput[file].push(action))
+            _actionsByInput[file] = uniq(_actionsByInput[file].concat(action))
           }
         })
       })
