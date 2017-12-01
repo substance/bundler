@@ -7,9 +7,9 @@ import randomId from '../randomId'
 
 export default class ForEachCommand {
 
-  constructor(description, pattern, handler) {
+  constructor(pattern, handler) {
     this._id = randomId()
-    this.description = description
+    this.description = `forEach(${pattern})...`
     this.pattern = pattern
     this.handler = handler
     if (!isFunction(handler)) {
@@ -35,17 +35,16 @@ export default class ForEachCommand {
     const pattern = this.pattern
     let files = glob.sync(pattern, {})
     if (files) {
-      files = files.map((file) => {
-        return path.join(rootDir, file)
-      })
       let t0 = Date.now()
       bundler._info(this.description)
       let actions = files.map((file) => {
-        return this._createAction(bundler, file, 'first-pass')
+        let absFile = !isAbsolute(file) ? path.join(rootDir, file) : file
+        return this._createAction(bundler, file, absFile, 'first-pass')
       })
       watcher.watch(pattern, {
         add: function(file) {
-          this._createAction(bundler, file)
+          let absFile = !isAbsolute(file) ? path.join(rootDir, file) : file
+          this._createAction(bundler, file, absFile)
         }
       })
       return Promise.all(actions).then(() => {
@@ -56,8 +55,8 @@ export default class ForEachCommand {
     }
   }
 
-  _createAction(bundler, file, firstPass) {
-    let action = new FileAction(this.description, file, this.handler)
+  _createAction(bundler, file, absFile, firstPass) {
+    let action = new FileAction(this.description, file, absFile, this.handler)
     bundler._registerAction(action)
     return action.execute(bundler, firstPass)
   }
@@ -66,10 +65,11 @@ export default class ForEachCommand {
 
 class FileAction extends Action {
 
-  constructor(title, file, handler) {
-    super([file], [])
+  constructor(title, file, absFile, handler) {
+    super([absFile], [])
     this.handler = handler
     this.file = file
+    this.absFile = absFile
 
     this._id = randomId()
     this.title = title
@@ -84,16 +84,14 @@ class FileAction extends Action {
   }
 
   execute(bundler, firstPass) {
-    if (firstPass) {
-      bundler._info('.. '+ this.file)
-    } else {
+    if (!firstPass) {
       bundler._info(this.title)
-      bundler._info('.. '+ this.file)
     }
     let t0 = Date.now()
     let file = this.file
-    if (!fs.existsSync(file)) {
-      throw new Error('File does not exist:', file)
+    let absFile = this.absFile
+    if (!fs.existsSync(absFile)) {
+      throw new Error('File does not exist:', absFile)
     }
     const action = this
     return Promise.resolve(
@@ -102,7 +100,7 @@ class FileAction extends Action {
           if (!isAbsolute(f)) {
             f = path.join(bundler.rootDir, f)
           }
-          addInput(bundler, action, file)
+          addInput(bundler, action, f)
           return fs.readFileSync(f, ...args)
         },
         writeFileSync(f, ...args) {
@@ -110,8 +108,8 @@ class FileAction extends Action {
             f = path.join(bundler.rootDir, f)
           }
           addOutput(bundler, action, f)
-          fse.ensureDirSync(path.basename(f))
-          return fs.readFileSync(f, ...args)
+          fse.ensureDirSync(path.dirname(f))
+          return fs.writeFileSync(f, ...args)
         }
       })
     ).then(() => {

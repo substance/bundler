@@ -75,8 +75,8 @@ export default class Bundler extends EventEmitter {
     return this._scheduleCommand(new ExecCommand(cmd, options))
   }
 
-  forEach(description, pattern, handler) {
-    return this._scheduleCommand(new ForEachCommand(description, pattern, handler))
+  forEach(pattern, handler) {
+    return this._scheduleCommand(new ForEachCommand(pattern, handler))
   }
 
   js(src, opts) {
