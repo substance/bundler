@@ -1,12 +1,5 @@
 # Inbox
 
-## Test-Suite
-
-We should have a test-suite. It would be great
-to able to use a virtual file-system.
-Then we can debug the tests in the browser.
-
-# Next
 
 ## Internal Dependency Graph
 <a name="internal-dependency-graph"></a>
@@ -57,9 +50,21 @@ How should scheduling be done?
   depend on the updated file will be skipped in the current
   cycle.
 
+# Next
+
+## Test-Suite
+
+We should have a test-suite. It would be great
+to able to use a virtual file-system.
+Then we can debug the tests in the browser.
+
 # Log
 
-## Implement [Internal Dependency Graph](#internal-dependency-graph)
+## Implement [Test-Suite](#test-suite)
+
+This is an essential preparation for the
+refactor `Internal Dependency Graph`.
+
 
 This is part of a general substance-bundler overhaul.
 
