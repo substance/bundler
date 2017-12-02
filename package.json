@@ -3,7 +3,7 @@
   "version": "0.20.0",
   "description": "Simplified bundling taylored to our needs.",
   "repository": "https.//github.com/substance/bundler.git",
-  "main": "dist/bundler.js",
+  "main": "main.js",
   "scripts": {
     "prepublishOnly": "node make clean vendor bundler",
     "lint": "eslint -c .eslintrc.js src extensions util",

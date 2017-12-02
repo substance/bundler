@@ -33,7 +33,7 @@ b.task('vendor', function() {
 
 b.task('bundler', function() {
   b.copy('vendor/vendor.js', 'dist/vendor.js')
-  b.js('src/main.js', {
+  b.js('src/index.js', {
     // need buble if we want to minify later
     buble: { include: [ 'src/**' ] },
     // built-ins: i.e. these files will not be processed

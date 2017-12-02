@@ -1,8 +1,8 @@
 // enabling source maps so that errors in bundler can be traced
 require('source-map-support').install()
 
-import { yargs, colors } from './vendor'
-import Bundler from './Bundler'
+const { yargs, colors } = require('./dist/vendor')
+const { Bundler } require('./dist/bundler.cjs.js')
 
 const argv = yargs
   // use this to start watcher
@@ -102,4 +102,4 @@ if (argv.remote) {
   })
 }
 
-export default bundler
+module.exports = bundler
