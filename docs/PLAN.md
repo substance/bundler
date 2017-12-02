@@ -75,7 +75,7 @@ Started this document to record ideas.
 > Ideas that have been implemented or rejected.
 
 ## Better API for Custom Tasks
-<a name="better-custom-tasks"></a>
+<a name="better-custom-api"></a>
 
 ATM `b.custom()` requires a `src` glob pattern,
 and a `execute(files)` method. It registers a watcher
