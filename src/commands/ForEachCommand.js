@@ -93,24 +93,10 @@ class FileAction extends Action {
     if (!fs.existsSync(absFile)) {
       throw new Error('File does not exist:', absFile)
     }
-    const action = this
     return Promise.resolve(
       this.handler(file, {
-        readFileSync(f, ...args) {
-          if (!isAbsolute(f)) {
-            f = path.join(bundler.rootDir, f)
-          }
-          addInput(bundler, action, f)
-          return fs.readFileSync(f, ...args)
-        },
-        writeFileSync(f, ...args) {
-          if (!isAbsolute(f)) {
-            f = path.join(bundler.rootDir, f)
-          }
-          addOutput(bundler, action, f)
-          fse.ensureDirSync(path.dirname(f))
-          return fs.writeFileSync(f, ...args)
-        }
+        action: createActionProxy(bundler, this),
+        fs: createFsProxy(bundler, this)
       })
     ).then(() => {
       if (!firstPass) {
@@ -120,7 +106,45 @@ class FileAction extends Action {
   }
 }
 
+function createActionProxy(bundler, action) {
+  return {
+    setDependencies(deps) {
+      // TODO: instead of adding files to the watcher
+      // it would be more accurate to replace
+      // the inputs.
+      // For now it is good enough
+      deps.forEach((f) => {
+        if (!isAbsolute(f)) {
+          f = path.join(bundler.rootDir, f)
+        }
+        addInput(bundler, action, f)
+      })
+    }
+  }
+}
+
+function createFsProxy(bundler, action) {
+  return {
+    readFileSync(f, ...args) {
+      if (!isAbsolute(f)) {
+        f = path.join(bundler.rootDir, f)
+      }
+      addInput(bundler, action, f)
+      return fs.readFileSync(f, ...args)
+    },
+    writeFileSync(f, ...args) {
+      if (!isAbsolute(f)) {
+        f = path.join(bundler.rootDir, f)
+      }
+      addOutput(bundler, action, f)
+      fse.ensureDirSync(path.dirname(f))
+      return fs.writeFileSync(f, ...args)
+    }
+  }
+}
+
 function addInput(bundler, action, file) {
+  if (!file) return
   if (action.inputs.indexOf(file) < 0) {
     action.inputs.push(file)
     bundler._registerActionInput(action, file)
@@ -128,6 +152,7 @@ function addInput(bundler, action, file) {
 }
 
 function addOutput(bundler, action, file) {
+  if (!file) return
   if (action.outputs.indexOf(file) < 0) {
     action.outputs.push(file)
     bundler._registerActionOutput(action, file)
