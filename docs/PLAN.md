@@ -1,4 +1,12 @@
-# Ideas
+# Inbox
+
+## Test-Suite
+
+We should have a test-suite. It would be great
+to able to use a virtual file-system.
+Then we can debug the tests in the browser.
+
+# Next
 
 ## Internal Dependency Graph
 <a name="internal-dependency-graph"></a>
