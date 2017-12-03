@@ -5,10 +5,11 @@ const path = require('path')
 const ROOT = path.join(__dirname, '..')
 const TMP = path.join(ROOT, 'tmp')
 
-module.exports = function setup() {
-  let b = new Bundler({
+module.exports = function setup(opts = {}) {
+  opts = Object.assign({
     rootDir: ROOT
-  })
+  }, opts)
+  let b = new Bundler(opts)
   // delete tmp on every setup
   fse.removeSync(TMP)
   return { b }

@@ -142,6 +142,21 @@ export default class Bundler extends EventEmitter {
     return _isDirectory(p)
   }
 
+  start() {
+    const bundler = this
+    bundler.once('done', () => {
+      if (bundler.opts.watch) {
+        console.log('Start watching')
+        bundler._startWatching()
+      }
+    })
+    bundler._start()
+  }
+
+  stop() {
+    this.watcher.stop()
+  }
+
   _scheduleCommand(cmd) {
     const entry = this._schedule(cmd)
     return entry.promise
