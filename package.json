@@ -1,11 +1,12 @@
 {
   "name": "substance-bundler",
-  "version": "0.20.2",
+  "version": "0.20.3",
   "description": "Simplified bundling taylored to our needs.",
   "repository": "https.//github.com/substance/bundler.git",
   "main": "dist/bundler.js",
   "scripts": {
     "prepare": "node make clean vendor bundler",
+    "prepublish": "node make clean vendor bundler",
     "lint": "eslint -c .eslintrc.js src extensions util",
     "build": "node make clean vendor bundler",
     "start": "node make -w"
