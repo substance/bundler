@@ -19,7 +19,7 @@ module.exports = function vfs(b, options={}) {
         vfs[relPath] = content
       })
       const code = _generateCode(vfs, options)
-      b.writeSync(dest, code)
+      b.writeFileSync(dest, code)
     }
   })
 }
