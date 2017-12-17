@@ -5,7 +5,7 @@
   "repository": "https.//github.com/substance/bundler.git",
   "main": "dist/bundler.js",
   "scripts": {
-    "prepublishOnly": "node make clean vendor bundler",
+    "prepare": "node make clean vendor bundler",
     "lint": "eslint -c .eslintrc.js src extensions util",
     "build": "node make clean vendor bundler",
     "start": "node make -w"
