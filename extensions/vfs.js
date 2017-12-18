@@ -40,6 +40,12 @@ class SimpleVFS {
     }
     return CONTENT[path]
   }
+  writeFileSync(path, content) {
+    if (path.charCodeAt(0) === SLASH) {
+      path = path.slice(1)
+    }
+    CONTENT[path] = content
+  }
   existsSync(path) {
     return CONTENT.hasOwnProperty(path)
   }
