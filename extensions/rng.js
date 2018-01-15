@@ -5,10 +5,10 @@ module.exports = function compileRngSchema(b, src, options = {}) {
   const dir = options.dir || 'tmp'
   const name = options.name || path.basename(src, '.rng')
   const dest = `${dir}/${name}.data.js`
-  const issues = `${dir}/${name}.issues.txt`
+  // const issues = `${dir}/${name}.issues.txt`
   const doc = `${dir}/${name}.schema.md`
   const entry = path.basename(src)
-  const RNG_SEARCH_DIRS = [path.dirname(src)]
+  let RNG_SEARCH_DIRS = [path.dirname(src)]
   if (options.RNG_SEARCH_DIRS) {
     RNG_SEARCH_DIRS = RNG_SEARCH_DIRS.concat(options.RNG_SEARCH_DIRS)
   }
