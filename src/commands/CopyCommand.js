@@ -58,7 +58,7 @@ export default class CopyCommand {
       if (!this.opts.root) {
         let idx = this.src.indexOf('*')
         let pre = this.src.slice(0, idx)
-        this.opts.root = path.dirname(pre)
+        this.opts.root = pre
       }
       return this._executeWithGlob(bundler)
     }
