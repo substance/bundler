@@ -14,7 +14,7 @@ Consider a library 'foo' written in ES6.
 
 To be able to use the library from Node, set the target format to 'cjs'.
 
-```
+```js
 b.js('index.es6.js', {
   target: {
     dest: './dist/foo.cjs.js',
@@ -32,7 +32,7 @@ to use your library without the need of extra configuration. Additionally it mig
 
 > Note: if you don't do this, others will need to configure their bundler to treat the CommonJS code on their own.
 
-```
+```js
 b.js('index.es6.js', {
   target: {
     dest: './dist/foo.es6.js',
@@ -45,7 +45,7 @@ In `package.json` you would then set `"jsnext:main": "dist/foo.es6.js"`.
 
 ## Browser
 
-```
+```js
 b.js('index.es6.js', {
   target: {
     dest: './dist/foo.js',
@@ -56,7 +56,7 @@ b.js('index.es6.js', {
 
 ## CommonJS Dependencies
 
-```
+```js
 b.js('index.es6.js', {
   commonjs: ['lodash'],
   target: {
@@ -70,7 +70,7 @@ b.js('index.es6.js', {
 
 Sometimes you want to exclude dependencies from the bundle, e.g. because it is not used.
 
-```
+```js
 b.js('index.es6.js', {
   ignore: ['cheerio'],
   target: {
@@ -87,7 +87,7 @@ The specified modules will be replaced with a stub, an empty object.
 If you want to take care of a module by yourself, you can declare it as 'external'.
 These modules are supposed to be found in the global scope.
 
-```
+```js
 b.js('index.es6.js', {
   external: ['jquery'],
   target: {
@@ -103,8 +103,9 @@ Some dependencies are difficult to bundle with `rollup`, e.g. `tape`. In these c
 to generate a vendor bundle, and then proceed with `rollup`.
 
 For example, in `substance-test` we need to bundle `tape` with `browserify`, and then create the
-entire bundle using `rollup`
-```
+entire bundle using `rollup`.
+
+```js
 const TAPE_BROWSER = path.join(__dirname, 'tmp/tape.browser.js')
 
 // bundle tape with browserify
