@@ -10,7 +10,7 @@ module.exports = function vfs(b, options={}) {
     src: src,
     dest: dest,
     execute(files) {
-      const rootDir = b.rootDir
+      const rootDir = options.rootDir || b.rootDir
       const vfs = {}
       files.forEach((f) => {
         if (b.isDirectory(f)) return
