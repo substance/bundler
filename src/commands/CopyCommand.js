@@ -1,8 +1,10 @@
 import * as path from 'path'
 import * as fs from 'fs'
 import Action from '../Action'
-import { glob, fse } from '../vendor'
+import { glob, fse, debug } from '../vendor'
 import { copySync, isAbsolute, isDirectory } from '../fileUtils'
+
+const log = debug('copy')
 
 /*
   Copy a single file into dist folder:
@@ -166,8 +168,11 @@ class CopyAction extends Action {
   }
 
   _execute() {
-    if (fs.existsSync(this.src)) {
-      copySync(this.src, this.dest)
+    const src = this.src
+    const dest = this.dest
+    if (fs.existsSync(src)) {
+      log(`copying ${src} -> ${dest}`)
+      copySync(src, dest)
     }
   }
 }

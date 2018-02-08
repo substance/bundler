@@ -7,7 +7,9 @@ export function isDirectory (p) {
 }
 
 export function isAbsolute(p) {
-  return path.resolve(p) === path.normalize(p)
+  // this is broken since node 8
+  // return path.resolve(p) === path.normalize(p)
+  return path.isAbsolute(p)
 }
 
 export function copySync(src, dest) {
