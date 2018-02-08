@@ -58,9 +58,9 @@ export default class CopyCommand {
       // use the parent of the first * as relative root
       // for paths found via glob
       if (!this.opts.root) {
-        let idx = this.src.indexOf('*')
-        let pre = this.src.slice(0, idx)
-        this.opts.root = pre
+        let idx = this.src.lastIndexOf('*')
+        let root = path.dirname(this.src.slice(0, idx))
+        this.opts.root = root
       }
       return this._executeWithGlob(bundler)
     }
