@@ -1,6 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { fse } from './vendor'
+import { fse, debug } from './vendor'
+
+const log = debug('fileUtils')
+
+const SLASH = '/'.charCodeAt(0)
 
 export function isDirectory (p) {
   return (fs.existsSync(p) && fs.lstatSync(p).isDirectory())
@@ -14,6 +18,7 @@ export function isAbsolute(p) {
 
 export function copySync(src, dest) {
   const dir = _dir(dest)
+  log(`ensureDirSync(${dir})`)
   fse.ensureDirSync(dir)
   fse.copySync(src, dest)
 }
@@ -25,6 +30,6 @@ export function writeSync(dest, buf) {
 }
 
 function _dir(p) {
-  if (p[p.length-1] === '/') return p
+  if (p.charCodeAt(p.length-1) === SLASH) return p
   else return path.dirname(p)
 }
