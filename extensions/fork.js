@@ -12,7 +12,12 @@ module.exports = function(b, cmd, ...args) {
   }
   b.custom(`Fork: ${cmd} ${args}`, {
     execute() {
-      return _fork(cmd, args, options)
+      let p = _fork(cmd, args, options)
+      if (options.await) {
+        return p
+      } else {
+        return Promise.resolve(true)
+      }
     }
   })
 }
