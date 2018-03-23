@@ -13,7 +13,7 @@ module.exports = function(b, cmd, ...args) {
   b.custom(`Fork: ${cmd} ${args}`, {
     execute() {
       let p = _fork(cmd, args, options)
-      if (options.await) {
+      if (options.await !== false) {
         return p
       } else {
         return Promise.resolve(true)
