@@ -54,6 +54,7 @@ export default class CopyCommand {
     const rootDir = bundler.rootDir
     let dest = this.dest
     if (!isAbsolute(dest)) dest = path.join(rootDir, dest)
+    const lastIsSlash = (dest[dest.length-1] === path.sep)
     if (glob.hasMagic(this.src)) {
       // use the parent of the first * as relative root
       // for paths found via glob
@@ -65,7 +66,20 @@ export default class CopyCommand {
       return this._executeWithGlob(bundler)
     }
     else if (isDirectory(this.src)) {
-      this.opts.root = this.src
+      log('Copying a directory...')
+      if (this.opts.root) {
+        // just use the option
+      } else if (lastIsSlash) {
+        if (isAbsolute(this.src)) {
+          this.opts.root = path.dirname(this.src)
+        } else {
+          this.opts.root = path.join(rootDir, path.dirname(this.src))
+        }
+        log('using implicit root dir: ' + this.opts.root)
+      } else {
+        this.opts.root = this.src
+        log('using implicit root dir: ' + this.opts.root)
+      }
       this.src = this.src+"/**/*"
       return this._executeWithGlob(bundler)
     }
@@ -94,7 +108,14 @@ export default class CopyCommand {
     const pattern = this.src
     let dest = this.dest
     if (!isAbsolute(dest)) dest = path.join(rootDir, dest)
-    const globRoot = this.opts.root ? path.join(rootDir, this.opts.root) : rootDir
+    let globRoot = rootDir
+    if (this.opts.root) {
+      if (isAbsolute(this.opts.root)) {
+        globRoot = this.opts.root
+      } else {
+        globRoot = path.join(rootDir, this.opts.root)
+      }
+    }
     const files = glob.sync(pattern, {})
     if (files) {
       files.forEach(function(file) {
