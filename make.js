@@ -24,7 +24,7 @@ b.task('vendor', function() {
       return bundleVendor({
         src: './vendor/_vendor.js',
         dest: './vendor/vendor.js',
-        external: ['fsevents', 'pkg-resolve', 'sugarss'],
+        external: ['fsevents', 'pkg-resolve', 'resolve', 'sugarss'],
         debug: true
       })
     }
