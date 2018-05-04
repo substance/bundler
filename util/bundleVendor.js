@@ -19,7 +19,8 @@ module.exports = function bundleVendor(opts) {
       builtins: false,
       commondir: false,
       fullPaths: false,
-      standalone: 'vendor'
+      standalone: 'vendor',
+      debug: opts.debug
     })
     external.forEach(function(m) {
       b.external(m)
