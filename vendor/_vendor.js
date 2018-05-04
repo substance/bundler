@@ -29,6 +29,8 @@ var buble = require('buble/dist/buble-browser-deps.umd.js')
 var pluginutils = require('rollup-pluginutils/dist/pluginutils.cjs.js')
 // ATTENTION rollup-plugin-node-globals also uses dynamic require statements so it can not be bundled
 //var nodeGlobals = require('rollup-plugin-node-globals/dist/rollup-plugin-node-globals.cjs.js')
+var alias = require('rollup-plugin-alias')
+var ignore = require('rollup-plugin-ignore')
 
 // postcss
 var postcss = require('postcss')
@@ -59,6 +61,8 @@ module.exports = {
   without: without,
   rollup: rollup,
   commonjs: commonjs,
+  alias: alias,
+  ignore: ignore,
   sourcemaps: sourcemaps,
   buble: buble,
   pluginutils: pluginutils,

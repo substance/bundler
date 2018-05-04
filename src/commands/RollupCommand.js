@@ -1,13 +1,11 @@
 import * as path from 'path'
 import {
-  glob, rollup, commonjs,
+  glob, rollup, commonjs, alias, ignore,
   sourcemaps, isArray, isPlainObject,
   colors, forEach
 } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
-import resolve from '../rollup/rollup-plugin-resolve'
 import buble from '../rollup/rollup-plugin-buble'
-import eslintPlugin from '../rollup/rollup-plugin-eslint'
 import istanbulPlugin from '../rollup/rollup-plugin-istanbul'
 import cleanup from '../rollup/rollup-plugin-cleanup'
 import rollupGlob from '../rollup/rollup-glob'
@@ -16,11 +14,12 @@ import Action from '../Action'
 import log from '../log'
 
 const ZERO = "\0".charCodeAt(0)
-const DOT = ".".charCodeAt(0)
+
+let nodeResolve = require('rollup-plugin-node-resolve')
 
 export default class RollupCommand {
 
-  constructor(src, opts, bundler) {
+  constructor(src, opts) {
     if (!src) throw new Error("'src' is mandatory.")
     // rollup does not have a good behavior with src being a glob pattern.
     // for that purpose we detect if src contains glob pattern
@@ -84,50 +83,36 @@ export default class RollupCommand {
       this.targets = [target]
     }
 
-    // we provide a custom resolver, taking care of
-    // pretty much all resolving (relative and node)
     let resolveOpts
+    // always add node-resolve, only don't if set to false
     if (opts.resolve !== false) {
-      resolveOpts = opts.resolve || {}
-      if (opts.external) {
-        resolveOpts.external = opts.external
-      }
-      if (opts.alias) {
-        // compile aliases:
-        // keys can be provided as absolute path (/...), module based (no slash), or relative path
-        // the resolver only supports absolute paths and module based ids
-        // For the values, only absolute paths are supported
-        let _aliases = Object.assign({}, opts.alias, resolveOpts.alias)
-        let aliases = {}
-        forEach(_aliases, (val, key) => {
-          if (key.charCodeAt(0) === DOT) {
-            key = path.join(bundler.rootDir, key)
-          }
-          if (!isAbsolute(val)) {
-            val = path.join(bundler.rootDir, val)
-          }
-          aliases[key] = val
-        })
-        resolveOpts.alias = aliases
-      }
-      if (opts.ignore && opts.ignore.length > 0) {
-        resolveOpts.ignore = opts.ignore
-      }
+      resolveOpts = opts.resolve || { main: true, jsnext: true }
     }
-    delete opts.ignore
-    delete opts.alias
     delete opts.resolve
 
+    let aliasOpts
+    if (opts.alias) {
+      aliasOpts = opts.alias || {}
+    }
+    delete opts.alias
+
+    let ignoreOpts
+    if (opts.ignore) {
+      ignoreOpts = opts.ignore
+    }
+    delete opts.ignore
+
     // commonjs modules
-    let cjsOpts = null
+    let cjsOpts
     if (opts.commonjs) {
-      cjsOpts = { include: [] }
-      if (isArray(opts.commonjs)) {
-        resolveOpts.cjs = resolveOpts.cjs || []
-        resolveOpts.cjs = resolveOpts.cjs.concat(opts.commonjs)
-        opts.commonjs.forEach((name) => {
-          cjsOpts.include.push('**/'+name+'/**')
-        })
+      if (opts.commonjs === true) {
+        // default setting
+        cjsOpts = {
+          include: ['node_modules/**']
+        }
+      } else if (isArray(opts.commonjs)) {
+        let include = opts.commonjs.map(name => '**/'+name+'/**')
+        cjsOpts = { include }
       } else if (isPlainObject(opts.commonjs)) {
         cjsOpts = opts.commonjs
       }
@@ -145,12 +130,6 @@ export default class RollupCommand {
       jsonOpts = opts.json
     }
     delete opts.json
-
-    let eslintOpts = null
-    if (opts.eslint) {
-      eslintOpts = opts.eslint
-    }
-    delete opts.eslint
 
     let istanbulOpts = null
     if (opts.istanbul) {
@@ -171,12 +150,14 @@ export default class RollupCommand {
     // if the src contains a glob pattern we use rollupGlob to generate the entry
     if (srcPattern) plugins.push(rollupGlob({pattern:srcPattern}))
 
+    if (ignoreOpts) plugins.push(ignore(ignoreOpts))
+
+    if (aliasOpts) plugins.push(alias(aliasOpts))
+
     // resolve plugin takes care of finding imports in 'node_modules'
     // NOTE: better this be the first and does everything related to resolving
     // i.e., aliases, ignores etc.
-    if (resolveOpts) plugins.push(resolve(resolveOpts))
-
-    if (eslintOpts) plugins.push(eslintPlugin(eslintOpts))
+    if (resolveOpts) plugins.push(nodeResolve(resolveOpts))
 
     // this is necesssary so that already existing sourcemaps
     // present in imported files are picked up
