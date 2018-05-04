@@ -1,10 +1,11 @@
 import * as path from 'path'
 import {
-  glob, rollup, commonjs, alias, ignore,
+  glob, rollup, commonjs, alias,
   sourcemaps, isArray, isPlainObject,
   colors, forEach
 } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
+import ignore from '../rollup/rollup-ignore'
 import buble from '../rollup/rollup-plugin-buble'
 import istanbulPlugin from '../rollup/rollup-plugin-istanbul'
 import cleanup from '../rollup/rollup-plugin-cleanup'
