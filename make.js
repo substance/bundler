@@ -16,7 +16,7 @@ b.task('vendor', function() {
     verbose: true,
     shell: true
   }
-  exec(b, cmd, 'install', '--ignore-scripts', opts)
+  exec(b, cmd, 'install', '--ignore-scripts', '--no-package-lock', '--no-save', opts)
   b.custom('Bundling vendor...', {
     src: './vendor/_vendor.js',
     dest: './vendor/vendor.js',
