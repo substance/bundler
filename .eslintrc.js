@@ -17,7 +17,7 @@ module.exports = {
   },
   "rules": {
     // 0 - off, 1 - warning, 2 - error
-    "indent": ["error", 2, { "SwitchCase": 1 }],
+    "indent": ["error", 2, { "SwitchCase": 1, "MemberExpression": "off" }],
     "semi": [2, "never"],
     "comma-dangle": [2, "only-multiline"],
     "no-cond-assign": 2,
