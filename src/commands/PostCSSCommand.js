@@ -1,10 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import {
-    postcss, postcssImport,
-    postcssVariables, postcssReporter,
-    colors
-  } from '../vendor'
+  postcss, postcssImport,
+  postcssVariables, postcssReporter,
+  colors
+} from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import Action from '../Action'
 
@@ -87,7 +87,12 @@ class PostCSSAction extends Action {
     const css = fs.readFileSync(this.src, 'utf8')
     return postcss(plugins)
     .process(css, postcssOpts)
-    .then(function (result) {
+    .then(result => {
+      const deps = result.messages.filter(
+        message => message.type === "dependency"
+      )
+      this._registerWatchers(deps)
+
       writeSync(dest+'.map', JSON.stringify(result.map))
       writeSync(dest, result.css)
       bundler._info(colors.green('..finished in %s ms.'), Date.now()-t0)
@@ -98,13 +103,14 @@ class PostCSSAction extends Action {
     Action.removeOutputs(this)
   }
 
-  _onImport(files) {
+  _registerWatchers(deps) {
     const bundler = this.bundler
     const watcher = bundler.watcher
     const watched = this._watched
     const self = this
 
-    files.forEach(function(file) {
+    deps.forEach(dep => {
+      let file = dep.file
       // skip fake modules which usually do not have a qualified path
       if (!isAbsolute(file)) return
       if (!watched[file]) {
