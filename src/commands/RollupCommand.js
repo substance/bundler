@@ -82,6 +82,7 @@ export default class RollupCommand {
       // HACK: special treatment for globals
       target.globals = globals
       this.targets = [target]
+      delete opts.globals
     }
 
     let resolveOpts
@@ -294,15 +295,15 @@ class RollupAction extends Action {
   _generate(bundle, target) {
     const rootDir = this.rootDir
     const absDest = isAbsolute(target.dest) ? target.dest : path.join(rootDir, target.dest)
-    let opts = Object.assign({}, target)
+    let targetOpts = Object.assign({}, target)
     // HACK: do globals really need to go here?
     // maybe we should copy them previously
     if (this.opts.globals) {
-      opts.globals = this.opts.globals
+      targetOpts.globals = Object.assign({}, this.opts.globals, target.globals)
     }
     if (this.sourceMap) {
-      opts.sourceMap = true
-      opts.sourceMapFile = absDest
+      targetOpts.sourceMap = true
+      targetOpts.sourceMapFile = absDest
     }
     // NOTE: with the latest rollup version,
     // some options have been renamed
@@ -314,12 +315,12 @@ class RollupAction extends Action {
       'sourceMapFile': 'sourcemapFile',
     }
     forEach(RENAMED, (newName, oldName) => {
-      if (opts.hasOwnProperty(oldName)) {
-        opts[newName] = opts[oldName]
-        delete opts[oldName]
+      if (targetOpts.hasOwnProperty(oldName)) {
+        targetOpts[newName] = targetOpts[oldName]
+        delete targetOpts[oldName]
       }
     })
-    return bundle.generate(opts)
+    return bundle.generate(targetOpts)
     .then((result) => {
       // write the map file first so that a file watcher for the bundle
       // is not triggered too early
