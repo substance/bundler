@@ -1,12 +1,13 @@
 import * as path from 'path'
 import {
   glob, rollup, commonjs, alias,
-  sourcemaps, isArray, isPlainObject,
-  colors, forEach
+  sourcemaps,
+  isArray, isPlainObject, colors, forEach
 } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import ignore from '../rollup/rollup-ignore'
 import buble from '../rollup/rollup-plugin-buble'
+import uglify from '../rollup/rollup-plugin-uglify'
 import istanbulPlugin from '../rollup/rollup-plugin-istanbul'
 import cleanup from '../rollup/rollup-plugin-cleanup'
 import rollupGlob from '../rollup/rollup-glob'
@@ -32,7 +33,11 @@ export default class RollupCommand {
     }
     this.src = src
 
-    const sourceMap = (opts.sourceMap !== false)
+    // we have allowed some target options on the top level
+    // so we need to make sure to rename old ones
+    _renameLegacyTargetOptions(opts)
+
+    const sourcemap = (opts.sourcemap !== false)
 
     // in rollup external and globals are often
     // redundant, thus we added an option to specify
@@ -57,33 +62,41 @@ export default class RollupCommand {
     }
 
     // parse targets
-    if (opts.targets) {
-      this.targets = opts.targets
-      delete opts.targets
-    } else if (opts.target) {
-      this.targets = [opts.target]
-      delete opts.target
-    } else {
-      // all these are actually target specific options
-      // but allowed on top-level for convenience
-      // however, here we normalize, wrapping this into
-      // 'targets'
-      const TARGET_OPTS = [
-        'dest', 'format', 'moduleName', 'paths',
-        'sourceMap', 'sourceMapRoot', 'sourceMapPrefix'
-      ]
-      let target = {}
-      TARGET_OPTS.forEach((name) => {
-        if (opts.hasOwnProperty(name)) {
-          target[name] = opts[name]
-          delete opts[name]
-        }
-      })
-      // HACK: special treatment for globals
-      target.globals = globals
-      this.targets = [target]
-      delete opts.globals
+    if (opts.output) {
+      this.targets = opts.output
+      delete opts.output
     }
+    // LEGACY
+    else {
+      console.error("DEPRECATED: use 'output:[...]' instead")
+      if (opts.targets) {
+        this.targets = opts.targets
+        delete opts.targets
+      } else if (opts.target) {
+        this.targets = [opts.target]
+        delete opts.target
+      } else {
+        // all these are actually target specific options
+        // but allowed on top-level for convenience
+        // however, here we normalize, wrapping this into 'targets'
+        const TARGET_OPTS = [
+          'dest', 'format', 'name', 'paths',
+          'sourcemap', 'sourcemapRoot', 'sourcemapPrefix'
+        ]
+        let target = {}
+        TARGET_OPTS.forEach((name) => {
+          if (opts.hasOwnProperty(name)) {
+            target[name] = opts[name]
+            delete opts[name]
+          }
+        })
+        // HACK: special treatment for globals
+        target.globals = globals
+        this.targets = [target]
+        delete opts.globals
+      }
+    }
+    this.targets.forEach(_renameLegacyTargetOptions)
 
     let resolveOpts
     // always add node-resolve, only don't if set to false
@@ -92,16 +105,10 @@ export default class RollupCommand {
     }
     delete opts.resolve
 
-    let aliasOpts
-    if (opts.alias) {
-      aliasOpts = opts.alias || {}
-    }
+    let aliasOpts = opts.alias || {}
     delete opts.alias
 
-    let ignoreOpts
-    if (opts.ignore) {
-      ignoreOpts = opts.ignore
-    }
+    let ignoreOpts = opts.ignore
     delete opts.ignore
 
     // commonjs modules
@@ -127,23 +134,17 @@ export default class RollupCommand {
     }
     delete opts.buble
 
-    let jsonOpts = null
-    if (opts.json) {
-      jsonOpts = opts.json
-    }
+    let jsonOpts = opts.json
     delete opts.json
 
-    let istanbulOpts = null
-    if (opts.istanbul) {
-      istanbulOpts = opts.istanbul
-    }
+    let istanbulOpts = opts.istanbul
     delete opts.istanbul
 
-    let cleanupOpts = null
-    if (opts.cleanup) {
-      cleanupOpts = opts.cleanup
-    }
+    let cleanupOpts = opts.cleanup
     delete opts.cleanup
+
+    let uglifyOpts = opts.minify
+    delete opts.minify
 
     // Plugins
 
@@ -163,7 +164,7 @@ export default class RollupCommand {
 
     // this is necesssary so that already existing sourcemaps
     // present in imported files are picked up
-    if (sourceMap) plugins.push(sourcemaps())
+    if (sourcemap) plugins.push(sourcemaps())
 
     // apply instrumentation before any other transforms
     if (istanbulOpts) plugins.push(istanbulPlugin(istanbulOpts))
@@ -178,6 +179,8 @@ export default class RollupCommand {
     if (bubleOpts) plugins.push(buble(bubleOpts))
 
     if (jsonOpts) plugins.push(jsonPlugin(jsonOpts))
+
+    if (uglifyOpts) plugins.push(uglify(uglifyOpts))
 
     // TODO: need to discuss whether and how we want to allow custom rollup plugins
     // The order of plugins is critical in certain cases, thus as we do here, appending to
@@ -199,7 +202,7 @@ export default class RollupCommand {
 
   get id() {
     return ['RollupCommand', this.src, this.targets.map(function(target) {
-      return target.dest
+      return target.file
     })]
   }
 
@@ -230,7 +233,7 @@ class RollupAction extends Action {
     this.plugins = plugins
     this.targets = targets
     this.opts = opts
-    this.sourceMap = (opts.sourceMap !== false)
+    this.sourcemap = (opts.sourcemap !== false)
     this.rootDir = bundler.rootDir
 
     this._cache = null
@@ -294,52 +297,37 @@ class RollupAction extends Action {
 
   _generate(bundle, target) {
     const rootDir = this.rootDir
-    const absDest = isAbsolute(target.dest) ? target.dest : path.join(rootDir, target.dest)
+    const absDest = isAbsolute(target.file) ? target.file : path.join(rootDir, target.file)
     let targetOpts = Object.assign({}, target)
     // HACK: do globals really need to go here?
     // maybe we should copy them previously
     if (this.opts.globals) {
       targetOpts.globals = Object.assign({}, this.opts.globals, target.globals)
     }
-    if (this.sourceMap) {
-      targetOpts.sourceMap = true
-      targetOpts.sourceMapFile = absDest
+    if (this.sourcemap) {
+      targetOpts.sourcemap = true
+      targetOpts.sourcemapFile = absDest
     }
-    // NOTE: with the latest rollup version,
-    // some options have been renamed
-    // const RENAMED
-    const RENAMED = {
-      'dest': 'file',
-      'moduleName': 'name',
-      'sourceMap': 'sourcemap',
-      'sourceMapFile': 'sourcemapFile',
-    }
-    forEach(RENAMED, (newName, oldName) => {
-      if (targetOpts.hasOwnProperty(oldName)) {
-        targetOpts[newName] = targetOpts[oldName]
-        delete targetOpts[oldName]
-      }
-    })
     return bundle.generate(targetOpts)
     .then((result) => {
       // write the map file first so that a file watcher for the bundle
       // is not triggered too early
-      if (this.sourceMap) {
-        let sourceMap = result.map.toString()
-        if (target.sourceMapRoot) {
-          let data = JSON.parse(sourceMap)
+      if (this.sourcemap) {
+        let sourcemap = result.map.toString()
+        if (target.sourcemapRoot) {
+          let data = JSON.parse(sourcemap)
           data.sources = data.sources.map(function(srcPath) {
             let absSrcPath = path.join(path.dirname(absDest), srcPath)
-            let relSrcPath = path.relative(target.sourceMapRoot, absSrcPath)
+            let relSrcPath = path.relative(target.sourcemapRoot, absSrcPath)
             relSrcPath = relSrcPath.replace(/\\/g, "/")
             // console.log('### source file:', srcPath)
             // HACK: hard coded pattern for source path transformation
-            if (target.sourceMapPrefix) relSrcPath = target.sourceMapPrefix + '/' + relSrcPath
+            if (target.sourcemapPrefix) relSrcPath = target.sourcemapPrefix + '/' + relSrcPath
             return relSrcPath
           })
-          sourceMap = JSON.stringify(data)
+          sourcemap = JSON.stringify(data)
         }
-        writeSync(absDest+'.map', sourceMap)
+        writeSync(absDest+'.map', sourcemap)
         writeSync(absDest,
           [
             result.code,
@@ -392,18 +380,38 @@ class RollupAction extends Action {
   _getBundles() {
     const rootDir = this.rootDir
     const targets = this.targets
-    return targets.map(function(target) {
-      return isAbsolute(target.dest) ? target.dest : path.join(rootDir, target.dest)
+    return targets.map((target) => {
+      return isAbsolute(target.file) ? target.file : path.join(rootDir, target.file)
     })
   }
 
   _getSourceMaps() {
     const rootDir = this.rootDir
     const targets = this.targets
-    return targets.map(function(target) {
-      if (target.sourceMap === false) return null
-      const dest = target.dest + ".map"
+    return targets.map((target) => {
+      if (target.sourcemap === false) return null
+      const dest = target.file + ".map"
       return isAbsolute(dest) ? dest : path.join(rootDir, dest)
     }).filter(Boolean)
   }
+}
+
+function _renameLegacyTargetOptions(target) {
+  // NOTE: with the latest rollup version,
+  // some options have been renamed
+  // const RENAMED
+  const RENAMED = {
+    'dest': 'file',
+    'moduleName': 'name',
+    'sourceMap': 'sourcemap',
+    'sourceMapFile': 'sourcemapFile',
+    'sourceMapPrefix': 'sourcemapPrefix',
+  }
+  forEach(RENAMED, (newName, oldName) => {
+    if (target.hasOwnProperty(oldName)) {
+      console.error(`DEPRECATED: use 'target.${newName}' instead.`)
+      target[newName] = target[oldName]
+      delete target[oldName]
+    }
+  })
 }
