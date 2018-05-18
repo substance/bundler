@@ -61,14 +61,16 @@ class MinifyAction extends Action {
     const code = fs.readFileSync(src, 'utf8')
     const destSourceMap = this.destSourceMap
     let opts = {
-      fromString: true,
+      // fromString: true,
     }
     if (this.debug) {
-      opts.outSourceMap = destSourceMap
-      opts.sourceMapUrl = './'+path.basename(destSourceMap)
-    }
-    if (fs.existsSync(inSourceMap)) {
-      opts.inSourceMap = inSourceMap
+      opts.sourceMap = {
+        url: './' + path.basename(destSourceMap)
+      }
+      if (fs.existsSync(inSourceMap)) {
+        let content = fs.readFileSync(inSourceMap, 'utf8')
+        opts.sourceMap.content = content
+      }
     }
     const t0 = Date.now()
     const result = uglify.minify(code, opts)
