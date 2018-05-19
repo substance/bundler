@@ -60,7 +60,8 @@ export default class CopyCommand {
       // for paths found via glob
       if (!this.opts.root) {
         let idx = this.src.lastIndexOf('*')
-        let root = path.dirname(this.src.slice(0, idx))
+        let root = path.join(rootDir, path.dirname(this.src.slice(0, idx + 1)))
+        // console.log('USING ROOT', root)
         this.opts.root = root
       }
       return this._executeWithGlob(bundler)
@@ -116,12 +117,17 @@ export default class CopyCommand {
         globRoot = path.join(rootDir, this.opts.root)
       }
     }
-    const files = glob.sync(pattern, {})
+    // console.log('GLOBROOT', globRoot)
+    const files = glob.sync(pattern)
     if (files) {
-      files.forEach(function(file) {
-        let srcPath = path.join(rootDir, file)
+      files.forEach(function(relativePath) {
+        // console.log('RELATIVE_PATH', relativePath)
+        let absPath = path.join(rootDir, relativePath)
+        // console.log('ABS_PATH', absPath)
+        let srcPath = absPath
         if (isDirectory(srcPath)) return
-        let destPath = path.join(dest, path.relative(globRoot, file))
+        let destPath = path.join(dest, path.relative(globRoot, absPath))
+        // console.log('DEST_PATH', destPath)
         const action = new CopyAction(srcPath, destPath)
         bundler._registerAction(action)
         action._execute()
