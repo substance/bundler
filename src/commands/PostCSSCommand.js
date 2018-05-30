@@ -3,10 +3,12 @@ import * as path from 'path'
 import {
   postcss, postcssImport,
   postcssVariables, postcssReporter,
-  colors
+  colors, debug
 } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import Action from '../Action'
+
+const log = debug('bundler:postcss')
 
 export default class PostCSSCommand {
   constructor (src, dest, opts) {
@@ -63,7 +65,10 @@ class PostCSSAction extends Action {
         // make sure that postcss-import is the first one
         plugins.unshift(postcssImport({
           onImport: (files) => {
-            this._onImport(files)
+            log('onImport received files', files[0])
+            this._registerWatchers(files.map(file => {
+              return { file }
+            }))
           }
         }))
       }
