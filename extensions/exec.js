@@ -16,7 +16,11 @@ module.exports = function(b, cmd, ...args) {
   if (options && options.cwd) {
     msg += ` in ${options.cwd}`
   }
+  let src = options.src
+  let dest = options.dest
   b.custom(msg, {
+    src,
+    dest,
     execute() {
       return _exec(cmd, args, options)
     }
