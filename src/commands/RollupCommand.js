@@ -37,6 +37,7 @@ export default class RollupCommand {
     _renameLegacyTargetOptions(opts)
 
     const sourcemap = (opts.sourcemap !== false)
+    delete opts.sourcemap
 
     // in rollup external and globals are often
     // redundant, thus we added an option to specify
