@@ -5,8 +5,8 @@
   "repository": "https.//github.com/substance/bundler.git",
   "main": "dist/bundler.js",
   "scripts": {
-    "prepare": "node make clean vendor bundler",
-    "lint": "eslint -c .eslintrc.js src extensions util",
+    "prepack": "npm run build",
+    "lint": "standard src/**/*.js extensions/*.js",
     "build": "node make clean vendor bundler",
     "start": "node make -w"
   },
@@ -44,6 +44,7 @@
     "rollup-pluginutils": "^2.0.1",
     "spawn-sync": "^1.0.15",
     "substance-bundler": "0.18.1",
+    "standard": "^11.0.1",
     "thread-sleep": "^2.0.0",
     "try-thread-sleep": "^1.0.2",
     "yargs": "^11.0.0"
