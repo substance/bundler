@@ -4,12 +4,12 @@ var bundleVendor = require('./util/bundleVendor')
 var exec = require('./extensions/exec')
 var path = require('path')
 
-b.task('clean', function() {
+b.task('clean', function () {
   b.rm('./dist')
   b.rm('./tmp')
 })
 
-b.task('vendor', function() {
+b.task('vendor', function () {
   let cmd = 'npm'
   let opts = {
     cwd: path.join(__dirname, 'vendor', 'istanbul'),
@@ -20,7 +20,7 @@ b.task('vendor', function() {
   b.custom('Bundling vendor...', {
     src: './vendor/_vendor.js',
     dest: './vendor/vendor.js',
-    execute: function() {
+    execute: function () {
       return bundleVendor({
         src: './vendor/_vendor.js',
         dest: './vendor/vendor.js',
@@ -31,7 +31,7 @@ b.task('vendor', function() {
   })
 })
 
-b.task('bundler', function() {
+b.task('bundler', function () {
   b.copy('vendor/vendor.js', 'dist/vendor.js')
   b.js('src/main.js', {
     // need buble if we want to minify later
