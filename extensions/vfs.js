@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 
-module.exports = function vfs(b, options={}) {
+module.exports = function vfs (b, options = {}) {
   const src = options.src
   if (!src) throw new Error("'src' is mandatory")
   const dest = options.dest
@@ -9,7 +9,7 @@ module.exports = function vfs(b, options={}) {
   b.custom(`Creating virtual file system: ${dest}`, {
     src: src,
     dest: dest,
-    execute(files) {
+    execute (files) {
       const rootDir = options.rootDir || b.rootDir
       const vfs = {}
       files.forEach((f) => {
@@ -24,7 +24,7 @@ module.exports = function vfs(b, options={}) {
   })
 }
 
-function _generateCode(vfs, {format, moduleName}) {
+function _generateCode (vfs, {format, moduleName}) {
   const CONTENT = JSON.stringify(vfs, null, 2)
   // NOTE: the following code is run in the browser
   const clazz = `

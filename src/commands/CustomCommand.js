@@ -6,8 +6,7 @@ import Action from '../Action'
 import randomId from '../randomId'
 
 export default class CustomCommand {
-
-  constructor(description, params) {
+  constructor (description, params) {
     this._id = randomId()
     this.description = description
     this.src = params.src
@@ -18,20 +17,19 @@ export default class CustomCommand {
     }
   }
 
-  get id() {
+  get id () {
     return this._id
   }
 
-  get descr() {
+  get descr () {
     return this.description
   }
 
-  get name() {
+  get name () {
     return 'custom'
   }
 
-
-  execute(bundler) {
+  execute (bundler) {
     if (this.src && isArray(this.src)) {
       return this._executeWithCollection(bundler)
     } else if (this.src && glob.hasMagic(this.src)) {
@@ -41,7 +39,7 @@ export default class CustomCommand {
     }
   }
 
-  _executeWithoutGlob(bundler) {
+  _executeWithoutGlob (bundler) {
     let src = this.src
     let dest = this.dest
     if (src && !isAbsolute(src)) src = path.join(bundler.rootDir, src)
@@ -51,7 +49,7 @@ export default class CustomCommand {
     return action.execute(bundler)
   }
 
-  _executeWithGlob(bundler) {
+  _executeWithGlob (bundler) {
     const rootDir = bundler.rootDir
     const watcher = bundler.watcher
     const pattern = this.src
@@ -59,7 +57,7 @@ export default class CustomCommand {
     if (!isAbsolute(dest)) dest = path.join(rootDir, dest)
     let files = glob.sync(pattern, {})
     if (files) {
-      files = files.map(function(file) {
+      files = files.map(function (file) {
         return path.join(rootDir, file)
       })
       const action = new CustomAction(this._id, this.description, files, [dest], this._execute)
@@ -67,7 +65,7 @@ export default class CustomCommand {
       let result = action.execute(bundler)
       // TODO: need to rework the whole dynamic registry stuff
       watcher.watch(pattern, {
-        add: function(file) {
+        add: function (file) {
           action.inputs.push(file)
           action.inputs = uniq(action.inputs)
           const _actionsByInput = bundler._actionsByInput
@@ -81,14 +79,14 @@ export default class CustomCommand {
     }
   }
 
-  _executeWithCollection(bundler) {
+  _executeWithCollection (bundler) {
     const rootDir = bundler.rootDir
     const watcher = bundler.watcher
     let dest = this.dest
     if (dest && !isAbsolute(dest)) dest = path.join(rootDir, dest)
     let files = []
     let patterns = []
-    this.src.forEach(function(fileOrPattern) {
+    this.src.forEach(function (fileOrPattern) {
       if (glob.hasMagic(fileOrPattern)) {
         patterns.push(fileOrPattern)
         files = files.concat(glob.sync(fileOrPattern, {}))
@@ -97,16 +95,16 @@ export default class CustomCommand {
       }
     })
     if (files.length) {
-      files = files.map(function(file) {
+      files = files.map(function (file) {
         return path.join(rootDir, file)
       })
       const action = new CustomAction(this._id, this.description, files, [dest], this._execute)
       bundler._registerAction(action)
       let result = action.execute(bundler)
-      patterns.forEach(function(pattern) {
+      patterns.forEach(function (pattern) {
         // TODO: need to rework the whole dynamic registry stuff
         watcher.watch(pattern, {
-          add: function(file) {
+          add: function (file) {
             action.inputs.push(file)
             action.inputs = uniq(action.inputs)
             const _actionsByInput = bundler._actionsByInput
@@ -120,38 +118,36 @@ export default class CustomCommand {
       console.error('No files found for pattern %s', patterns)
     }
   }
-
 }
 
 class CustomAction extends Action {
-
-  constructor(id, description, inputs, outputs, _execute) {
+  constructor (id, description, inputs, outputs, _execute) {
     super(inputs.filter(Boolean), outputs.filter(Boolean))
     this._id = id
     this._description = description
     this._execute = _execute
   }
 
-  get id() {
+  get id () {
     return this._id
   }
 
-  get description() {
+  get description () {
     return this._description
   }
 
-  execute(bundler) {
+  execute (bundler) {
     bundler._info(this._description)
     var t0 = Date.now()
-    this.outputs.forEach(function(f) {
+    this.outputs.forEach(function (f) {
       fse.ensureDirSync(path.dirname(f))
     })
-    let inputs = this.inputs.filter(function(file) {
+    let inputs = this.inputs.filter(function (file) {
       return fs.existsSync(file)
     })
     return Promise.resolve(this._execute(inputs))
-    .then(function() {
-      bundler._info(colors.green('..finished in %s ms.'), Date.now()-t0)
-    })
+      .then(function () {
+        bundler._info(colors.green('..finished in %s ms.'), Date.now() - t0)
+      })
   }
 }

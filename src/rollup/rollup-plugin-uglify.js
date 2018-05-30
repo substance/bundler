@@ -1,11 +1,11 @@
-export default function uglify(opts) {
-  let minifier = opts.minifier || require("uglify-es").minify
-  const options = Object.assign({ sourceMap: true }, opts);
+export default function uglify (opts) {
+  let minifier = opts.minifier || require('uglify-es').minify
+  const options = Object.assign({ sourceMap: true }, opts)
 
   return {
-    name: "uglify",
+    name: 'uglify',
 
-    transformBundle(code) {
+    transformBundle (code) {
       const result = minifier(code, options)
       if (result.error) {
         throw result.error

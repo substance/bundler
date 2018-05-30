@@ -5,26 +5,25 @@ import { colors } from '../vendor'
 import Action from '../Action'
 
 export default class MinifyCommand {
-
-  constructor(src, opts = {}) {
+  constructor (src, opts = {}) {
     if (!/.js$/.exec(src)) throw new Error("'src' must be a path to a '.js' file")
     this.src = src
     this.opts = opts
     this._isWatching = false
   }
 
-  get id() {
+  get id () {
     return ['MinifyCommand', this.src].join(' ')
   }
 
-  get name() {
+  get name () {
     return 'minify'
   }
 
-  execute(bundler) {
+  execute (bundler) {
     let src = this.src
     if (!isAbsolute(src)) src = path.join(bundler.rootDir, src)
-    const dest = path.join(path.dirname(src), path.basename(src, '.js')+'.min.js')
+    const dest = path.join(path.dirname(src), path.basename(src, '.js') + '.min.js')
     const action = new MinifyAction(src, dest, this.opts)
     bundler._registerAction(action)
     action.execute(bundler)
@@ -32,8 +31,7 @@ export default class MinifyCommand {
 }
 
 class MinifyAction extends Action {
-
-  constructor(src, dest, opts = {}) {
+  constructor (src, dest, opts = {}) {
     super([src], [dest])
 
     this.src = src
@@ -41,20 +39,20 @@ class MinifyAction extends Action {
     this.debug = (opts.debug !== false)
 
     if (this.debug !== false) {
-      this.destSourceMap = dest+'.map'
+      this.destSourceMap = dest + '.map'
       this.outputs.push(this.destSourceMap)
     }
   }
 
-  get id() {
+  get id () {
     return ['Minify:', this.src].join(' ')
   }
 
-  execute(bundler) {
+  execute (bundler) {
     bundler._info(this.id)
     // uglify can not be bundled as it does dynamic file loading
     // and we also don't ship it, thus it is required as late as possible
-    const uglify = require("uglify-es")
+    const uglify = require('uglify-es')
     const src = this.src
     const dest = this.dest
     const inSourceMap = src + '.map'
@@ -78,11 +76,10 @@ class MinifyAction extends Action {
     if (this.debug) {
       writeSync(destSourceMap, result.map)
     }
-    bundler._info(colors.green('..finished in %s ms.'), Date.now()-t0)
+    bundler._info(colors.green('..finished in %s ms.'), Date.now() - t0)
   }
 
-  invalidate() {
+  invalidate () {
     Action.removeOutputs(this)
   }
-
 }

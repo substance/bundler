@@ -3,20 +3,19 @@ import * as fs from 'fs'
 import { fse } from '../vendor'
 
 export default class RemoveCommand {
-
-  constructor(rmPath) {
+  constructor (rmPath) {
     this.rmPath = rmPath
   }
 
-  get id() {
+  get id () {
     return ['Remove:', this.rmPath].join(' ')
   }
 
-  get name() {
+  get name () {
     return 'rm'
   }
 
-  execute(bundler) {
+  execute (bundler) {
     let rmPath = this.rmPath
     if (rmPath[0] === '.') {
       rmPath = path.join(bundler.rootDir, rmPath)

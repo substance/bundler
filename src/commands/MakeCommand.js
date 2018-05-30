@@ -3,21 +3,20 @@ import * as path from 'path'
 import { isAbsolute } from '../fileUtils'
 
 class MakeCommand {
-
-  constructor(module, tasks) {
+  constructor (module, tasks) {
     this.module = module
     this.tasks = tasks || []
   }
 
-  get id() {
+  get id () {
     return ['Make', this.module].concat(this.tasks).join(' ')
   }
 
-  get name() {
+  get name () {
     return 'make'
   }
 
-  execute(bundler) {
+  execute (bundler) {
     bundler._info(this.id)
 
     const tasks = this.tasks
@@ -26,7 +25,7 @@ class MakeCommand {
     if (isAbsolute(module)) {
       makefile = module
     } else {
-      makefile = require.resolve(module+'/make.js')
+      makefile = require.resolve(module + '/make.js')
     }
     if (!fs.existsSync(makefile)) {
       throw new Error('Could not find "make.js" in module "%s"', module)
@@ -35,7 +34,7 @@ class MakeCommand {
 
     return new Promise(_runMake)
 
-    function _runMake(resolve, reject) {
+    function _runMake (resolve, reject) {
       // get the real location of the module in case
       // it is npm-linked
       const cp = require('child_process')
@@ -44,12 +43,12 @@ class MakeCommand {
       const child = cp.fork(makefile, args, {
         cwd: path.dirname(makefile)
       })
-      child.on('message', function(msg) {
+      child.on('message', function (msg) {
         if (msg === 'done') {
           resolve()
         }
       })
-      child.on('error', function(error) {
+      child.on('error', function (error) {
         reject(new Error(error))
       })
     }

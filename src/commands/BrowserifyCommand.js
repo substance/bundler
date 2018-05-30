@@ -4,8 +4,7 @@ import { colors } from '../vendor'
 import Action from '../Action'
 
 export default class BrowserifyCommand {
-
-  constructor(src, opts = {}) {
+  constructor (src, opts = {}) {
     this.src = src
     if (!this.src) throw new Error("'src' is mandatory")
     this.dest = opts.dest
@@ -22,8 +21,8 @@ export default class BrowserifyCommand {
       bOpts.insertGlobalVars = Object.assign({
         'process': undefined,
         'global': undefined,
-        '__dirname': "",
-        '__filename': "",
+        '__dirname': '',
+        '__filename': ''
       }, bOpts.insertGlobalVars)
       bOpts.browserField = false
       bOpts.builtins = false
@@ -42,27 +41,25 @@ export default class BrowserifyCommand {
     this.options = options
   }
 
-  get id() {
-    return ['BrowserifyCommand', this.src, this.dest ].join('')
+  get id () {
+    return ['BrowserifyCommand', this.src, this.dest].join('')
   }
 
-  get name() {
+  get name () {
     return 'browserify'
   }
 
-  execute(bundler) {
+  execute (bundler) {
     let src = this.src
     if (!isAbsolute(src)) src = path.join(bundler.rootDir, src)
     const action = new BrowserifyAction(bundler, src, this.dest, this.options)
     bundler._registerAction(action)
     return action.execute(bundler)
   }
-
 }
 
 class BrowserifyAction extends Action {
-
-  constructor(bundler, src, dest, options = {}) {
+  constructor (bundler, src, dest, options = {}) {
     super()
 
     this.src = src
@@ -71,11 +68,11 @@ class BrowserifyAction extends Action {
     this.rootDir = bundler.rootDir
   }
 
-  get id() {
+  get id () {
     return ['Browserify:', this.src, '->', this.dest].join(' ')
   }
 
-  execute(bundler) {
+  execute (bundler) {
     bundler._info(this.id)
     const options = this.options
     var t0 = Date.now()
@@ -99,7 +96,7 @@ class BrowserifyAction extends Action {
         })
       }
       b.bundle((err, code) => {
-        if(err) {
+        if (err) {
           return reject(err)
         }
         // TODO: deal with sourceMaps
@@ -112,7 +109,7 @@ class BrowserifyAction extends Action {
           let lastLine = lines.pop()
           if (/^\s*$/.exec(lastLine)) {
             // nothing
-          } else if(/^\/\/#/.exec(lastLine)) {
+          } else if (/^\/\/#/.exec(lastLine)) {
             // TODO: do something with the source map
           } else {
             lines.push(lastLine)
@@ -121,33 +118,32 @@ class BrowserifyAction extends Action {
           // HACK: extracting the entry id by extracting a valid expression from the last generated line of code
           // evaluating it in a Function
           // Example: },{}]},{},[1])
-          let f = new Function('return [{ "foo": [{'+lastLine.slice(0, -2)+']')
+          let f = new Function('return [{ "foo": [{' + lastLine.slice(0, -2) + ']') // eslint-disable-line no-new-func
           // console.log('#### ', f.toString())
           let iifeArgs = f()
           let entry = iifeArgs[2][0]
-          lines.push([lastLine.slice(0,-1),'(',entry,')'].join(''))
+          lines.push([lastLine.slice(0, -1), '(', entry, ')'].join(''))
           // generate es6 exports
-          code = ['let _exports = '+lines.join('\n')]
+          code = ['let _exports = ' + lines.join('\n')]
           exports.forEach((name) => {
             if (name === 'default') {
               code.push('export default _exports')
             } else {
-              code.push('let '+name+' = _exports.'+name)
-              code.push('export {'+name+'}')
+              code.push('let ' + name + ' = _exports.' + name)
+              code.push('export {' + name + '}')
             }
           })
           code = code.join('\n')
         }
         let absDest = isAbsolute(this.dest) ? this.dest : path.join(this.rootDir, this.dest)
         writeSync(absDest, code)
-        bundler._info(colors.green('..finished in %s ms'), Date.now()-t0)
+        bundler._info(colors.green('..finished in %s ms'), Date.now() - t0)
         resolve()
       })
     })
   }
 
-  invalidate() {
+  invalidate () {
     Action.removeOutputs(this)
   }
-
 }

@@ -1,13 +1,13 @@
 import * as path from 'path'
 import { pluginutils } from '../vendor'
 
-const DOT = ".".charCodeAt(0)
+const DOT = '.'.charCodeAt(0)
 
-function normalizePath(id) {
+function normalizePath (id) {
   return path.relative(process.cwd(), id).split(path.sep).join('/')
 }
 
-export default function eslintPlugin(options = {}) {
+export default function eslintPlugin (options = {}) {
   const { CLIEngine } = require('eslint')
   const cli = new CLIEngine()
   let formatter = cli.getFormatter('stylish')
@@ -20,7 +20,7 @@ export default function eslintPlugin(options = {}) {
   return {
     name: 'eslint',
 
-    transform(code, id) {
+    transform (code, id) {
       const file = normalizePath(id)
       if (cli.isPathIgnored(file) || !filter(id)) {
         return null

@@ -2,11 +2,11 @@ import { glob, isArray } from '../vendor'
 
 const ENTRY = '\0rollup-glob:ENTRY'
 
-export default function rollupGlob(options = {}) {
+export default function rollupGlob (options = {}) {
   let pattern = options.pattern
   if (!pattern) throw new Error("'pattern' is mandatory.")
   return {
-    name: "glob",
+    name: 'glob',
     resolveId (id) {
       if (id === ENTRY) return ENTRY
     },

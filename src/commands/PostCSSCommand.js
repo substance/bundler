@@ -9,22 +9,21 @@ import { isAbsolute, writeSync } from '../fileUtils'
 import Action from '../Action'
 
 export default class PostCSSCommand {
-
-  constructor(src, dest, opts) {
+  constructor (src, dest, opts) {
     this.src = src
     this.dest = dest
     this.opts = opts || {}
   }
 
-  get id() {
+  get id () {
     return ['PostCSSCommand', this.src, this.dest]
   }
 
-  get name() {
+  get name () {
     return 'css'
   }
 
-  execute(bundler) {
+  execute (bundler) {
     let src = this.src
     let dest = this.dest
     if (!isAbsolute(src)) src = path.join(bundler.rootDir, src)
@@ -36,8 +35,7 @@ export default class PostCSSCommand {
 }
 
 class PostCSSAction extends Action {
-
-  constructor(bundler, src, dest, opts) {
+  constructor (bundler, src, dest, opts) {
     super()
     this.bundler = bundler
     this.src = src
@@ -46,11 +44,11 @@ class PostCSSAction extends Action {
     this._watched = {}
   }
 
-  get id() {
+  get id () {
     return ['PostCSS:', this.src, '->', this.dest].join('')
   }
 
-  execute(bundler) {
+  execute (bundler) {
     bundler._info(this.id)
     const t0 = Date.now()
     const src = this.src
@@ -86,24 +84,24 @@ class PostCSSAction extends Action {
     }
     const css = fs.readFileSync(this.src, 'utf8')
     return postcss(plugins)
-    .process(css, postcssOpts)
-    .then(result => {
-      const deps = result.messages.filter(
-        message => message.type === "dependency"
-      )
-      this._registerWatchers(deps)
+      .process(css, postcssOpts)
+      .then(result => {
+        const deps = result.messages.filter(
+          message => message.type === 'dependency'
+        )
+        this._registerWatchers(deps)
 
-      writeSync(dest+'.map', JSON.stringify(result.map))
-      writeSync(dest, result.css)
-      bundler._info(colors.green('..finished in %s ms.'), Date.now()-t0)
-    })
+        writeSync(dest + '.map', JSON.stringify(result.map))
+        writeSync(dest, result.css)
+        bundler._info(colors.green('..finished in %s ms.'), Date.now() - t0)
+      })
   }
 
-  invalidate() {
+  invalidate () {
     Action.removeOutputs(this)
   }
 
-  _registerWatchers(deps) {
+  _registerWatchers (deps) {
     const bundler = this.bundler
     const watcher = bundler.watcher
     const watched = this._watched
@@ -122,12 +120,12 @@ class PostCSSAction extends Action {
       }
     })
 
-    function _onChange() {
+    function _onChange () {
       _invalidate()
       bundler._schedule(self)
     }
 
-    function _invalidate() {
+    function _invalidate () {
       self.invalidate()
       bundler._invalidate(self.dest)
     }

@@ -28,9 +28,9 @@ export default function (options = {}) {
       // console.log('## Running istanbul on', id)
       code = instrumenter.instrumentSync(code, id);
 
-      var map = sourceMap ?
-                instrumenter.lastSourceMap().toJSON() :
-                {mappings: ''};
+      var map = sourceMap
+        ? instrumenter.lastSourceMap().toJSON()
+        : {mappings: ''};
 
       return { code, map };
     }

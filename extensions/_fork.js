@@ -1,4 +1,4 @@
-module.exports = function (cmd, args, options={}) {
+module.exports = function (cmd, args, options = {}) {
   const silent = Boolean(options.silent)
   const verbose = Boolean(options.verbose) && !silent
   delete options.silent
@@ -9,16 +9,16 @@ module.exports = function (cmd, args, options={}) {
     }, options)
     const cp = require('child_process')
     const child = cp.fork(cmd, args, opts)
-    child.on('message', function(msg) {
+    child.on('message', function (msg) {
       if (msg === 'done') { resolve() }
     })
-    child.on('error', function(error) {
+    child.on('error', function (error) {
       reject(error)
     })
-    child.on('close', function(exitCode) {
+    child.on('close', function (exitCode) {
       // console.log('##### closing %s: %s', cmd, exitCode)
       if (exitCode !== 0) {
-        reject()
+        reject(new Error('Exited with exitCode ' + exitCode))
       } else {
         resolve()
       }

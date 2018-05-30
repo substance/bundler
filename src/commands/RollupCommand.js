@@ -15,19 +15,18 @@ import jsonPlugin from '../rollup/rollup-plugin-json'
 import Action from '../Action'
 import log from '../log'
 
-const ZERO = "\0".charCodeAt(0)
+const ZERO = '\0'.charCodeAt(0)
 
 let nodeResolve = require('rollup-plugin-node-resolve')
 
 export default class RollupCommand {
-
-  constructor(src, opts) {
+  constructor (src, opts) {
     if (!src) throw new Error("'src' is mandatory.")
     // rollup does not have a good behavior with src being a glob pattern.
     // for that purpose we detect if src contains glob pattern
     // and then use a generated index file as entry
     let srcPattern = null
-    if(isArray(src) || glob.hasMagic(src)) {
+    if (isArray(src) || glob.hasMagic(src)) {
       srcPattern = src
       src = rollupGlob.ENTRY
     }
@@ -57,7 +56,7 @@ export default class RollupCommand {
     // external
     if (opts.ignore && opts.ignore.length > 0 && opts.external) {
       opts.external = opts.external.filter((ext) => {
-        return opts.ignore.indexOf(ext)<0
+        return opts.ignore.indexOf(ext) < 0
       })
     }
 
@@ -65,9 +64,8 @@ export default class RollupCommand {
     if (opts.output) {
       this.targets = opts.output
       delete opts.output
-    }
     // LEGACY
-    else {
+    } else {
       console.error("DEPRECATED: use 'output:[...]' instead")
       if (opts.targets) {
         this.targets = opts.targets
@@ -120,7 +118,7 @@ export default class RollupCommand {
           include: ['node_modules/**']
         }
       } else if (isArray(opts.commonjs)) {
-        let include = opts.commonjs.map(name => '**/'+name+'/**')
+        let include = opts.commonjs.map(name => '**/' + name + '/**')
         cjsOpts = { include }
       } else if (isPlainObject(opts.commonjs)) {
         cjsOpts = opts.commonjs
@@ -151,7 +149,7 @@ export default class RollupCommand {
     let plugins = []
 
     // if the src contains a glob pattern we use rollupGlob to generate the entry
-    if (srcPattern) plugins.push(rollupGlob({pattern:srcPattern}))
+    if (srcPattern) plugins.push(rollupGlob({pattern: srcPattern}))
 
     if (ignoreOpts) plugins.push(ignore(ignoreOpts))
 
@@ -200,21 +198,21 @@ export default class RollupCommand {
     this.cache = null
   }
 
-  get id() {
-    return ['RollupCommand', this.src, this.targets.map(function(target) {
+  get id () {
+    return ['RollupCommand', this.src, this.targets.map(function (target) {
       return target.file
     })]
   }
 
-  get name() {
+  get name () {
     return 'js'
   }
 
-  execute(bundler) {
+  execute (bundler) {
     let src = this.src
     // turn src into an absolute path, but only
     // if it does not start with "\0" as it used by rollup-glob.ENTRY
-    if (src.charCodeAt(0)!==ZERO && !isAbsolute(src)) src = path.join(bundler.rootDir, src)
+    if (src.charCodeAt(0) !== ZERO && !isAbsolute(src)) src = path.join(bundler.rootDir, src)
     const plugins = this.plugins
     const targets = this.targets
     const opts = this.opts
@@ -225,8 +223,7 @@ export default class RollupCommand {
 }
 
 class RollupAction extends Action {
-
-  constructor(bundler, src, plugins, targets, opts) {
+  constructor (bundler, src, plugins, targets, opts) {
     super()
     this.bundler = bundler
     this.src = src
@@ -242,11 +239,11 @@ class RollupAction extends Action {
     this.outputs = this._getOutputs()
   }
 
-  get id() {
+  get id () {
     return ['Rollup:', this.src, '->'].concat(this._getBundles().join('|')).join(' ')
   }
 
-  execute(bundler) {
+  execute (bundler) {
     bundler._info(this.id)
     const t0 = Date.now()
     const cache = this._cache
@@ -267,35 +264,35 @@ class RollupAction extends Action {
 
     log('RollupAction: starting rollup...')
     return rollup.rollup(opts)
-    .then((bundle) => {
-      log('RollupAction: received bundle...')
-      this.cache = bundle
-      log('RollupAction: generating targets...')
-      return Promise.all(targets.map((target) => {
-        return this._generate(bundle, target)
-      })).then(() => {
-        bundler._info(colors.green('..finished in %s ms.'), Date.now()-t0)
-        this._updateWatchers(bundle)
+      .then((bundle) => {
+        log('RollupAction: received bundle...')
+        this.cache = bundle
+        log('RollupAction: generating targets...')
+        return Promise.all(targets.map((target) => {
+          return this._generate(bundle, target)
+        })).then(() => {
+          bundler._info(colors.green('..finished in %s ms.'), Date.now() - t0)
+          this._updateWatchers(bundle)
+        })
       })
-    })
-    .catch((err) => {
-      if (err.loc) {
-        console.error(colors.red('Rollup failed with %s in %s, line %2, column %s'), err.code, err.loc.file, err.loc.line, err.loc.column)
-      } else {
-        console.error(colors.red('Rollup failed with %s'), err.code, err)
-      }
-      if (err.frame) {
-        console.error(colors.grey(err.frame))
-      }
-      throw err
-    })
+      .catch((err) => {
+        if (err.loc) {
+          console.error(colors.red('Rollup failed with %s in %s, line %2, column %s'), err.code, err.loc.file, err.loc.line, err.loc.column)
+        } else {
+          console.error(colors.red('Rollup failed with %s'), err.code, err)
+        }
+        if (err.frame) {
+          console.error(colors.grey(err.frame))
+        }
+        throw err
+      })
   }
 
-  invalidate() {
+  invalidate () {
     Action.removeOutputs(this)
   }
 
-  _generate(bundle, target) {
+  _generate (bundle, target) {
     const rootDir = this.rootDir
     const absDest = isAbsolute(target.file) ? target.file : path.join(rootDir, target.file)
     let targetOpts = Object.assign({}, target)
@@ -309,45 +306,45 @@ class RollupAction extends Action {
       targetOpts.sourcemapFile = absDest
     }
     return bundle.generate(targetOpts)
-    .then((result) => {
+      .then((result) => {
       // write the map file first so that a file watcher for the bundle
       // is not triggered too early
-      if (this.sourcemap) {
-        let sourcemap = result.map.toString()
-        if (target.sourcemapRoot) {
-          let data = JSON.parse(sourcemap)
-          data.sources = data.sources.map(function(srcPath) {
-            let absSrcPath = path.join(path.dirname(absDest), srcPath)
-            let relSrcPath = path.relative(target.sourcemapRoot, absSrcPath)
-            relSrcPath = relSrcPath.replace(/\\/g, "/")
-            // console.log('### source file:', srcPath)
-            // HACK: hard coded pattern for source path transformation
-            if (target.sourcemapPrefix) relSrcPath = target.sourcemapPrefix + '/' + relSrcPath
-            return relSrcPath
-          })
-          sourcemap = JSON.stringify(data)
+        if (this.sourcemap) {
+          let sourcemap = result.map.toString()
+          if (target.sourcemapRoot) {
+            let data = JSON.parse(sourcemap)
+            data.sources = data.sources.map(function (srcPath) {
+              let absSrcPath = path.join(path.dirname(absDest), srcPath)
+              let relSrcPath = path.relative(target.sourcemapRoot, absSrcPath)
+              relSrcPath = relSrcPath.replace(/\\/g, '/')
+              // console.log('### source file:', srcPath)
+              // HACK: hard coded pattern for source path transformation
+              if (target.sourcemapPrefix) relSrcPath = target.sourcemapPrefix + '/' + relSrcPath
+              return relSrcPath
+            })
+            sourcemap = JSON.stringify(data)
+          }
+          writeSync(absDest + '.map', sourcemap)
+          writeSync(absDest,
+            [
+              result.code,
+              // HACK: buble has troubles with '//' in a string
+              '\n', '/', '/# sourceMappingURL=./', path.basename(absDest) + '.map'
+            ].join('')
+          )
+        } else {
+          writeSync(absDest, result.code)
         }
-        writeSync(absDest+'.map', sourcemap)
-        writeSync(absDest,
-          [
-            result.code,
-            // HACK: buble has troubles with '//' in a string
-            "\n","/","/# sourceMappingURL=./", path.basename(absDest)+".map"
-          ].join('')
-        )
-      } else {
-        writeSync(absDest, result.code)
-      }
-    })
+      })
   }
 
-  _updateWatchers(bundle) {
+  _updateWatchers (bundle) {
     const bundler = this.bundler
     const watcher = bundler.watcher
     const watched = this._watched
     const self = this
 
-    bundle.modules.forEach(function(m) {
+    bundle.modules.forEach(function (m) {
       const file = m.id
       // skip fake modules which usually do not have a qualified path
       if (!isAbsolute(file)) return
@@ -360,24 +357,24 @@ class RollupAction extends Action {
       }
     })
 
-    function _onChange() {
+    function _onChange () {
       _invalidate()
       bundler._schedule(self)
     }
 
-    function _invalidate() {
+    function _invalidate () {
       self.invalidate()
-      self.outputs.forEach(function(file) {
+      self.outputs.forEach(function (file) {
         bundler._invalidate(file)
       })
     }
   }
 
-  _getOutputs() {
+  _getOutputs () {
     return this._getBundles().concat(this._getSourceMaps())
   }
 
-  _getBundles() {
+  _getBundles () {
     const rootDir = this.rootDir
     const targets = this.targets
     return targets.map((target) => {
@@ -385,18 +382,18 @@ class RollupAction extends Action {
     })
   }
 
-  _getSourceMaps() {
+  _getSourceMaps () {
     const rootDir = this.rootDir
     const targets = this.targets
     return targets.map((target) => {
       if (target.sourcemap === false) return null
-      const dest = target.file + ".map"
+      const dest = target.file + '.map'
       return isAbsolute(dest) ? dest : path.join(rootDir, dest)
     }).filter(Boolean)
   }
 }
 
-function _renameLegacyTargetOptions(target) {
+function _renameLegacyTargetOptions (target) {
   // NOTE: with the latest rollup version,
   // some options have been renamed
   // const RENAMED
@@ -405,7 +402,7 @@ function _renameLegacyTargetOptions(target) {
     'moduleName': 'name',
     'sourceMap': 'sourcemap',
     'sourceMapFile': 'sourcemapFile',
-    'sourceMapPrefix': 'sourcemapPrefix',
+    'sourceMapPrefix': 'sourcemapPrefix'
   }
   forEach(RENAMED, (newName, oldName) => {
     if (target.hasOwnProperty(oldName)) {

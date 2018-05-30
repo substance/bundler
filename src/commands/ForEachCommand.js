@@ -6,8 +6,7 @@ import Action from '../Action'
 import randomId from '../randomId'
 
 export default class ForEachCommand {
-
-  constructor(pattern, handler) {
+  constructor (pattern, handler) {
     this._id = randomId()
     this.description = `forEach(${pattern})...`
     this.pattern = pattern
@@ -17,19 +16,19 @@ export default class ForEachCommand {
     }
   }
 
-  get id() {
+  get id () {
     return this._id
   }
 
-  get descr() {
+  get descr () {
     return this.description
   }
 
-  get name() {
+  get name () {
     return 'forEach'
   }
 
-  execute(bundler) {
+  execute (bundler) {
     const rootDir = bundler.rootDir
     const watcher = bundler.watcher
     const pattern = this.pattern
@@ -42,30 +41,28 @@ export default class ForEachCommand {
         return this._createAction(bundler, file, absFile, 'first-pass')
       })
       watcher.watch(pattern, {
-        add: function(file) {
+        add: function (file) {
           let absFile = !isAbsolute(file) ? path.join(rootDir, file) : file
           this._createAction(bundler, file, absFile)
         }
       })
       return Promise.all(actions).then(() => {
-        bundler._info(colors.green('..finished in %s ms.'), Date.now()-t0)
+        bundler._info(colors.green('..finished in %s ms.'), Date.now() - t0)
       })
     } else {
       console.error('No files found for pattern %s', pattern)
     }
   }
 
-  _createAction(bundler, file, absFile, firstPass) {
+  _createAction (bundler, file, absFile, firstPass) {
     let action = new FileAction(this.description, file, absFile, this.handler)
     bundler._registerAction(action)
     return action.execute(bundler, firstPass)
   }
-
 }
 
 class FileAction extends Action {
-
-  constructor(title, file, absFile, handler) {
+  constructor (title, file, absFile, handler) {
     super([absFile], [])
     this.handler = handler
     this.file = file
@@ -75,15 +72,15 @@ class FileAction extends Action {
     this.title = title
   }
 
-  get id() {
+  get id () {
     return this._id
   }
 
-  get description() {
+  get description () {
     return this.title + ': ' + this.file
   }
 
-  execute(bundler, firstPass) {
+  execute (bundler, firstPass) {
     if (!firstPass) {
       bundler._info(this.title)
     }
@@ -100,15 +97,15 @@ class FileAction extends Action {
       })
     ).then(() => {
       if (!firstPass) {
-        bundler._info(colors.green('..finished in %s ms.'), Date.now()-t0)
+        bundler._info(colors.green('..finished in %s ms.'), Date.now() - t0)
       }
     })
   }
 }
 
-function createActionProxy(bundler, action) {
+function createActionProxy (bundler, action) {
   return {
-    setDependencies(deps) {
+    setDependencies (deps) {
       // TODO: instead of adding files to the watcher
       // it would be more accurate to replace
       // the inputs.
@@ -123,16 +120,16 @@ function createActionProxy(bundler, action) {
   }
 }
 
-function createFsProxy(bundler, action) {
+function createFsProxy (bundler, action) {
   return {
-    readFileSync(f, ...args) {
+    readFileSync (f, ...args) {
       if (!isAbsolute(f)) {
         f = path.join(bundler.rootDir, f)
       }
       addInput(bundler, action, f)
       return fs.readFileSync(f, ...args)
     },
-    writeFileSync(f, ...args) {
+    writeFileSync (f, ...args) {
       if (!isAbsolute(f)) {
         f = path.join(bundler.rootDir, f)
       }
@@ -143,7 +140,7 @@ function createFsProxy(bundler, action) {
   }
 }
 
-function addInput(bundler, action, file) {
+function addInput (bundler, action, file) {
   if (!file) return
   if (action.inputs.indexOf(file) < 0) {
     action.inputs.push(file)
@@ -151,7 +148,7 @@ function addInput(bundler, action, file) {
   }
 }
 
-function addOutput(bundler, action, file) {
+function addOutput (bundler, action, file) {
   if (!file) return
   if (action.outputs.indexOf(file) < 0) {
     action.outputs.push(file)

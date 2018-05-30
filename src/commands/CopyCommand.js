@@ -34,27 +34,26 @@ const log = debug('copy')
 */
 
 export default class CopyCommand {
-
-  constructor(src, dest, opts) {
+  constructor (src, dest, opts) {
     this.src = src
     this.dest = dest
     this.opts = opts || {}
   }
 
-  get id() {
+  get id () {
     return ['CopyCommand', this.src, '->', this.dest].join(' ')
   }
 
-  get name() {
+  get name () {
     return 'copy'
   }
 
-  execute(bundler) {
+  execute (bundler) {
     bundler._info('Copy:', this.src, '->', this.dest)
     const rootDir = bundler.rootDir
     let dest = this.dest
     if (!isAbsolute(dest)) dest = path.join(rootDir, dest)
-    const lastIsSlash = (dest[dest.length-1] === path.sep)
+    const lastIsSlash = (dest[dest.length - 1] === path.sep)
     if (glob.hasMagic(this.src)) {
       // use the parent of the first * as relative root
       // for paths found via glob
@@ -65,8 +64,7 @@ export default class CopyCommand {
         this.opts.root = root
       }
       return this._executeWithGlob(bundler)
-    }
-    else if (isDirectory(this.src)) {
+    } else if (isDirectory(this.src)) {
       log('Copying a directory...')
       if (this.opts.root) {
         // just use the option
@@ -81,21 +79,20 @@ export default class CopyCommand {
         this.opts.root = this.src
         log('using implicit root dir: ' + this.opts.root)
       }
-      this.src = this.src+"/**/*"
+      this.src = this.src + '/**/*'
       return this._executeWithGlob(bundler)
-    }
-    else {
+    } else {
       return this._executeWithoutGlob(bundler)
     }
   }
 
-  _executeWithoutGlob(bundler) {
+  _executeWithoutGlob (bundler) {
     const rootDir = bundler.rootDir
     let dest = this.dest
     let src = this.src
     if (!isAbsolute(src)) src = path.join(rootDir, src)
     if (!isAbsolute(dest)) dest = path.join(rootDir, dest)
-    const lastIsSlash = (dest[dest.length-1] === path.sep)
+    const lastIsSlash = (dest[dest.length - 1] === path.sep)
     if (lastIsSlash || isDirectory(dest)) dest = path.join(dest, path.basename(src))
     // console.log('####', dest, isAbsolute(dest), dest[dest.length-1], path.sep, lastIsSlash, path.basename(src))
     const action = new CopyAction(src, dest)
@@ -103,7 +100,7 @@ export default class CopyCommand {
     action._execute()
   }
 
-  _executeWithGlob(bundler) {
+  _executeWithGlob (bundler) {
     const rootDir = bundler.rootDir
     const watcher = bundler.watcher
     const pattern = this.src
@@ -120,7 +117,7 @@ export default class CopyCommand {
     // console.log('GLOBROOT', globRoot)
     const files = glob.sync(pattern)
     if (files) {
-      files.forEach(function(relativePath) {
+      files.forEach(function (relativePath) {
         // console.log('RELATIVE_PATH', relativePath)
         let absPath = path.join(rootDir, relativePath)
         // console.log('ABS_PATH', absPath)
@@ -147,7 +144,7 @@ export default class CopyCommand {
     When used with a glob pattern this gets called
     when a new file has been added
   */
-  _onAdd(bundler, file) {
+  _onAdd (bundler, file) {
     if (isDirectory(file)) return
     const rootDir = bundler.rootDir
     let srcPath = file
@@ -163,8 +160,7 @@ export default class CopyCommand {
 }
 
 class CopyAction extends Action {
-
-  constructor(src, dest) {
+  constructor (src, dest) {
     super([src], [dest])
 
     if (!isAbsolute(src)) {
@@ -181,20 +177,20 @@ class CopyAction extends Action {
     this.dest = dest
   }
 
-  get id() {
-    return ['Copy:',this.src,'->',this.dest].join(' ')
+  get id () {
+    return ['Copy:', this.src, '->', this.dest].join(' ')
   }
 
-  execute(bundler) {
+  execute (bundler) {
     bundler._info(this.id)
     this._execute()
   }
 
-  invalidate() {
+  invalidate () {
     fse.removeSync(this.dest)
   }
 
-  _execute() {
+  _execute () {
     const src = this.src
     const dest = this.dest
     if (fs.existsSync(src)) {

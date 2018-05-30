@@ -2,21 +2,20 @@ import {existsSync} from 'fs'
 import Action from '../Action'
 
 export default class ExecCommand {
-
-  constructor(cmd, options = {}) {
+  constructor (cmd, options = {}) {
     this.cmd = cmd
     this.options = options
   }
 
-  get id() {
+  get id () {
     return ['Exec:', this.cmd].join(' ')
   }
 
-  get name() {
+  get name () {
     return 'exec'
   }
 
-  execute(bundler) {
+  execute (bundler) {
     const action = new ExecAction(this)
     bundler._registerAction(action)
     return action.execute(bundler)
@@ -24,8 +23,7 @@ export default class ExecCommand {
 }
 
 class ExecAction extends Action {
-
-  constructor(command) {
+  constructor (command) {
     super()
 
     this.command = command
@@ -33,11 +31,11 @@ class ExecAction extends Action {
     this.options = command.options
   }
 
-  get id() {
+  get id () {
     return ['Exec: ', this.cmd].join('')
   }
 
-  execute(bundler) {
+  execute (bundler) {
     const exec = require('child_process').exec
     const cmd = this.cmd
     const options = this.options

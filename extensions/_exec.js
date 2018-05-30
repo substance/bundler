@@ -24,7 +24,7 @@ module.exports = function (cmd, args, options = {}) {
     child.on('close', (exitCode) => {
       // console.log('##### closing %s: %s', cmd, exitCode)
       if (exitCode !== 0) {
-        reject()
+        reject(new Error('Exited with exitCode ' + exitCode))
       } else {
         resolve()
       }

@@ -2,17 +2,17 @@ import { pluginutils } from '../vendor'
 
 const { createFilter, makeLegalIdentifier } = pluginutils
 
-export default function json ( options = {} ) {
-  const filter = createFilter( options.include, options.exclude );
+export default function json (options = {}) {
+  const filter = createFilter(options.include, options.exclude)
 
   return {
     name: 'json',
 
-    transform ( json, id ) {
-      if ( id.slice( -5 ) !== '.json' ) return null;
-      if ( !filter( id ) ) return null;
+    transform (json, id) {
+      if (id.slice(-5) !== '.json') return null
+      if (!filter(id)) return null
 
-      let code = '';
+      let code = ''
 
       // Manipulating properties so keeping as `let`
       // eslint-disable-next-line prefer-const
@@ -22,10 +22,10 @@ export default function json ( options = {} ) {
         start: 0,
         end: null,
         body: []
-      };
+      }
 
-      if ( json[0] !== '{' ) {
-        code = `export default ${json};`;
+      if (json[0] !== '{') {
+        code = `export default ${json};`
 
         ast.body.push({
           type: 'ExportDefaultDeclaration',
@@ -38,29 +38,29 @@ export default function json ( options = {} ) {
             value: null,
             raw: 'null'
           }
-        });
+        })
       } else {
-        const data = JSON.parse( json );
+        const data = JSON.parse(json)
 
-        const validKeys = [];
-        const invalidKeys = [];
+        const validKeys = []
+        const invalidKeys = []
 
-        Object.keys( data ).forEach( key => {
-          if ( key === makeLegalIdentifier( key ) ) {
-            validKeys.push( key );
+        Object.keys(data).forEach(key => {
+          if (key === makeLegalIdentifier(key)) {
+            validKeys.push(key)
           } else {
-            invalidKeys.push( key );
+            invalidKeys.push(key)
           }
-        });
+        })
 
-        let char = 0;
+        let char = 0
 
-        validKeys.forEach( key => {
-          const declarationType = options.preferConst ? 'const' : 'var';
-          const declaration = `export ${declarationType} ${key} = ${JSON.stringify( data[ key ] )};`;
+        validKeys.forEach(key => {
+          const declarationType = options.preferConst ? 'const' : 'var'
+          const declaration = `export ${declarationType} ${key} = ${JSON.stringify(data[ key ])};`
 
-          const start = char;
-          const end = start + declaration.length;
+          const start = char
+          const end = start + declaration.length
 
           // generate fake AST node while we're here
           ast.body.push({
@@ -95,11 +95,11 @@ export default function json ( options = {} ) {
             },
             specifiers: [],
             source: null
-          });
+          })
 
-          char = end + 1;
-          code += `${declaration}\n`;
-        });
+          char = end + 1
+          code += `${declaration}\n`
+        })
 
         const defaultExportNode = {
           type: 'ExportDefaultDeclaration',
@@ -111,15 +111,15 @@ export default function json ( options = {} ) {
             end: null,
             properties: []
           }
-        };
+        }
 
-        char += 18; // 'export default {\n\t'.length'
+        char += 18 // 'export default {\n\t'.length'
 
-        const defaultExportRows = validKeys.map( key => {
-          const row = `${key}: ${key}`;
+        const defaultExportRows = validKeys.map(key => {
+          const row = `${key}: ${key}`
 
-          const start = char;
-          const end = start + row.length;
+          const start = char
+          const end = start + row.length
 
           defaultExportNode.declaration.properties.push({
             type: 'Property',
@@ -141,25 +141,25 @@ export default function json ( options = {} ) {
               name: key
             },
             kind: 'init'
-          });
+          })
 
-          char += row.length + 3; // ',\n\t'.length
+          char += row.length + 3 // ',\n\t'.length
 
-          return row;
-        }).concat( invalidKeys.map( key => `"${key}": ${JSON.stringify( data[ key ] )}` ) );
+          return row
+        }).concat(invalidKeys.map(key => `"${key}": ${JSON.stringify(data[ key ])}`))
 
-        code += `export default {\n\t${defaultExportRows.join( ',\n\t' )}\n};`;
-        ast.body.push( defaultExportNode );
+        code += `export default {\n\t${defaultExportRows.join(',\n\t')}\n};`
+        ast.body.push(defaultExportNode)
 
-        const end = code.length;
+        const end = code.length
 
-        defaultExportNode.declaration.end = end - 1;
-        defaultExportNode.end = end;
+        defaultExportNode.declaration.end = end - 1
+        defaultExportNode.end = end
       }
 
-      ast.end = code.length;
+      ast.end = code.length
 
-      return { ast, code, map: { mappings: '' } };
+      return { ast, code, map: { mappings: '' } }
     }
-  };
+  }
 }

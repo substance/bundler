@@ -1,7 +1,7 @@
 const path = require('path')
 const fs = require('fs')
 
-module.exports = function compileRngSchema(b, src, options = {}) {
+module.exports = function compileRngSchema (b, src, options = {}) {
   const dir = options.dir || 'tmp'
   const name = options.name || path.basename(src, '.rng')
   const dest = `${dir}/${name}.data.js`
@@ -15,7 +15,7 @@ module.exports = function compileRngSchema(b, src, options = {}) {
   b.custom(`Compiling schema '${name}'...`, {
     src: src,
     dest: dest,
-    execute() {
+    execute () {
       const { compileRNG, checkSchema } = require('substance')
       const xmlSchema = compileRNG(fs, RNG_SEARCH_DIRS, entry)
       const data = xmlSchema.toJSON()
