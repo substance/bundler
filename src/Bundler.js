@@ -49,7 +49,10 @@ export default class Bundler extends EventEmitter {
     this._running = false
     this._firstRun = true
 
-    process.on('SIGINT', function() {
+    this._step = this._step.bind(this)
+
+    process.on('SIGINT', function () {
+      log('received SIGINT')
       process.exit(0)
     })
   }
@@ -299,7 +302,7 @@ export default class Bundler extends EventEmitter {
     const entry = this._scheduledActions.shift()
     const action = entry.action
     const id = action.id
-    const _step = this._step.bind(this)
+    const _step = this._step
     delete this._scheduledActionIds[id]
     try {
       Promise.resolve(action.execute(this))
