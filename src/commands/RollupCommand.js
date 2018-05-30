@@ -2,7 +2,7 @@ import * as path from 'path'
 import {
   glob, rollup, commonjs, alias,
   sourcemaps,
-  isArray, isPlainObject, colors, forEach
+  isArray, isPlainObject, colors, forEach, clone
 } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import ignore from '../rollup/rollup-ignore'
@@ -36,8 +36,9 @@ export default class RollupCommand {
     // so we need to make sure to rename old ones
     _renameLegacyTargetOptions(opts)
 
-    const sourcemap = (opts.sourcemap !== false)
-    delete opts.sourcemap
+    if (opts.hasOwnProperty('sourcemap')) {
+      console.error('DEPRECATED: use output.sourcemap instead')
+    }
 
     // in rollup external and globals are often
     // redundant, thus we added an option to specify
@@ -95,7 +96,13 @@ export default class RollupCommand {
         delete opts.globals
       }
     }
-    this.targets.forEach(_renameLegacyTargetOptions)
+    let sourcemap
+    this.targets.forEach(t => {
+      _renameLegacyTargetOptions(t)
+      if (t.sourcemap) {
+        sourcemap = true
+      }
+    })
 
     let resolveOpts
     // always add node-resolve, only don't if set to false
@@ -163,6 +170,7 @@ export default class RollupCommand {
 
     // this is necesssary so that already existing sourcemaps
     // present in imported files are picked up
+    // TODO: find out if this is really necessary anymore
     if (sourcemap) plugins.push(sourcemaps())
 
     // apply instrumentation before any other transforms
@@ -230,8 +238,7 @@ class RollupAction extends Action {
     this.src = src
     this.plugins = plugins
     this.targets = targets
-    this.opts = opts
-    this.sourcemap = (opts.sourcemap !== false)
+    this.opts = clone(opts)
     this.rootDir = bundler.rootDir
 
     this._cache = null
@@ -303,15 +310,15 @@ class RollupAction extends Action {
     if (this.opts.globals) {
       targetOpts.globals = Object.assign({}, this.opts.globals, target.globals)
     }
-    if (this.sourcemap) {
+    // enable sourcemaps by default
+    if (!targetOpts.hasOwnProperty('sourcemap')) {
       targetOpts.sourcemap = true
-      targetOpts.sourcemapFile = absDest
     }
     return bundle.generate(targetOpts)
-      .then((result) => {
-      // write the map file first so that a file watcher for the bundle
-      // is not triggered too early
-        if (this.sourcemap) {
+      .then(result => {
+        // write the map file first so that a file watcher for the bundle
+        // is not triggered too early
+        if (targetOpts.sourcemap) {
           let sourcemap = result.map.toString()
           if (target.sourcemapRoot) {
             let data = JSON.parse(sourcemap)
