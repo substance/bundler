@@ -7,10 +7,8 @@ module.exports = function (b, cmd, ...args) {
   if (isPlainObject(args[args.length - 1])) {
     options = args.pop()
   }
-  if (args.length === 0) {
-    const frags = cmd.split(/\s+/)
-    cmd = frags[0]
-    args = frags.slice(1)
+  if (args.length === 1) {
+    args = args[0].split(/\s+/)
   }
   let msg = `Exec: ${cmd} ${args.join(' ')}`
   if (options && options.cwd) {
@@ -18,11 +16,22 @@ module.exports = function (b, cmd, ...args) {
   }
   let src = options.src
   let dest = options.dest
+  delete options.src
+  delete options.dest
   b.custom(msg, {
     src,
     dest,
     execute () {
-      return _exec(cmd, args, options)
+      // console.log('Running _exec with:')
+      // console.log('  cmd:', cmd)
+      // console.log('  args:', args.join(' '))
+      // console.log('  options:', JSON.stringify(options, 0, 2))
+      let p = _exec(cmd, args, options)
+      if (options.await !== false) {
+        return p
+      } else {
+        return Promise.resolve(true)
+      }
     }
   })
 }
