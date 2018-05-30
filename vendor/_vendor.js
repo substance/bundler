@@ -18,17 +18,18 @@ var isFunction = require('lodash/isFunction')
 var isPlainObject = require('lodash/isPlainObject')
 var uniq = require('lodash/uniq')
 var without = require('lodash/without')
+var clone = require('lodash/clone')
 
 // rollup
 var rollup = require('rollup/dist/rollup')
 var commonjs = require('rollup-plugin-commonjs')
 // ATTENTION: rollup-plugin-node-resolve can not be bundled due to dynamic require statement
-//var nodeResolve = require('rollup-plugin-node-resolve')
+// var nodeResolve = require('rollup-plugin-node-resolve')
 var sourcemaps = require('rollup-plugin-sourcemaps')
 var buble = require('buble/dist/buble-browser-deps.umd.js')
 var pluginutils = require('rollup-pluginutils/dist/pluginutils.cjs.js')
 // ATTENTION rollup-plugin-node-globals also uses dynamic require statements so it can not be bundled
-//var nodeGlobals = require('rollup-plugin-node-globals/dist/rollup-plugin-node-globals.cjs.js')
+// var nodeGlobals = require('rollup-plugin-node-globals/dist/rollup-plugin-node-globals.cjs.js')
 var alias = require('rollup-plugin-alias')
 
 // postcss
@@ -58,6 +59,7 @@ module.exports = {
   isPlainObject: isPlainObject,
   uniq: uniq,
   without: without,
+  clone: clone,
   rollup: rollup,
   commonjs: commonjs,
   alias: alias,
