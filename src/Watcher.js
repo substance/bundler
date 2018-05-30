@@ -4,8 +4,7 @@ import FileWatcher from './FileWatcher'
 import GlobWatcher from './GlobWatcher'
 
 export default class Watcher {
-
-  constructor() {
+  constructor () {
     this.watching = false
     this.watchEntries = {}
     this.watchers = {}
@@ -16,11 +15,11 @@ export default class Watcher {
     process.on('exit', this.stop)
   }
 
-  start() {
+  start () {
     if (this.watching) return
     var watchEntries = this.watchEntries
     var watchers = this.watchers
-    Object.keys(watchEntries).forEach(function(id) {
+    Object.keys(watchEntries).forEach(function (id) {
       var watcher = watchers[id]
       if (watcher) watcher.close()
       var watchEntry = watchEntries[id]
@@ -29,10 +28,10 @@ export default class Watcher {
     this.watching = true
   }
 
-  stop() {
+  stop () {
     var watchEntries = this.watchEntries
     var watchers = this.watchers
-    Object.keys(watchEntries).forEach(function(id) {
+    Object.keys(watchEntries).forEach(function (id) {
       var watcher = watchers[id]
       if (watcher) {
         watcher.close()
@@ -42,7 +41,7 @@ export default class Watcher {
     this.watching = false
   }
 
-  watch(patternOrPath, hooks) {
+  watch (patternOrPath, hooks) {
     if (!patternOrPath || !isString(patternOrPath)) {
       throw new Error('Watcher.watch(): invalid path ' + patternOrPath)
     }
@@ -51,7 +50,7 @@ export default class Watcher {
     let watchEntry
     let type = glob.hasMagic(patternOrPath) ? 'glob' : 'file'
     if (type === 'file' && !isAbsolute(patternOrPath)) {
-      throw new Error('Only absolute file paths are allowed. Was '+patternOrPath)
+      throw new Error('Only absolute file paths are allowed. Was ' + patternOrPath)
     }
     if (!watchEntries[patternOrPath]) {
       watchEntry = {
@@ -69,13 +68,13 @@ export default class Watcher {
     }
   }
 
-  _createWatcher(watchEntry) {
-    const w = watchEntry.type === 'file' ?
-      new FileWatcher(watchEntry.path) :
-      new GlobWatcher(watchEntry.path)
+  _createWatcher (watchEntry) {
+    const w = watchEntry.type === 'file'
+      ? new FileWatcher(watchEntry.path)
+      : new GlobWatcher(watchEntry.path)
     // console.log('### watching %s', watchEntry.path)
-    watchEntry.handlers.forEach(function(hooks) {
-      Object.keys(hooks).forEach(function(evt) {
+    watchEntry.handlers.forEach(function (hooks) {
+      Object.keys(hooks).forEach(function (evt) {
         w.on(evt, hooks[evt])
       })
     })

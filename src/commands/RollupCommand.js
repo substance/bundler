@@ -264,7 +264,7 @@ class RollupAction extends Action {
 
     log('RollupAction: starting rollup...')
     return rollup.rollup(opts)
-      .then((bundle) => {
+      .then(bundle => {
         log('RollupAction: received bundle...')
         this.cache = bundle
         log('RollupAction: generating targets...')
@@ -275,7 +275,8 @@ class RollupAction extends Action {
           this._updateWatchers(bundle)
         })
       })
-      .catch((err) => {
+      .catch(err => {
+        log('RollupAction: bundling failed', err)
         if (err.loc) {
           console.error(colors.red('Rollup failed with %s in %s, line %2, column %s'), err.code, err.loc.file, err.loc.line, err.loc.column)
         } else {

@@ -15,15 +15,14 @@ const opts = {
 }
 
 export default class FileWatcher extends EventEmitter {
-
   constructor (file) {
     super()
     this._file = file
     const watcher = chokidar.watch(file, opts)
     this._watcher = watcher
     watcher.setMaxListeners(0)
-    watcher.on('error', function(err) {
-      if ( err.code === 'ENOENT' ) {
+    watcher.on('error', function (err) {
+      if (err.code === 'ENOENT') {
         // can't watch files that don't exist (e.g. injected by plugins somehow)
       } else {
         throw err
@@ -33,11 +32,11 @@ export default class FileWatcher extends EventEmitter {
     watcher.on('change', this.onChange.bind(this))
   }
 
-  close() {
+  close () {
     this._watcher.close()
   }
 
-  onDelete(file) {
+  onDelete (file) {
     log('File deleted: %s', file)
     this.emit('unlink', this._file)
     // TODO: we need to think about a way to explicitly
@@ -46,7 +45,7 @@ export default class FileWatcher extends EventEmitter {
     // this.close()
   }
 
-  onChange(file) {
+  onChange (file) {
     log('File changed: %s', file)
     this.emit('change', file)
   }

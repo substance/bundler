@@ -1,8 +1,9 @@
-// enabling source maps so that errors in bundler can be traced
-require('source-map-support').install()
-
 import { yargs, colors } from './vendor'
 import Bundler from './Bundler'
+import log from './log'
+
+// enabling source maps so that errors in bundler can be traced
+require('source-map-support').install()
 
 const argv = yargs
   // use this to start watcher
@@ -40,20 +41,20 @@ bundler.usage = `
     -w:     watch for file changes
     -s:     start http server
 `
-function _start() {
+function _start () {
   if (bundler.autorun) {
-    if(showHelp) {
+    if (showHelp) {
       console.info('Usage:')
       console.info(bundler.usage)
       return
-    } else if(showTasks) {
+    } else if (showTasks) {
       const tasks = bundler._tasks
       console.info('Available tasks:')
       console.info(Object.keys(tasks).map((name) => {
         const task = tasks[name]
-        const frags = ["  - ", colors.green(name)]
+        const frags = ['  - ', colors.green(name)]
         if (task.description) {
-          frags.push(colors.white(": "))
+          frags.push(colors.white(': '))
           frags.push(task.description)
         }
         return frags.join('')
@@ -61,8 +62,10 @@ function _start() {
       return
     }
     if (tasks.length > 0) {
+      log('One or more tasks specified. Start running tasks')
       bundler._runTasks(tasks)
     } else if (bundler._tasks['default']) {
+      log('No tasks specified. Start running default task')
       bundler._runTask('default')
     }
     if (!bundler._hasScheduledActions()) {
@@ -73,7 +76,8 @@ function _start() {
 }
 
 process.once('beforeExit', _start)
-bundler.once('done', function() {
+bundler.once('done', function () {
+  log('received done...')
   if (showHelp || showTasks || !bundler.autorun) return
   const watch = bundler.opts.watch
   const serve = bundler.opts.serve
@@ -88,16 +92,10 @@ bundler.once('done', function() {
     }
     bundler._startWatching()
   }
-  if (!remote && !watch && !serve) {
-    // TODO: why do exit here?
-    // If some child process is still running, it is maybe
-    // better to wait?
-    // process.exit(0)
-  }
 })
 
 if (argv.remote) {
-  bundler.once('done', function() {
+  bundler.once('done', function () {
     process.send('done')
   })
 }

@@ -7,21 +7,20 @@ const opts = {
 }
 
 export default class GlobWatcher {
-
   constructor (pattern) {
     const watcher = chokidar.watch(pattern, opts)
     this._watcher = watcher
     watcher.setMaxListeners(0)
-    watcher.on('error', function(err) {
+    watcher.on('error', function (err) {
       throw err
     })
   }
 
-  close() {
+  close () {
     this._watcher.close()
   }
 
-  on(evt, handler) {
+  on (evt, handler) {
     this._watcher.on(evt, handler)
   }
 }

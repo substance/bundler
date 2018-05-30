@@ -20,15 +20,14 @@ import PostCSSCommand from './commands/PostCSSCommand'
 import log from './log'
 
 export default class Bundler extends EventEmitter {
-
-  constructor(opts) {
+  constructor (opts) {
     super()
 
     this.opts = opts || {}
     this.rootDir = process.cwd()
 
     this.watcher = new Watcher()
-    this.server = new express()
+    this.server = new express() // eslint-disable-line new-cap
     this._serverPort = 4000
 
     // an action is registerd via a file id
@@ -55,51 +54,51 @@ export default class Bundler extends EventEmitter {
     })
   }
 
-  make(other, ...tasks) {
+  make (other, ...tasks) {
     return this._scheduleCommand(new MakeCommand(other, tasks))
   }
 
-  copy(src, dest, opts) {
+  copy (src, dest, opts) {
     return this._scheduleCommand(new CopyCommand(src, dest, opts))
   }
 
-  cp(...args) {
+  cp (...args) {
     return this.copy(...args)
   }
 
-  custom(description, params) {
+  custom (description, params) {
     return this._scheduleCommand(new CustomCommand(description, params))
   }
 
-  exec(cmd, options) {
+  exec (cmd, options) {
     return this._scheduleCommand(new ExecCommand(cmd, options))
   }
 
-  forEach(pattern, handler) {
+  forEach (pattern, handler) {
     return this._scheduleCommand(new ForEachCommand(pattern, handler))
   }
 
-  js(src, opts) {
+  js (src, opts) {
     return this._scheduleCommand(new RollupCommand(src, opts, this))
   }
 
-  browserify(src, opts) {
+  browserify (src, opts) {
     return this._scheduleCommand(new BrowserifyCommand(src, opts))
   }
 
-  css(src, dest, opts) {
+  css (src, dest, opts) {
     return this._scheduleCommand(new PostCSSCommand(src, dest, opts))
   }
 
-  rm(rmPath) {
+  rm (rmPath) {
     return this._scheduleCommand(new RemoveCommand(rmPath))
   }
 
-  minify(src, opts) {
+  minify (src, opts) {
     return this._scheduleCommand(new MinifyCommand(src, opts))
   }
 
-  task(name, deps, fn) {
+  task (name, deps, fn) {
     log('Registering task', name)
     if (isFunction(deps)) {
       fn = deps
@@ -110,11 +109,11 @@ export default class Bundler extends EventEmitter {
     return task
   }
 
-  setServerPort(port) {
+  setServerPort (port) {
     this._serverPort = port
   }
 
-  serve(params) {
+  serve (params) {
     const server = this.server
     const rootDir = this.rootDir
     if (params.static) {
@@ -129,35 +128,35 @@ export default class Bundler extends EventEmitter {
     }
   }
 
-  writeSync(dest, buf) {
+  writeSync (dest, buf) {
     console.warn('DEPRECATED: use b.writeFileSync()')
     this.writeFileSync(dest, buf)
   }
 
-  writeFileSync(dest, buf) {
+  writeFileSync (dest, buf) {
     _writeSync(dest, buf)
   }
 
-  isDirectory(p) {
+  isDirectory (p) {
     return _isDirectory(p)
   }
 
-  _scheduleCommand(cmd) {
+  _scheduleCommand (cmd) {
     const entry = this._schedule(cmd)
     return entry.promise
   }
 
-  _info(...args) {
+  _info (...args) {
     if (!this.silent) {
       console.info.apply(console, args)
     }
   }
 
-  _hasScheduledActions() {
+  _hasScheduledActions () {
     return this._scheduledActions.length > 0
   }
 
-  _registerAction(action) {
+  _registerAction (action) {
     const id = action.id
     // skip if the same action is already registered
     if (this._actions[id]) return
@@ -170,7 +169,7 @@ export default class Bundler extends EventEmitter {
     })
   }
 
-  _registerActionInput(action, input) {
+  _registerActionInput (action, input) {
     const watcher = this.watcher
     // if no other action has been registered as generator
     // then we add a file watcher
@@ -188,39 +187,39 @@ export default class Bundler extends EventEmitter {
     this._actionsByInput[input] = uniq(this._actionsByInput[input])
   }
 
-  _registerActionOutput(action, output) {
+  _registerActionOutput (action, output) {
     this._generatedFiles[output] = true
   }
 
-  _onChange(file) {
+  _onChange (file) {
     this._invalidate(file)
     const actions = this._actionsByInput[file] || []
-    actions.forEach(function(action) {
+    actions.forEach(function (action) {
       log('Rescheduling action', action.id)
       this._schedule(action)
     }.bind(this))
   }
 
-  _onUnlink(file) {
+  _onUnlink (file) {
     // TODO: maybe we should unregister the action
     // when the file is deleted
     this._invalidate(file)
   }
 
-  _invalidate(file) {
+  _invalidate (file) {
     log('Invalidating', file)
     const actions = this._getAllActions(file)
-    actions.forEach(function(action) {
+    actions.forEach(function (action) {
       action.invalidate()
     })
   }
 
   // find all actions by investigating action input-output dependencies
-  _getAllActions(file) {
+  _getAllActions (file) {
     let visited = {}
     let queue = [file]
     let actions = []
-    while(queue.length > 0) {
+    while (queue.length > 0) {
       const next = queue.shift()
       const nextActions = this._actionsByInput[next]
       for (var id in nextActions) {
@@ -235,16 +234,16 @@ export default class Bundler extends EventEmitter {
     return actions
   }
 
-  _startWatching() {
+  _startWatching () {
     this.watcher.start()
   }
 
-  _startServing() {
+  _startServing () {
     this._info('Starting server on port %s...', this._serverPort)
     this.server.listen(this._serverPort)
   }
 
-  _schedule(action) {
+  _schedule (action) {
     const id = action.id
     const schedule = this._scheduledActions
     const scheduledIds = this._scheduledActionIds
@@ -276,7 +275,7 @@ export default class Bundler extends EventEmitter {
       schedule.push(entry)
       scheduledIds[id] = true
     } else {
-      process.nextTick(function() {
+      process.nextTick(function () {
         schedule.push(entry)
         scheduledIds[id] = true
         if (!this._running) {
@@ -288,13 +287,14 @@ export default class Bundler extends EventEmitter {
     return entry
   }
 
-  _start() {
+  _start () {
+    log('Bundler is starting...')
     this._started = true
     this._running = true
     this._step()
   }
 
-  _next() {
+  _next () {
     const self = this
     const entry = this._scheduledActions.shift()
     const action = entry.action
@@ -309,11 +309,11 @@ export default class Bundler extends EventEmitter {
       _catch(err)
     }
 
-    function _next() {
+    function _next () {
       const outputs = action.outputs || []
-      outputs.forEach(function(output) {
+      outputs.forEach(function (output) {
         const nextActions = self._actionsByInput[output] || []
-        nextActions.forEach(function(action) {
+        nextActions.forEach(function (action) {
           self._schedule(action)
         })
       })
@@ -321,7 +321,8 @@ export default class Bundler extends EventEmitter {
       process.nextTick(_step)
     }
 
-    function _catch(err) {
+    function _catch (err) {
+      log('caught exception in action:', err)
       if (err) {
         if (err.stack) {
           console.error(colors.red('\nError during execution of Command '), colors.white(action.name))
@@ -333,6 +334,7 @@ export default class Bundler extends EventEmitter {
         }
       }
       if (self._firstRun) {
+        log('... exiting after error on first run')
         process.exit(1)
       } else {
         entry.reject(err)
@@ -341,7 +343,7 @@ export default class Bundler extends EventEmitter {
     }
   }
 
-  _step() {
+  _step () {
     if (this._scheduledActions.length > 0) {
       this._next()
     } else {
@@ -351,27 +353,27 @@ export default class Bundler extends EventEmitter {
     }
   }
 
-  _runTasks(names) {
-    names.forEach(function(name) {
+  _runTasks (names) {
+    names.forEach(function (name) {
       this._runTask(name)
     }.bind(this))
   }
 
-  _runTask(name, state) {
+  _runTask (name, state) {
     state = state || {}
     if (state[name] === 'done') return
     const task = this._tasks[name]
     if (!task) {
-      console.error("Unknown task: '%s'", name)
+      console.error("Unknown task: '%s'. Exiting", name)
       process.exit()
     }
     state[name] = 'visiting'
     if (task.deps && !this.opts.nodeps) {
-      task.deps.forEach(function(dep) {
+      task.deps.forEach(function (dep) {
         if (state[dep] === 'visiting') {
           throw new Error('Cyclic dependency detected in task ' + dep)
         } else if (state[dep] === 'done') {
-          return
+
         } else {
           this._runTask(dep, state)
         }
