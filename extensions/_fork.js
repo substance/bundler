@@ -5,9 +5,9 @@ module.exports = function (cmd, args, options = {}) {
   const verbose = Boolean(options.verbose) && !silent
   delete options.silent
   delete options.verbose
-  const stdio = [0, verbose ? 1 : 'ignore', silent ? 'ignore' : 2]
-  // ATTENTION: somehow under windows adding 'ipc' here, leads to an error
-  if (os.platform() !== 'win32') stdio.push('ipc')
+  // ATTENTION: in contrast to 'cp.spawn()' a fork must have an 'ipc' channel
+  // while spawn() must not have one under windows
+  const stdio = [0, verbose ? 1 : 'ignore', silent ? 'ignore' : 2, 'ipc']
   return new Promise((resolve, reject) => {
     const opts = Object.assign({ stdio }, options)
     const cp = require('child_process')

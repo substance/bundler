@@ -6,7 +6,7 @@ module.exports = function (cmd, args, options = {}) {
   delete options.silent
   delete options.verbose
   const stdio = [0, verbose ? 1 : 'ignore', silent ? 'ignore' : 2]
-  // ATTENTION: somehow under windows adding 'ipc' here, leads to an error
+  // ATTENTION: in contrast to 'cp.fork()', 'spawn() must not have an 'ipc' channel on windows
   if (os.platform() !== 'win32') stdio.push('ipc')
   return new Promise((resolve, reject) => {
     const opts = Object.assign({ stdio }, options)
