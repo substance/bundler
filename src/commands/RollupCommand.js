@@ -2,7 +2,8 @@ import * as path from 'path'
 import {
   glob, rollup, commonjs, alias,
   sourcemaps,
-  isArray, isPlainObject, colors, forEach, clone
+  isArray, isPlainObject, colors, forEach, clone,
+  debug
 } from '../vendor'
 import { isAbsolute, writeSync } from '../fileUtils'
 import ignore from '../rollup/rollup-ignore'
@@ -13,8 +14,8 @@ import cleanup from '../rollup/rollup-plugin-cleanup'
 import rollupGlob from '../rollup/rollup-glob'
 import jsonPlugin from '../rollup/rollup-plugin-json'
 import Action from '../Action'
-import log from '../log'
 
+const log = debug('bundler:rollup')
 const ZERO = '\0'.charCodeAt(0)
 
 let nodeResolve = require('rollup-plugin-node-resolve')

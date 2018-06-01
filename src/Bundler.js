@@ -2,7 +2,7 @@ import { EventEmitter } from 'events'
 import * as path from 'path'
 import {
   isFunction, uniq, express,
-  colors
+  colors, debug
 } from './vendor'
 import { writeSync as _writeSync, isDirectory as _isDirectory } from './fileUtils'
 import Watcher from './Watcher'
@@ -17,7 +17,8 @@ import RemoveCommand from './commands/RemoveCommand'
 import RollupCommand from './commands/RollupCommand'
 import BrowserifyCommand from './commands/BrowserifyCommand'
 import PostCSSCommand from './commands/PostCSSCommand'
-import log from './log'
+
+const log = debug('bundler')
 
 export default class Bundler extends EventEmitter {
   constructor (opts) {

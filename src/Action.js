@@ -1,5 +1,5 @@
-import { fse } from './vendor'
-import log from './log'
+import { fse, debug } from './vendor'
+const log = debug('bundler:action')
 
 export default class Action {
   constructor (inputs, outputs) {

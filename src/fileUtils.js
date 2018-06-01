@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { fse, debug } from './vendor'
 
-const log = debug('fileUtils')
+const log = debug('bundler:file-utils')
 
 const SLASH = '/'.charCodeAt(0)
 

@@ -1,9 +1,9 @@
-import { yargs, colors } from './vendor'
+import { yargs, colors, debug } from './vendor'
 import Bundler from './Bundler'
-import log from './log'
-
 // enabling source maps so that errors in bundler can be traced
 require('source-map-support').install()
+
+const log = debug('bundler:main')
 
 const argv = yargs
   // use this to start watcher

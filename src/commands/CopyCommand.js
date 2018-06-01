@@ -4,7 +4,7 @@ import Action from '../Action'
 import { glob, fse, debug } from '../vendor'
 import { copySync, isAbsolute, isDirectory } from '../fileUtils'
 
-const log = debug('copy')
+const log = debug('bundler:copy')
 
 /*
   Copy a single file into dist folder:
