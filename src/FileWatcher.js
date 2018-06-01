@@ -1,22 +1,31 @@
 import { EventEmitter } from 'events'
-import { chokidar } from './vendor'
-import log from './log'
+import { chokidar, debug } from './vendor'
+import platform from '../util/platform'
 
-const opts = {
-  encoding: 'utf-8',
-  persistent: true,
-  // TODO: do we really want this
-  // Under windows I found especially Sublime
-  // causing a lot of double events
-  awaitWriteFinish: {
-    stabilityThreshold: 100,
-    pollInterval: 50
-  }
-}
+const log = debug('bundler:file-watcher')
 
 export default class FileWatcher extends EventEmitter {
   constructor (file) {
     super()
+
+    const opts = {
+      encoding: 'utf-8',
+      persistent: true
+      // ATTENTION: have deactivated this because it was cuasing trouble
+      // at least on Windows
+      // awaitWriteFinish: {
+      //   stabilityThreshold: 100,
+      //   pollInterval: 50
+      // }
+    }
+    // TODO: see how this is working on OSX
+    if (!platform.isWindows) {
+      opts.awaitWriteFinish = {
+        stabilityThreshold: 100,
+        pollInterval: 50
+      }
+    }
+
     this._file = file
     const watcher = chokidar.watch(file, opts)
     this._watcher = watcher
