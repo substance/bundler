@@ -322,7 +322,9 @@ export default class Bundler extends EventEmitter {
         })
       })
       entry.resolve()
-      process.nextTick(_step)
+      // give the system some time if something goes wrong
+      // e.g. bundler is in an infinite update look for instance
+      setTimeout(_step, 10)
     }
 
     function _catch (err) {
