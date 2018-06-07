@@ -19,11 +19,8 @@ export default class FileWatcher extends EventEmitter {
       // }
     }
     // TODO: see how this is working on OSX
-    if (!platform.isWindows) {
-      opts.awaitWriteFinish = {
-        stabilityThreshold: 100,
-        pollInterval: 50
-      }
+    if (platform.isWindows) {
+      opts.awaitWriteFinish = true
     }
 
     this._file = file
