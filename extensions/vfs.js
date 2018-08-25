@@ -62,8 +62,16 @@ class SimpleVFS {
   if (!format) throw new Error("'format' is mandatory")
   if (format === 'umd') {
     if (!moduleName) throw new Error("'moduleName' is mandatory")
-    return [clazz, `window.${moduleName} = new SimpleVFS()`].join('\n')
+    return `
+(_global => {
+${clazz}
+_global.${moduleName} = new SimpleVFS()
+})(typeof global !== 'undefined' ? global : window)
+`
   } else if (format === 'es') {
-    return [clazz, 'const vfs = new SimpleVFS()', 'export default vfs'].join('\n')
+    return `
+${clazz}
+export default new SimpleVFS()
+`
   }
 }
