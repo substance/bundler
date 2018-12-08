@@ -15,10 +15,10 @@ module.exports = function (b, options = {}) {
           browsers,
           singleRun,
           failOnEmptyTestSuite
-        }, function () {
+        }, function (exitCode) {
           // why is exitCode always == 1?
           if (fails > 0) {
-            process.exit(1)
+            process.exit(exitCode)
           } else {
             resolve()
           }
