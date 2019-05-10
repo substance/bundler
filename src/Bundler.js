@@ -14,7 +14,6 @@ import ForEachCommand from './commands/ForEachCommand'
 import MakeCommand from './commands/MakeCommand'
 import MinifyCommand from './commands/MinifyCommand'
 import RemoveCommand from './commands/RemoveCommand'
-import RollupCommand from './commands/RollupCommand'
 import BrowserifyCommand from './commands/BrowserifyCommand'
 import PostCSSCommand from './commands/PostCSSCommand'
 
@@ -80,10 +79,6 @@ export default class Bundler extends EventEmitter {
 
   forEach (pattern, handler) {
     return this._scheduleCommand(new ForEachCommand(pattern, handler))
-  }
-
-  js (src, opts) {
-    return this._scheduleCommand(new RollupCommand(src, opts, this))
   }
 
   browserify (src, opts) {
@@ -261,7 +256,7 @@ export default class Bundler extends EventEmitter {
         }
       }
       if (idx < 0) {
-        console.error('Internal Error: tried to reschedule an action with id "%s"',id)
+        console.error('Internal Error: tried to reschedule an action with id "%s"', id)
         process.exit(1)
       }
       schedule.splice(idx, 1)
