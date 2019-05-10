@@ -1,4 +1,0 @@
-[submodule "vendor/istanbul"]
-	path = vendor/istanbul
-	url = https://github.com/kpdecker/istanbul.git
-	branch = start-end
