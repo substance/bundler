@@ -1,7 +1,6 @@
 // NOTE: we are using an published version of substance-bundler to build the bundler
 var b = require('substance-bundler')
 var bundleVendor = require('./util/bundleVendor')
-var exec = require('./extensions/exec')
 var path = require('path')
 
 b.task('clean', function () {
@@ -10,13 +9,6 @@ b.task('clean', function () {
 })
 
 b.task('vendor', function () {
-  let cmd = 'npm'
-  let opts = {
-    cwd: path.join(__dirname, 'vendor', 'istanbul'),
-    verbose: true,
-    shell: true
-  }
-  exec(b, cmd, 'install', '--ignore-scripts', '--no-package-lock', '--no-save', opts)
   b.custom('Bundling vendor...', {
     src: './vendor/_vendor.js',
     dest: './vendor/vendor.js',
