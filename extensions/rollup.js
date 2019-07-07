@@ -30,6 +30,11 @@ module.exports = function _rollup (b, config) {
                 }
                 break
               }
+              case 'ERROR':
+              case 'FATAL': {
+                reject(event.error)
+                break
+              }
               default:
                 //
             }
