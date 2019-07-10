@@ -32,11 +32,15 @@ module.exports = function _rollup (b, config) {
               }
               case 'ERROR':
               case 'FATAL': {
-                reject(event.error)
+                if (initial) {
+                  reject(event.error)
+                } else {
+                  console.error(event.error)
+                }
                 break
               }
               default:
-                //
+                // console.log(`Unhandled event: ${event.code}`)
             }
           })
         })
