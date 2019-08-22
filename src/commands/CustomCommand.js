@@ -41,10 +41,9 @@ export default class CustomCommand {
 
   _executeWithoutGlob (bundler) {
     let src = this.src
-    let dest = this.dest
+    let dest = this._normalizedDest(bundler)
     if (src && !isAbsolute(src)) src = path.join(bundler.rootDir, src)
-    if (dest && !isAbsolute(dest)) dest = path.join(bundler.rootDir, dest)
-    const action = new CustomAction(this._id, this.description, [src], [dest], this._execute)
+    const action = new CustomAction(this._id, this.description, [src], dest, this._execute)
     bundler._registerAction(action)
     return action.execute(bundler)
   }
@@ -53,14 +52,13 @@ export default class CustomCommand {
     const rootDir = bundler.rootDir
     const watcher = bundler.watcher
     const pattern = this.src
-    let dest = this.dest
-    if (!isAbsolute(dest)) dest = path.join(rootDir, dest)
+    let dest = this._normalizedDest(bundler)
     let files = glob.sync(pattern, {})
     if (files) {
       files = files.map(function (file) {
         return path.join(rootDir, file)
       })
-      const action = new CustomAction(this._id, this.description, files, [dest], this._execute)
+      const action = new CustomAction(this._id, this.description, files, dest, this._execute)
       bundler._registerAction(action)
       let result = action.execute(bundler)
       // TODO: need to rework the whole dynamic registry stuff
@@ -82,8 +80,7 @@ export default class CustomCommand {
   _executeWithCollection (bundler) {
     const rootDir = bundler.rootDir
     const watcher = bundler.watcher
-    let dest = this.dest
-    if (dest && !isAbsolute(dest)) dest = path.join(rootDir, dest)
+    let dest = this._normalizedDest(bundler)
     let files = []
     let patterns = []
     this.src.forEach(function (fileOrPattern) {
@@ -98,7 +95,7 @@ export default class CustomCommand {
       files = files.map(function (file) {
         return path.join(rootDir, file)
       })
-      const action = new CustomAction(this._id, this.description, files, [dest], this._execute)
+      const action = new CustomAction(this._id, this.description, files, dest, this._execute)
       bundler._registerAction(action)
       let result = action.execute(bundler)
       patterns.forEach(function (pattern) {
@@ -117,6 +114,21 @@ export default class CustomCommand {
     } else {
       console.error('No files found for pattern %s', patterns)
     }
+  }
+
+  _normalizedDest (bundler) {
+    const rootDir = bundler.rootDir
+    let dest = this.dest
+    if (dest) {
+      if (!isArray(dest)) dest = [dest]
+      dest = dest.map(d => {
+        if (d && !isAbsolute(d)) d = path.join(rootDir, d)
+        return d
+      })
+    } else {
+      dest = []
+    }
+    return dest
   }
 }
 
