@@ -383,4 +383,6 @@ export default class Bundler extends EventEmitter {
     if (task.fn) task.fn()
     state[name] = 'done'
   }
+
+  get _isBundler () { return true }
 }
