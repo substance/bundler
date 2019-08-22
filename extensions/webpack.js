@@ -1,8 +1,18 @@
 const { colors } = require('../dist/vendor')
 
 module.exports = function _webpack (b, config) {
+  if (!b._isBundler) {
+    throw new Error('Expected a Bundler instance as first argument.')
+  }
   let webpack = require('webpack')
-  let dest = config.output.path
+  let dest
+  // support for multiple target configuration
+  if (Array.isArray(config)) {
+    dest = config.map(c => c.output.fileName).filter(Boolean)
+  } else {
+    dest = config.output.fileName
+  }
+  // TODO: maybe we create a nicer display, for now only output file name(s)
   b.custom(`Webpack: ${dest}`, {
     src: null,
     dest,
