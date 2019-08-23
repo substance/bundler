@@ -47,7 +47,8 @@ function _execute (b, config) {
               initial = false
               resolve()
             } else {
-              console.log('Finished in %s ms', Date.now() - t0)
+              let ellapsedTime = Date.now() - t0
+              console.log(b.colors.green(`..finished in ${ellapsedTime} ms`))
             }
             break
           }
