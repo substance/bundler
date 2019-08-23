@@ -10,7 +10,6 @@ import Task from './Task'
 import CopyCommand from './commands/CopyCommand'
 import CustomCommand from './commands/CustomCommand'
 import ExecCommand from './commands/ExecCommand'
-import ForEachCommand from './commands/ForEachCommand'
 import MakeCommand from './commands/MakeCommand'
 import MinifyCommand from './commands/MinifyCommand'
 import RemoveCommand from './commands/RemoveCommand'
@@ -74,10 +73,6 @@ export default class Bundler extends EventEmitter {
 
   exec (cmd, options) {
     return this._scheduleCommand(new ExecCommand(cmd, options))
-  }
-
-  forEach (pattern, handler) {
-    return this._scheduleCommand(new ForEachCommand(pattern, handler))
   }
 
   css (src, dest, opts) {
