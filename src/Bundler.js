@@ -11,7 +11,6 @@ import CopyCommand from './commands/CopyCommand'
 import CustomCommand from './commands/CustomCommand'
 import ExecCommand from './commands/ExecCommand'
 import MakeCommand from './commands/MakeCommand'
-import MinifyCommand from './commands/MinifyCommand'
 import RemoveCommand from './commands/RemoveCommand'
 import PostCSSCommand from './commands/PostCSSCommand'
 
@@ -81,10 +80,6 @@ export default class Bundler extends EventEmitter {
 
   rm (rmPath) {
     return this._scheduleCommand(new RemoveCommand(rmPath))
-  }
-
-  minify (src, opts) {
-    return this._scheduleCommand(new MinifyCommand(src, opts))
   }
 
   task (name, deps, fn) {
