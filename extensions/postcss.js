@@ -25,8 +25,8 @@ module.exports = function postcssBundlerExtension (b, config) {
   let { src, dest } = config
   let descr = `PostCSS: ${dest}`
   b.custom(descr, {
-    src: src,
-    dest: dest,
+    src,
+    dest,
     execute (file, { watch, writeFileSync }) {
       let { postcss, plugins, processOptions } = _getPostcssConfig(config)
       processOptions = Object.assign({
@@ -34,7 +34,7 @@ module.exports = function postcssBundlerExtension (b, config) {
         to: dest,
         map: { inline: false }
       }, processOptions)
-      const css = fs.readFileSync(file, 'utf8')
+      const css = fs.readFileSync(src, 'utf8')
       return postcss(plugins)
         .process(css, processOptions)
         .then(result => {
@@ -42,7 +42,7 @@ module.exports = function postcssBundlerExtension (b, config) {
             message => message.type === 'dependency'
           )
           for (let dep of deps) {
-            watch(dep)
+            watch(dep.file)
           }
           if (result.map) {
             writeFileSync(dest + '.map', JSON.stringify(result.map))
