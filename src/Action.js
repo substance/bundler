@@ -12,8 +12,6 @@ export default class Action {
     // Note: some actions use Action.removeOutputs()
   }
 
-  update (next) {} // eslint-disable-line no-unused-vars
-
   get id () {
     return String(this.inputs) + '->' + String(this.outputs)
   }
@@ -21,11 +19,15 @@ export default class Action {
   get descr () {
     return this.id
   }
-}
 
-Action.removeOutputs = function (action) {
-  action.outputs.forEach(function (file) {
-    log('Invalidating %s', file)
-    fse.removeSync(file)
-  })
+  _removeOutputs () {
+    Action.removeOutputs(this)
+  }
+
+  static removeOutputs (action) {
+    action.outputs.forEach(function (file) {
+      log('Invalidating %s', file)
+      fse.removeSync(file)
+    })
+  }
 }

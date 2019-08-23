@@ -29,6 +29,16 @@ export function writeSync (dest, buf) {
   fs.writeFileSync(dest, buf)
 }
 
+export function mkDirSync (dir) {
+  fse.ensureDirSync(dir)
+}
+
+export function rmSync (rmPath) {
+  if (fs.existsSync(rmPath)) {
+    fse.removeSync(rmPath)
+  }
+}
+
 function _dir (p) {
   if (p.charCodeAt(p.length - 1) === SLASH) return p
   else return path.dirname(p)

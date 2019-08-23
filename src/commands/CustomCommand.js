@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { isAbsolute } from '../fileUtils'
+import { isAbsolute, isDirectory, copySync, mkDirSync, rmSync, writeSync } from '../fileUtils'
 import { isFunction, isArray, uniq, fse, glob, colors } from '../vendor'
 import Action from '../Action'
 import randomId from '../randomId'
@@ -138,6 +138,7 @@ class CustomAction extends Action {
     this._id = id
     this._description = description
     this._execute = _execute
+    this._watched = new Set()
   }
 
   get id () {
@@ -157,9 +158,44 @@ class CustomAction extends Action {
     let inputs = this.inputs.filter(function (file) {
       return fs.existsSync(file)
     })
-    return Promise.resolve(this._execute(inputs))
+    let api = {
+      watch: (file) => {
+        if (!isAbsolute(file)) file = path.join(bundler.rootDir, file)
+        this._addWatcher(file)
+      },
+      // providing some fs api
+      isAbsolute,
+      isDirectory,
+      copySync,
+      mkDirSync,
+      rmSync,
+      writeFileSync: writeSync
+    }
+    return Promise.resolve(this._execute(inputs, api))
       .then(function () {
         bundler._info(colors.green('..finished in %s ms.'), Date.now() - t0)
       })
+  }
+
+  _addWatcher (absPath) {
+    const bundler = this.bunder
+    const watcher = bundler.watcher
+    const _onChange = () => {
+      _invalidate()
+      bundler._schedule(this)
+    }
+    function _invalidate () {
+      this.invalidate()
+      for (let output of this.outputs) {
+        bundler._invalidate(output)
+      }
+    }
+    if (!this._watched.has(absPath)) {
+      watcher.watch(absPath, {
+        change: _onChange,
+        unlink: _invalidate
+      })
+      this._watched.add(absPath)
+    }
   }
 }
