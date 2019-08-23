@@ -1,6 +1,12 @@
-const { colors } = require('../dist/vendor')
-
-module.exports = function _webpack (b, config) {
+/**
+ * A bundler extension for running rollup.
+ *
+ * > Note: webpack and plugins are not installed automatically.
+ *
+ * @param {Bundler} b
+ * @param {object} config see [webpack documentation](https://webpack.js.org/configuration/)
+ */
+module.exports = function webpackBundlerExtension (b, config) {
   if (!b._isBundler) {
     throw new Error('Expected a Bundler instance as first argument.')
   }
@@ -34,7 +40,7 @@ module.exports = function _webpack (b, config) {
             if (_firstRun) {
               _firstRun = false
             } else {
-              console.log(colors.green(`..finished in ${ellapsedTime} ms`))
+              console.log(b.colors.green(`..finished in ${ellapsedTime} ms`))
             }
             resolve()
           }

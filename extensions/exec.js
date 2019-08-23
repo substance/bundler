@@ -1,15 +1,19 @@
-var isPlainObject = require('../util/isPlainObject')
-var _exec = require('./_exec')
+const _exec = require('./_exec')
 
-module.exports = function (b, cmd, ...args) {
-  let options
-  // console.log('### exec', cmd, args, isPlainObject(args[0]))
-  if (isPlainObject(args[args.length - 1])) {
-    options = args.pop()
-  }
-  if (args.length === 1) {
-    args = args[0].split(/\s+/)
-  }
+/**
+ * A bundler extension for executing command line commands.
+ *
+ * > Note: karma and plugins are not installed automatically.
+ *
+ * @param {Bundler} b
+ * @param {string} cmd
+ * @param {Array<any>} args command line arguments
+ * @param {object} options
+ * @param {string} options.cwd working directory
+ * @param {string|array<string>} options.src input file(s) or glob pattern(s) (will be watched)
+ * @param {string|array<string>} options.dest output files
+ */
+module.exports = function (b, cmd, args = [], options = {}) {
   let msg = `Exec: ${cmd} ${args.join(' ')}`
   if (options && options.cwd) {
     msg += ` in ${options.cwd}`

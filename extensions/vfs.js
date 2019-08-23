@@ -1,7 +1,15 @@
 const fs = require('fs')
 const path = require('path')
 
-module.exports = function vfs (b, options = {}) {
+/**
+ * A bundler extension for creating virtual browser filesystems.
+ *
+ * @param {Bundler} b
+ * @param {object} options
+ * @param {string|array<string>} options.src a single file, a glob pattern, or an array of such.
+ *    > Note: source files are watched when bundler is run in watch mode
+ */
+module.exports = function vfsBundlerExtension (b, options = {}) {
   const src = options.src
   if (!src) throw new Error("'src' is mandatory")
   const dest = options.dest

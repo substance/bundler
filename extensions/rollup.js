@@ -1,4 +1,12 @@
-module.exports = function _rollup (b, config) {
+/**
+ * A bundler extension for running rollup.
+ *
+ * > Note: rollup and plugins are not installed automatically.
+ *
+ * @param {Bundler} b
+ * @param {object} config see [rollup documentation](https://rollupjs.org/guide/en/#big-list-of-options)
+ */
+module.exports = function rollupBundlerExtension (b, config) {
   const rollup = require('rollup')
   let inputOptions = config
   let outputOptions = config.output

@@ -1,8 +1,20 @@
 const path = require('path')
 
-module.exports = function (b, options = {}) {
+/**
+ * A bundler extension for running karma.
+ *
+ * > Note: karma and plugins are not installed automatically.
+ *
+ * @param {Bundler} b
+ * @param {object} [options]
+ * @param {string} options.configFile location of the karma configuration file. See [karma documentation](http://karma-runner.github.io/4.0/config/configuration-file.html)
+ * @param {Array<string>} options.browsers override for config.browsers
+ * @param {boolean} options.singleRun override for config.singleRun
+ * @param {boolean} options.failOnEmptyTestSuite override for config.failOnEmptyTestSuite
+ */
+module.exports = function karmaBundlerExtension (b, options = {}) {
   const configFile = options.configFile || path.join(process.cwd(), 'karma.conf.js')
-  const browsers = options.browser || ['Chrome']
+  const browsers = options.browsers || ['Chrome']
   const singleRun = (options.singleRun !== false)
   const failOnEmptyTestSuite = Boolean(options.failOnEmptyTestSuite)
   b.custom('Running Karma...', {
