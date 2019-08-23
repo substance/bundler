@@ -17,22 +17,22 @@ export default class Watcher {
 
   start () {
     if (this.watching) return
-    var watchEntries = this.watchEntries
-    var watchers = this.watchers
+    let watchEntries = this.watchEntries
+    let watchers = this.watchers
     Object.keys(watchEntries).forEach(function (id) {
-      var watcher = watchers[id]
+      let watcher = watchers[id]
       if (watcher) watcher.close()
-      var watchEntry = watchEntries[id]
+      let watchEntry = watchEntries[id]
       watchers[id] = this._createWatcher(watchEntry)
     }.bind(this))
     this.watching = true
   }
 
   stop () {
-    var watchEntries = this.watchEntries
-    var watchers = this.watchers
+    let watchEntries = this.watchEntries
+    let watchers = this.watchers
     Object.keys(watchEntries).forEach(function (id) {
-      var watcher = watchers[id]
+      let watcher = watchers[id]
       if (watcher) {
         watcher.close()
         delete watchers[id]

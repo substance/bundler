@@ -3,7 +3,7 @@ export default function randomId () {
   const ts = Date.now().toString()
   const parts = ts.split('').reverse()
   const id = new Array(length)
-  for (var i = length - 1; i >= 0; i--) {
+  for (let i = length - 1; i >= 0; i--) {
     id[i] = _getRandomInt(0, parts.length - 1)
   }
   return id.join('')

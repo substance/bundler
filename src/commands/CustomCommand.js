@@ -151,7 +151,7 @@ class CustomAction extends Action {
 
   execute (bundler) {
     bundler._info(this._description)
-    var t0 = Date.now()
+    let t0 = Date.now()
     this.outputs.forEach(function (f) {
       fse.ensureDirSync(path.dirname(f))
     })

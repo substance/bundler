@@ -200,7 +200,7 @@ export default class Bundler extends EventEmitter {
     while (queue.length > 0) {
       const next = queue.shift()
       const nextActions = this._actionsByInput[next]
-      for (var id in nextActions) {
+      for (let id in nextActions) {
         if (!nextActions.hasOwnProperty(id)) continue
         if (visited[id]) continue
         const action = nextActions[id]
