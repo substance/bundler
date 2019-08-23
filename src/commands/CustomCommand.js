@@ -43,7 +43,7 @@ export default class CustomCommand {
     let src = this.src
     let dest = this._normalizedDest(bundler)
     if (src && !isAbsolute(src)) src = path.join(bundler.rootDir, src)
-    const action = new CustomAction(this._id, this.description, [src], dest, this._execute)
+    const action = new CustomAction(this._id, this.description, [src], dest, this._execute, false)
     bundler._registerAction(action)
     return action.execute(bundler)
   }
@@ -58,7 +58,7 @@ export default class CustomCommand {
       files = files.map(function (file) {
         return path.join(rootDir, file)
       })
-      const action = new CustomAction(this._id, this.description, files, dest, this._execute)
+      const action = new CustomAction(this._id, this.description, files, dest, this._execute, true)
       bundler._registerAction(action)
       let result = action.execute(bundler)
       // TODO: need to rework the whole dynamic registry stuff
@@ -95,7 +95,7 @@ export default class CustomCommand {
       files = files.map(function (file) {
         return path.join(rootDir, file)
       })
-      const action = new CustomAction(this._id, this.description, files, dest, this._execute)
+      const action = new CustomAction(this._id, this.description, files, dest, this._execute, true)
       bundler._registerAction(action)
       let result = action.execute(bundler)
       patterns.forEach(function (pattern) {
@@ -133,12 +133,13 @@ export default class CustomCommand {
 }
 
 class CustomAction extends Action {
-  constructor (id, description, inputs, outputs, _execute) {
+  constructor (id, description, inputs, outputs, _execute, multipleSourceFiles) {
     super(inputs.filter(Boolean), outputs.filter(Boolean))
     this._id = id
     this._description = description
     this._execute = _execute
     this._watched = new Set()
+    this._multipleSourceFiles = multipleSourceFiles
   }
 
   get id () {
@@ -170,6 +171,9 @@ class CustomAction extends Action {
       mkDirSync,
       rmSync,
       writeFileSync: writeSync
+    }
+    if (!this._multipleSourceFiles) {
+      inputs = inputs[0]
     }
     return Promise.resolve(this._execute(inputs, api))
       .then(function () {
