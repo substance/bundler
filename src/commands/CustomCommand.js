@@ -162,7 +162,7 @@ class CustomAction extends Action {
     let api = {
       watch: (file) => {
         if (!isAbsolute(file)) file = path.join(bundler.rootDir, file)
-        this._addWatcher(file)
+        this._addWatcher(bundler, file)
       },
       // providing some fs api
       isAbsolute,
@@ -181,14 +181,13 @@ class CustomAction extends Action {
       })
   }
 
-  _addWatcher (absPath) {
-    const bundler = this.bunder
+  _addWatcher (bundler, absPath) {
     const watcher = bundler.watcher
     const _onChange = () => {
       _invalidate()
       bundler._schedule(this)
     }
-    function _invalidate () {
+    const _invalidate = () => {
       this.invalidate()
       for (let output of this.outputs) {
         bundler._invalidate(output)
