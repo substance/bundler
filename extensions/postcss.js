@@ -5,14 +5,8 @@ const fs = require('fs')
  *
  * @param {Bundler} b
  * @param {object} config
- * @param {string} config.src location of the CSS entry file
- * @param {string} config.dest output location
- * @param {function} [config.postcss] postcss instance
- *    If not provided, bundler's built-in postcss is used
- * @param {array<postcss.Plugin>} [config.plugins] postcss plugins
- *    If not provided, bundler uses the following pre-defined plugins:
- *      - [postcss-import](https://www.npmjs.com/package/postcss-import)
- *      - [postcss-reporter](https://www.npmjs.com/package/postcss-reporter)
+ * @param {string} config.from location of the CSS entry file
+ * @param {string} config.to output file
  * @param {string} [config.processsOptions] postcss.process() options (see [postcss documentation](http://api.postcss.org/global.html#processOptions))
  *    The default processOptions are:
  *    ```
@@ -20,21 +14,27 @@ const fs = require('fs')
  *      map: { inline: false }
  *    }
  *    ```
+ * @param {function} [config.postcss] postcss instance
+ *    If not provided, bundler's built-in postcss is used
+ * @param {array<postcss.Plugin>} [config.plugins] postcss plugins
+ *    If not provided, bundler uses the following pre-defined plugins:
+ *      - [postcss-import](https://www.npmjs.com/package/postcss-import)
+ *      - [postcss-reporter](https://www.npmjs.com/package/postcss-reporter)
  */
 module.exports = function postcssBundlerExtension (b, config) {
-  let { src, dest } = config
-  let descr = `PostCSS: ${dest}`
+  let { from, to } = config
+  let descr = `PostCSS: ${to}`
   b.custom(descr, {
-    src,
-    dest,
+    src: from,
+    dest: to,
     execute (file, { watch, writeFileSync }) {
       let { postcss, plugins, processOptions } = _getPostcssConfig(config)
       processOptions = Object.assign({
-        from: src,
-        to: dest,
+        from,
+        to,
         map: { inline: false }
       }, processOptions)
-      const css = fs.readFileSync(src, 'utf8')
+      const css = fs.readFileSync(from, 'utf8')
       return postcss(plugins)
         .process(css, processOptions)
         .then(result => {
@@ -45,9 +45,9 @@ module.exports = function postcssBundlerExtension (b, config) {
             watch(dep.file)
           }
           if (result.map) {
-            writeFileSync(dest + '.map', JSON.stringify(result.map))
+            writeFileSync(to + '.map', JSON.stringify(result.map))
           }
-          writeFileSync(dest, result.css)
+          writeFileSync(to, result.css)
         })
     }
   })
