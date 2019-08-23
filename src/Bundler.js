@@ -125,6 +125,10 @@ export default class Bundler extends EventEmitter {
     return _isDirectory(p)
   }
 
+  get colors () {
+    return colors
+  }
+
   _scheduleCommand (cmd) {
     const entry = this._schedule(cmd)
     return entry.promise
