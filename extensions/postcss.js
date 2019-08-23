@@ -66,6 +66,6 @@ function _getPostcssConfig (options) {
 }
 
 function _getBuiltIns () {
-  let { postcss, postcssImport, postcssReporter } = require('../vendor/vendor')
+  let { postcss, postcssImport, postcssReporter } = require('../dist/vendor')
   return { postcss, postcssImport, postcssReporter }
 }
