@@ -14,7 +14,6 @@ import ForEachCommand from './commands/ForEachCommand'
 import MakeCommand from './commands/MakeCommand'
 import MinifyCommand from './commands/MinifyCommand'
 import RemoveCommand from './commands/RemoveCommand'
-import BrowserifyCommand from './commands/BrowserifyCommand'
 import PostCSSCommand from './commands/PostCSSCommand'
 
 const log = debug('bundler')
@@ -81,10 +80,6 @@ export default class Bundler extends EventEmitter {
     return this._scheduleCommand(new ForEachCommand(pattern, handler))
   }
 
-  browserify (src, opts) {
-    return this._scheduleCommand(new BrowserifyCommand(src, opts))
-  }
-
   css (src, dest, opts) {
     return this._scheduleCommand(new PostCSSCommand(src, dest, opts))
   }
@@ -127,13 +122,13 @@ export default class Bundler extends EventEmitter {
     }
   }
 
+  writeFileSync (dest, buf) {
+    _writeSync(dest, buf)
+  }
+
   writeSync (dest, buf) {
     console.warn('DEPRECATED: use b.writeFileSync()')
     this.writeFileSync(dest, buf)
-  }
-
-  writeFileSync (dest, buf) {
-    _writeSync(dest, buf)
   }
 
   isDirectory (p) {
