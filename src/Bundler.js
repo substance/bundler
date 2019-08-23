@@ -11,7 +11,6 @@ import CopyCommand from './commands/CopyCommand'
 import CustomCommand from './commands/CustomCommand'
 import MakeCommand from './commands/MakeCommand'
 import RemoveCommand from './commands/RemoveCommand'
-import PostCSSCommand from './commands/PostCSSCommand'
 
 const log = debug('bundler')
 
@@ -67,10 +66,6 @@ export default class Bundler extends EventEmitter {
 
   custom (description, params) {
     return this._scheduleCommand(new CustomCommand(description, params))
-  }
-
-  css (src, dest, opts) {
-    return this._scheduleCommand(new PostCSSCommand(src, dest, opts))
   }
 
   rm (rmPath) {
