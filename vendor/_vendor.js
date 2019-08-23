@@ -23,7 +23,6 @@ var clone = require('lodash/clone')
 // postcss
 var postcss = require('postcss')
 var postcssImport = require('postcss-import/index.js')
-var postcssVariables = require('postcss-css-variables')
 var postcssReporter = require('postcss-reporter')
 
 var colors = require('colors/safe')
@@ -49,7 +48,6 @@ module.exports = {
   yargs,
   postcss,
   postcssImport,
-  postcssVariables,
   postcssReporter,
   colors
 }
