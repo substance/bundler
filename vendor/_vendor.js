@@ -1,27 +1,28 @@
-var chokidar = require('chokidar')
-var debug = require('debug')
-var express = require('express')
-var fse = require('fs-extra')
-var glob = require('glob')
-var minimatch = require('minimatch')
-var yargs = require('yargs')
+const chokidar = require('chokidar')
+const debug = require('debug')
+const express = require('express')
+const fse = require('fs-extra')
+const glob = require('glob')
+const minimatch = require('minimatch')
+const yargs = require('yargs')
 
 // lodash
-var forEach = require('lodash/forEach')
-var isArray = require('lodash/isArray')
-var isString = require('lodash/isString')
-var isFunction = require('lodash/isFunction')
-var isPlainObject = require('lodash/isPlainObject')
-var uniq = require('lodash/uniq')
-var without = require('lodash/without')
-var clone = require('lodash/clone')
+const forEach = require('lodash/forEach')
+const isArray = require('lodash/isArray')
+const isString = require('lodash/isString')
+const isFunction = require('lodash/isFunction')
+const isPlainObject = require('lodash/isPlainObject')
+const omit = require('lodash/omit')
+const uniq = require('lodash/uniq')
+const without = require('lodash/without')
+const clone = require('lodash/clone')
 
 // postcss
-var postcss = require('postcss')
-var postcssImport = require('postcss-import/index.js')
-var postcssReporter = require('postcss-reporter')
+const postcss = require('postcss')
+const postcssImport = require('postcss-import/index.js')
+const postcssReporter = require('postcss-reporter')
 
-var colors = require('colors/safe')
+const colors = require('colors/safe')
 
 module.exports = {
   chokidar,
@@ -35,6 +36,7 @@ module.exports = {
   isString,
   isFunction,
   isPlainObject,
+  omit,
   uniq,
   without,
   clone,
