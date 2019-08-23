@@ -1,19 +1,19 @@
 /* eslint-disable semi */
-var fs = require('fs');
+const fs = require('fs');
 
-module.exports = function bundleVendor(opts) {
+module.exports = function bundleVendor (opts) {
   opts = opts || {}
-  var src = opts.src ;
-  var dest = opts.dest;
-  var external = opts.external || []
-  return new Promise(function(resolve, reject) {
-    var browserify = require('browserify');
-    var b = browserify(src, {
+  const src = opts.src;
+  const dest = opts.dest;
+  const external = opts.external || []
+  return new Promise((resolve, reject) => {
+    const browserify = require('browserify');
+    const browserified = browserify(src, {
       insertGlobalVars: {
         'process': undefined,
         'global': undefined,
-        '__dirname': "",
-        '__filename': "",
+        '__dirname': '',
+        '__filename': ''
       },
       browserField: false,
       builtins: false,
@@ -22,11 +22,11 @@ module.exports = function bundleVendor(opts) {
       standalone: 'vendor',
       debug: opts.debug
     })
-    external.forEach(function(m) {
-      b.external(m)
+    external.forEach(m => {
+      browserified.external(m)
     })
-    b.bundle(function(err, buf) {
-      if(err) {
+    browserified.bundle((err, buf) => {
+      if (err) {
         reject(err);
       } else {
         if (opts.debug) {

@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import { chokidar, debug } from './vendor'
-import platform from '../util/platform'
+import isWindows from '../util/isWindows'
 
 const log = debug('bundler:file-watcher')
 
@@ -11,16 +11,15 @@ export default class FileWatcher extends EventEmitter {
     const opts = {
       encoding: 'utf-8',
       persistent: true
-      // ATTENTION: have deactivated this because it was cuasing trouble
-      // at least on Windows
-      // awaitWriteFinish: {
-      //   stabilityThreshold: 100,
-      //   pollInterval: 50
-      // }
     }
-    // TODO: see how this is working on OSX
-    if (platform.isWindows) {
+    // TODO: a good setting of awaitWriteFinish prevents double updates
+    if (isWindows) {
       opts.awaitWriteFinish = true
+    } else {
+      opts.awaitWriteFinish = {
+        stabilityThreshold: 100,
+        pollInterval: 50
+      }
     }
 
     this._file = file
@@ -45,8 +44,7 @@ export default class FileWatcher extends EventEmitter {
   onDelete (file) {
     log('File deleted: %s', file)
     this.emit('unlink', this._file)
-    // TODO: we need to think about a way to explicitly
-    // free watchers
+    // TODO: we need to think about a way to explicitly free watchers
     // ATM, watchers are only freed when stopping the bundler
     // this.close()
   }
