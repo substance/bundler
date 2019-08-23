@@ -6,10 +6,6 @@ var glob = require('glob')
 var minimatch = require('minimatch')
 var yargs = require('yargs')
 
-var acorn = require('acorn')
-var estreeWalker = require('estree-walker')
-var MagicString = require('magic-string')
-
 // lodash
 var forEach = require('lodash/forEach')
 var isArray = require('lodash/isArray')
@@ -34,9 +30,6 @@ module.exports = {
   fse,
   glob,
   minimatch,
-  acorn,
-  estreeWalker,
-  MagicString,
   forEach,
   isArray,
   isString,

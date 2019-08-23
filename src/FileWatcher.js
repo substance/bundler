@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import { chokidar, debug } from './vendor'
-import isWindows from '../util/isWindows'
+import isWindows from './_isWindows'
 
 const log = debug('bundler:file-watcher')
 
