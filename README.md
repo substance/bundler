@@ -69,6 +69,16 @@ b.custom('Create version file', {
 })
 ```
 
+The first argument, `files`, of the `execute()` handler is particularly useful, if glob patterns are used.
+The second argument, `api`, provides the following methods:
+- `watch(path)`: adds a watcher for a given file path
+- `isAbsolute(path)`: helper to check if a path is absolute or relative
+- `isDirectory(path)`: helper to check if a path is a directory
+- `copySync(src, dest)`: copy a file or directory (see `b.cp()`)
+- `mkdirSync(dir)`: create a directory
+- `rmSync(path)`: deletes recursively like `rm -rf`
+- `writeFileSync(path, data)`: write data to a file (destination dir is created automatically)
+
 # Extensions
 
 Extensions make use of custom commands.
