@@ -1,5 +1,3 @@
-const os = require('os')
-
 module.exports = function (cmd, args, options = {}) {
   const silent = Boolean(options.silent)
   const verbose = Boolean(options.verbose) && !silent
@@ -19,7 +17,6 @@ module.exports = function (cmd, args, options = {}) {
       reject(error)
     })
     child.on('close', function (exitCode) {
-      // console.log('##### closing %s: %s', cmd, exitCode)
       if (exitCode !== 0) {
         reject(new Error('Exited with exitCode ' + exitCode))
       } else {

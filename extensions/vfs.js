@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 
 /**
- * A bundler extension for creating virtual browser filesystems.
+ * A bundler extension for creating a virtual filesystems for the browser.
  *
  * @param {Bundler} b
  * @param {object} options
