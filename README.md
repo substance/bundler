@@ -1,144 +1,141 @@
 # Substance Bundler
 
-This is our custom bundling library tailored to our needs, a more light-weight than web-pack, and a bit more like gulp.
+This is our custom bundling library, which is similar to gulp or grunt, but more like a shell script or make file.
+All operations support file watching (using chokidar).
+We use it as a high-level bundling tool, in combination with webpack, rollup, and postcss.
 
-Our approach is to use ES6 for Javascript, and using CSS 2.1 plus some next features using PostCSS (modules, variables).
+# API
 
-Typically we bundle everything into a `dist` folder and watch files during development.
+```
+const b = require('substance-bundler')
+```
 
-# Bundling a JS library
+## `b.copy(src, dest, options)`
 
-Consider a library 'foo' written in ES6.
+Copy a file or directory to a destination folder. `src` allows for glob patterns.
+The destination directory is created if it does not exist.
 
-## NodeJS / CommonJS
+Copy a single file into dist folder:
+```
+copy('./foo.js', 'dist/')
+```
 
-To be able to use the library from Node, set the target format to 'cjs'.
+Copy a single file with renaming
+```
+copy('./foo.js', 'dist/bar.js')
+```
 
-```js
-b.js('index.es6.js', {
-  target: {
-    dest: './dist/foo.cjs.js',
-    format: 'cjs'
+Copy a whole directory into dist folder
+```
+copy('./assets', 'dist/')
+```
+
+Copy a whole directory into dist folder with renaming
+```
+copy('./node_modules/substance/dist', 'dist/lib/substance')
+```
+
+Copy using a glob pattern
+```
+copy('./node_modules/substance/dist/**\u2063/*.css', 'dist/styles/', { root: './node_modules/substance/dist/'})
+```
+
+## `b.rm(path)`
+
+Remove a file or directory, essentially like `rm -rf`.
+
+```
+b.rm('dist')
+b.rm('tmp')
+```
+
+## `b.custom(descr, { src, [dest], execute })`
+
+Perform a custom action.
+- `src` can be a single path or a glob pattern, or an array of such.
+  Source files are watched for changes.
+- `dest` is optional and enables the `bundler` to propagate changes, e.g. removing generated files.
+- `execute(files, api)` is called initially and whenever the source files have changed
+
+Example:
+```
+b.custom('Create version file', {
+  src: 'package.json',
+  dest: 'VERSION',
+  execute (file, api) {
+    let pkg = require('./package.json')
+    api.writeFileSync('VERSION', pkg.version)
   }
 })
 ```
 
-> Note: target options are passed to [`rollup`](https://github.com/rollup/rollup/wiki/Command-Line-Interface#targets).
+# Extensions
 
-## ES6
+Extensions make use of custom commands.
 
-If you have CommonJS dependencies, it makes sense to provide an ES6 bundle, so that it is easier
-to use your library without the need of extra configuration. Additionally it might bring a slight speed up.
+## rollup
 
-> Note: if you don't do this, others will need to configure their bundler to treat the CommonJS code on their own.
+```
+const b = require('substance-bundler')
+const rollup = require('substance-bundler/extensions/rollup')
 
-```js
-b.js('index.es6.js', {
-  target: {
-    dest: './dist/foo.es6.js',
-    format: 'es'
-  }
+rollup(b, require('./rollup.config'))
+```
+
+> See [rollup documentation](https://rollupjs.org/guide/en/#big-list-of-options)
+
+## webpack
+
+```
+const b = require('substance-bundler')
+const webpack = require('substance-bundler/extensions/webpack')
+
+webpack(b, require('./webpack.config'))
+```
+
+> See [webpack documentation](https://webpack.js.org/configuration/)
+
+## postcss
+
+```
+const b = require('substance-bundler')
+const postcss = require('substance-bundler/extensions/postcss')
+
+postcss(b, {
+  from: 'substance.css',
+  to: 'dist/substance.css'
 })
 ```
 
-In `package.json` you would then set `"jsnext:main": "dist/foo.es6.js"`.
+> See [postcss documentation](http://api.postcss.org/global.html#processOptions)
 
-## Browser
-
-```js
-b.js('index.es6.js', {
-  target: {
-    dest: './dist/foo.js',
-    format: 'umd', moduleName: 'foo'
-  }
+Bundler comes with a bundled postcss and predefined set of plugins (`@import` and reporter).
+Both can be overridden:
+```
+postcss(b, {
+  from: 'substance.css',
+  to: 'dist/substance.css',
+  postcss,
+  plugins: [...]
 })
 ```
 
-## CommonJS Dependencies
+## exec
 
-```js
-b.js('index.es6.js', {
-  commonjs: ['lodash'],
-  target: {
-    dest: './dist/foo.js',
-    format: 'es'
-  }
-})
+Execute a program using node's `child_process` module, `cp.spawn()`.
+
 ```
+const b = require('substance-bundler')
+const exec = require('substance-bundler/extensions/exec')
 
-## Ignoring Dependencies
-
-Sometimes you want to exclude dependencies from the bundle, e.g. because it is not used.
-
-```js
-b.js('index.es6.js', {
-  ignore: ['cheerio'],
-  target: {
-    dest: './dist/foo.js',
-    format: 'es'
-  }
-})
+exec(b, command, args, [options])
 ```
+`options`
+  - `silent`: no output to stdout or stderr
+  - `verbose`: show output to stdout as well to stderr (default is only to stderr)
+  - options for `cp.spawn()`: see [child_process documentation](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options)
 
-The specified modules will be replaced with a stub, an empty object.
+## fork
 
-## External Dependencies
+Same as exec but using `cp.fork()`
 
-If you want to take care of a module by yourself, you can declare it as 'external'.
-These modules are supposed to be found in the global scope.
-
-```js
-b.js('index.es6.js', {
-  external: ['jquery'],
-  target: {
-    dest: './dist/foo.js',
-    format: 'umd', moduleName: 'foo'
-  }
-})
-```
-
-## Using Browserify for Edge cases
-
-Some dependencies are difficult to bundle with `rollup`, e.g. `tape`. In these cases you can use `browserify`
-to generate a vendor bundle, and then proceed with `rollup`.
-
-For example, in `substance-test` we need to bundle `tape` with `browserify`, and then create the
-entire bundle using `rollup`.
-
-```js
-const TAPE_BROWSER = path.join(__dirname, 'tmp/tape.browser.js')
-
-// bundle tape with browserify
-b.task('tape:browser', function() {
-  b.browserify('./.make/tape.js', {
-    dest: TAPE_BROWSER,
-    exports: ['default']
-  })
-})
-
-// bundle the suite with rollup
-// using an alias to pick the browser bundle
-b.task('suite', function() {
-  b.js('./src/suite.js', {
-    target: {
-      dest: './dist/testsuite.js',
-      format: 'umd', moduleName: 'testsuite'
-    },
-    alias: {
-      'tape': TAPE_BROWSER
-    }
-    commonjs: true,
-    buble: true,
-  })
-})
-```
-
-## FAQ
-
-### Plugin filters do not work with `npm link`
-
-Correct. That's because `node`'s internal `resolve` implementation uses `realPath` by default. You can tell node to preserve symlinks with:
-
-```bash
-$ node --preserve-symlinks make
-```
