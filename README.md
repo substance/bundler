@@ -1,7 +1,7 @@
 # Substance Bundler
 
-This is our custom bundling library, which is similar to gulp or grunt, but more like a shell script or make file.
-All operations support file watching (using chokidar).
+This is our custom bundling library, which is similar to gulp or grunt, but from regarding usage it is more like a shell script or make file.
+All operations support file watching (using chokidar). All actions can be organised in tasks, and tasks can depend on each other.
 We use it as a high-level bundling tool, in combination with webpack, rollup, and postcss.
 
 # API
@@ -45,7 +45,6 @@ copy('./node_modules/substance/dist/**\u2063/*.css', 'dist/styles/', { root: './
 Remove a file or directory, essentially like `rm -rf`.
 
 ```
-b.rm('dist')
 b.rm('tmp')
 ```
 
@@ -78,6 +77,47 @@ The second argument, `api`, provides the following methods:
 - `mkdirSync(dir)`: create a directory
 - `rmSync(path)`: deletes recursively like `rm -rf`
 - `writeFileSync(path, data)`: write data to a file (destination dir is created automatically)
+
+## `b.task(name, [dependencies], execute)`
+
+Example:
+
+`make.js`:
+```
+const b = require('substance-bundler')
+const postcss = require('substance-bundler/extensions/postcss')
+const rollup = require('substance-bundler/extensions/rollup')
+
+b.task('clean', () => {
+  b.rm('dist')
+})
+
+b.task('css', () => {
+  postcss({
+    from: 'styles/index.css',
+    to: 'dist/app.css'
+  })
+})
+
+b.task('lib', () => {
+  rollup(b, require('./rollup.config'))
+})
+
+b.task('default', ['clean', 'css', 'lib'])
+```
+
+```
+> node make           // runs 'default' task
+> node make css lib   // runs tasks 'css' and 'lib'
+```
+
+## Watcher
+
+```
+> node make -w
+```
+
+Runs the build once and watches for changes.
 
 # Extensions
 
