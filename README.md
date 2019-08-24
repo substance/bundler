@@ -37,7 +37,7 @@ copy('./node_modules/substance/dist', 'dist/lib/substance')
 
 Copy using a glob pattern
 ```
-copy('./node_modules/substance/dist/**\u2063/*.css', 'dist/styles/', { root: './node_modules/substance/dist/'})
+copy('./node_modules/substance/dist/**/*.css', 'dist/styles/', { root: './node_modules/substance/dist/'})
 ```
 
 ## `b.rm(path)`
