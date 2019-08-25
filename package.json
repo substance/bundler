@@ -40,9 +40,9 @@
     "yargs": "^14.0.0"
   },
   "files": [
-    "README.md",
     "dist",
     "extensions",
-    "util"
+    "package.json",
+    "README.md"
   ]
 }
