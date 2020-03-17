@@ -11,17 +11,13 @@ module.exports = function (cmd, args, options = {}) {
     const cp = require('child_process')
     const child = cp.fork(cmd, args, opts)
     child.on('message', function (msg) {
-      if (msg === 'done') { resolve() }
+      if (msg === 'done') { resolve({ running: true }) }
     })
     child.on('error', function (error) {
       reject(error)
     })
     child.on('close', function (exitCode) {
-      if (exitCode !== 0) {
-        reject(new Error('Exited with exitCode ' + exitCode))
-      } else {
-        resolve()
-      }
+      resolve({ exitCode })
     })
   })
 }
